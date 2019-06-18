@@ -8,7 +8,6 @@ import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.idam.UserDetails;
 import uk.gov.hmcts.reform.fpl.ccddatamigration.idam.IdamUserService;
 import uk.gov.hmcts.reform.fpl.ccddatamigration.s2s.AuthUtil;
 
-
 class BaseCcdCaseService {
     @Value("${ccd.jurisdictionid}")
     String jurisdictionId;
