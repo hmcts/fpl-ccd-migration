@@ -18,11 +18,12 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static java.util.Objects.nonNull;
+import static org.springframework.util.ObjectUtils.isEmpty;
 
 @Slf4j
 @Component("generalMigrationService")
 public class GeneralMigrationService implements MigrationService {
-    private static final String EVENT_ID = "migrateCase";
+    private static final String EVENT_ID = "enterRespondentsNew";
     private static final String EVENT_SUMMARY = "Migrate Case";
     private static final String EVENT_DESCRIPTION = "Migrate Case";
 
@@ -50,9 +51,12 @@ public class GeneralMigrationService implements MigrationService {
     @Value("${ccd.dryrun}")
     private boolean dryRun;
 
+    private MigrateRespondentService service = new MigrateRespondentService();
+
     // ADD CHECK FOR OLD CASE STRUCTURE
     private static Predicate<CaseDetails> accepts() {
-        return caseDetails -> caseDetails != null && caseDetails.getData() != null;
+        return caseDetails -> caseDetails != null && caseDetails.getData() != null &&
+            !isEmpty(caseDetails.getData().get("respondents"));
     }
 
     @Override
@@ -63,7 +67,7 @@ public class GeneralMigrationService implements MigrationService {
             log.info("case data {} ", aCase);
 
             // ADD CHECK FOR NEW CASE DATA STRUCTURE
-            if (aCase != null && aCase.getData() != null) {
+            if (aCase != null && aCase.getData() != null && !isEmpty(aCase.getData().get("respondents"))) {
                 updateOneCase(userToken, aCase);
             } else {
                 log.info("Case {} already migrated.", aCase.getId());
@@ -174,7 +178,8 @@ public class GeneralMigrationService implements MigrationService {
 
     private void updateCase(String authorisation, CaseDetails cd) {
         String caseId = cd.getId().toString();
-        Object data = cd.getData();
+        CaseDetails caseDetails = service.migrateCase(cd);
+        Object data = caseDetails.getData();
         if (debugEnabled) {
             log.info("data {}", data.toString());
         }
@@ -194,5 +199,4 @@ public class GeneralMigrationService implements MigrationService {
     private void updateMigratedCases(Long id) {
         migratedCases = nonNull(this.migratedCases) ? (this.migratedCases + "," + id) : id.toString();
     }
-
 }
