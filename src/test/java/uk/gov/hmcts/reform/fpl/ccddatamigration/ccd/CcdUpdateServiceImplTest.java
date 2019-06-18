@@ -31,7 +31,6 @@ public class CcdUpdateServiceImplTest {
     private static final String CASE_ID = "123456789";
     private static final String JURISDICTION_ID = "PUBLICLAW";
     private static final String USER_ID = "30";
-    private static final String CREATE = "create";
     private static final String AUTH_TOKEN = "Bearer eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJubGJoN";
     private static final String EVENT_TOKEN = "Bearer aaaadsadsasawewewewew";
     private static final String EVENT_SUMMARY = "Migrate Case";
@@ -59,11 +58,6 @@ public class CcdUpdateServiceImplTest {
         Field caseTypeField = ReflectionUtils.findField(CcdUpdateServiceImpl.class, "caseType");
         ReflectionUtils.makeAccessible(caseTypeField);
         ReflectionUtils.setField(caseTypeField, underTest, CASE_TYPE);
-
-        Field createEventIdField = ReflectionUtils.findField(CcdUpdateServiceImpl.class, "createEventId");
-        ReflectionUtils.makeAccessible(createEventIdField);
-        ReflectionUtils.setField(createEventIdField, underTest, CREATE);
-
     }
 
     @Test

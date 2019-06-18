@@ -19,10 +19,10 @@ import uk.gov.hmcts.reform.idam.client.IdamClient;
 public class DataMigrationProcessor implements CommandLineRunner {
 
     @Value("${idam.username}")
-    private String idamUserName;
+    private String idamUsername;
 
-    @Value("${idam.userpassword}")
-    private String idamUserPassword;
+    @Value("${idam.password}")
+    private String idamPassword;
 
     @Value("${ccd.jurisdictionid}")
     private String jurisdictionId;
@@ -59,7 +59,7 @@ public class DataMigrationProcessor implements CommandLineRunner {
             if (debugEnabled) {
                 log.info("Start processing cases");
             }
-            String userToken = idamClient.authenticateUser(idamUserName, idamUserPassword);
+            String userToken = idamClient.authenticateUser(idamUsername, idamPassword);
             if (debugEnabled) {
                 log.info("  userToken  : {}", userToken);
             }
