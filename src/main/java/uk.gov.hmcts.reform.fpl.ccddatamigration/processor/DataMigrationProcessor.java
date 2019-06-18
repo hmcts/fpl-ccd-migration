@@ -1,6 +1,8 @@
 package uk.gov.hmcts.reform.fpl.ccddatamigration.processor;
 
-import lombok.extern.slf4j.Slf4j;
+import groovy.util.logging.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
@@ -55,6 +57,7 @@ public class DataMigrationProcessor implements CommandLineRunner {
     @Autowired
     private MigrationService migrationService;
 
+    private static final Logger log = LoggerFactory.getLogger(DataMigrationProcessor.class);
 
     public static void main(String[] args) {
         SpringApplication.run(DataMigrationProcessor.class, args);
@@ -62,6 +65,7 @@ public class DataMigrationProcessor implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
+
         try {
             if (debugEnabled) {
                 log.info("Start processing cases");

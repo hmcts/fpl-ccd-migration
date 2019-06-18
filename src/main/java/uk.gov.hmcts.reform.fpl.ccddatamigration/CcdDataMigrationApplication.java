@@ -1,12 +1,9 @@
 package uk.gov.hmcts.reform.fpl.ccddatamigration;
 
-
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.openfeign.EnableFeignClients;
 import uk.gov.hmcts.reform.authorisation.healthcheck.ServiceAuthHealthIndicator;
 
-@EnableFeignClients(basePackages = {"uk.gov.hmcts.reform.finrem"})
 @SpringBootApplication(exclude = {ServiceAuthHealthIndicator.class})
 public class CcdDataMigrationApplication {
 

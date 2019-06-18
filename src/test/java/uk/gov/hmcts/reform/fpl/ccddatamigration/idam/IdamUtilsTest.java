@@ -22,8 +22,8 @@ import static org.junit.Assert.assertThat;
 public class IdamUtilsTest {
 
     private static final String IDAM_CODE_URL = "/oauth2/authorize?response_type=code&" +
-        "client_id=finrem&redirect_uri=callback";
-    private static final String IDAM_ACCESS_TOKEN_URL = "/oauth2/token?code=y4Kjxhxwr48n7Jca&client_id=finrem" +
+        "client_id=fpl&redirect_uri=callback";
+    private static final String IDAM_ACCESS_TOKEN_URL = "/oauth2/token?code=y4Kjxhxwr48n7Jca&client_id=fpl" +
         "&client_secret=AAAAAAAAAAAAAAAA&redirect_uri=callback&grant_type=authorization_code";
 
     @InjectMocks
@@ -48,7 +48,7 @@ public class IdamUtilsTest {
 
         Field field3 = ReflectionUtils.findField(IdamUtils.class, "clientId");
         ReflectionUtils.makeAccessible(field3);
-        ReflectionUtils.setField(field3, underTest, "finrem");
+        ReflectionUtils.setField(field3, underTest, "fpl");
 
     }
 

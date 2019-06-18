@@ -14,22 +14,18 @@ buildscript {
 }
 
 plugins {
-    id 'idea'
     id 'application'
-    id 'com.github.ben-manes.versions' version '0.20.0'
-    id 'com.jfrog.bintray' version '1.8.0'
-    id 'info.solidsoft.pitest' version '1.3.0'
-    id 'io.spring.dependency-management' version '1.0.5.RELEASE'
-    id 'jacoco'
-    id 'org.sonarqube' version '2.5'
-    id 'org.springframework.boot' version '1.5.12.RELEASE'
     id 'pmd'
+    id 'io.spring.dependency-management' version '1.0.7.RELEASE'
+    id 'org.springframework.boot' version '2.1.5.RELEASE'
+    id 'com.github.ben-manes.versions' version '0.21.0'
+    id 'org.sonarqube' version '2.7.1'
 }
 
 group = 'uk.gov.hmcts.reform'
 version = '1.0.0'
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+sourceCompatibility = '11'
+targetCompatibility = '11'
 
 mainClassName = 'uk.gov.hmcts.reform.fpl.ccddatamigration.CcdDataMigrationApplication'
 
@@ -63,23 +59,14 @@ distributions {
 def versions = [
         ccdStoreClient: '4.4.1',
         commonsLang3: '3.7',
-        commonsIo: '2.5',
         feignHttpClient: '9.5.1',
-        gradlePitest: '1.3.0',
-        jsonAssert: '1.2.3',
         junit: '4.12',
-        lombok: '1.16.16',
-        pitest: '1.3.2',
-        puppyCrawl: '7.6',
-        reformsJavaLogging: '3.0.1',
+        lombok: '1.18.8',
+        reformsJavaLogging: '5.0.1',
         reformSpringBootAutoConfigure: '1.1.0',
         restAssured: '3.0.3',
-        serenity: '1.5.2',
-        serenityCucumber: '1.1.3',
         serviceTokenGenerator: '1.0.0',
-        sonarPitest: '0.5',
         springfoxSwagger: '2.9.0',
-        unirest: '1.4.9',
         wiremockVersion: '2.18.0'
 ]
 
@@ -87,16 +74,11 @@ dependencies {
     compile('org.springframework.boot:spring-boot-starter-actuator')
     compile('org.springframework.boot:spring-boot-starter-web')
 
-    compile group: 'commons-io', name: 'commons-io', version: versions.commonsIo
-    compile group: 'com.puppycrawl.tools', name: 'checkstyle', version:  versions.puppyCrawl
-    compile group: 'info.solidsoft.gradle.pitest', name: 'gradle-pitest-plugin', version: versions.gradlePitest
     compile group: 'io.github.openfeign', name: 'feign-httpclient', version: versions.feignHttpClient
     compile group: 'io.rest-assured', name: 'rest-assured', version: versions.restAssured
     compile group: 'io.springfox', name: 'springfox-swagger2', version: versions.springfoxSwagger
     compile group: 'io.springfox', name: 'springfox-swagger-ui', version: versions.springfoxSwagger
     compile group: 'org.apache.commons', name: 'commons-lang3', version : versions.commonsLang3
-    compile group: 'org.codehaus.sonar-plugins', name:'sonar-pitest-plugin', version: versions.sonarPitest
-    compile group: 'org.pitest', name: 'pitest', version: versions.pitest
     compile group: 'org.springframework', name: 'spring-context-support'
     compile group: 'org.springframework.boot', name: 'spring-boot-starter-json'
     compile (group: 'org.springframework.cloud', name: 'spring-cloud-starter-openfeign')

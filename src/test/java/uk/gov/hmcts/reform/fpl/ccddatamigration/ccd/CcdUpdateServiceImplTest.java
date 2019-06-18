@@ -26,10 +26,10 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class CcdUpdateServiceImplTest {
 
-    private static final String EVENT_ID = "FR_migrateCase";
-    private static final String CASE_TYPE = "FinancialRemedyMVP2";
+    private static final String EVENT_ID = "migrateCase";
+    private static final String CASE_TYPE = "CARE_SUPERVISION_EPO";
     private static final String CASE_ID = "123456789";
-    private static final String JURISDICTION_ID = "divorce";
+    private static final String JURISDICTION_ID = "PUBLICLAW";
     private static final String USER_ID = "30";
     private static final String CREATE = "create";
     private static final String AUTH_TOKEN = "Bearer eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJubGJoN";
