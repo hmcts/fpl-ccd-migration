@@ -15,5 +15,4 @@ public class UserDetails {
     private String forename;
     private String surname;
     private List<String> roles;
-
 }
