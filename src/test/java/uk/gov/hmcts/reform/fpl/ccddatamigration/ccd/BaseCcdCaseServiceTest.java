@@ -8,7 +8,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
-import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.UserDetails;
+import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.idam.UserDetails;
 import uk.gov.hmcts.reform.fpl.ccddatamigration.idam.IdamUserService;
 
 import static org.hamcrest.Matchers.is;

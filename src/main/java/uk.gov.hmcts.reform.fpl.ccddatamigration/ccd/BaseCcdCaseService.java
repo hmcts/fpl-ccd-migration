@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
-import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.UserDetails;
+import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.idam.UserDetails;
 import uk.gov.hmcts.reform.fpl.ccddatamigration.idam.IdamUserService;
 import uk.gov.hmcts.reform.fpl.ccddatamigration.s2s.AuthUtil;
 

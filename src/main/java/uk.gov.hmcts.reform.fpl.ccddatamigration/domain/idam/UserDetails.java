@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.fpl.ccddatamigration.domain;
+package uk.gov.hmcts.reform.fpl.ccddatamigration.domain.idam;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Builder;
