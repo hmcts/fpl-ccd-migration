@@ -13,8 +13,8 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
-import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.UserDetails;
-import uk.gov.hmcts.reform.fpl.ccddatamigration.idam.IdamUserService;
+import uk.gov.hmcts.reform.idam.client.IdamClient;
+import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
 import java.lang.reflect.Field;
 import java.util.LinkedHashMap;
@@ -44,7 +44,7 @@ public class CcdUpdateServiceImplTest {
     CoreCaseDataApi coreCaseDataApi;
 
     @Mock
-    private IdamUserService idamUserService;
+    private IdamClient idamClient;
 
     @Mock
     private AuthTokenGenerator authTokenGenerator;
@@ -100,7 +100,7 @@ public class CcdUpdateServiceImplTest {
     }
 
     private void setupMocks(UserDetails userDetails, LinkedHashMap<String, Object> data) {
-        when(idamUserService.retrieveUserDetails(AUTH_TOKEN)).thenReturn(userDetails);
+        when(idamClient.getUserDetails(AUTH_TOKEN)).thenReturn(userDetails);
 
         when(authTokenGenerator.generate()).thenReturn(AUTH_TOKEN);
 

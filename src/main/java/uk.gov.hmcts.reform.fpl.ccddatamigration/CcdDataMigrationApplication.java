@@ -2,9 +2,8 @@ package uk.gov.hmcts.reform.fpl.ccddatamigration;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import uk.gov.hmcts.reform.authorisation.healthcheck.ServiceAuthHealthIndicator;
 
-@SpringBootApplication(exclude = {ServiceAuthHealthIndicator.class})
+@SpringBootApplication
 public class CcdDataMigrationApplication {
 
     public static void main(String[] args) {
