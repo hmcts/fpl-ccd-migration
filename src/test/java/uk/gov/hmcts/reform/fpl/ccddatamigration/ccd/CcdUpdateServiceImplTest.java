@@ -13,8 +13,8 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
-import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.idam.UserDetails;
-import uk.gov.hmcts.reform.fpl.ccddatamigration.idam.IdamUserService;
+import uk.gov.hmcts.reform.idam.client.IdamClient;
+import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
 import java.lang.reflect.Field;
 import java.util.LinkedHashMap;
@@ -31,7 +31,6 @@ public class CcdUpdateServiceImplTest {
     private static final String CASE_ID = "123456789";
     private static final String JURISDICTION_ID = "PUBLICLAW";
     private static final String USER_ID = "30";
-    private static final String CREATE = "create";
     private static final String AUTH_TOKEN = "Bearer eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJubGJoN";
     private static final String EVENT_TOKEN = "Bearer aaaadsadsasawewewewew";
     private static final String EVENT_SUMMARY = "Migrate Case";
@@ -44,7 +43,7 @@ public class CcdUpdateServiceImplTest {
     CoreCaseDataApi coreCaseDataApi;
 
     @Mock
-    private IdamUserService idamUserService;
+    IdamClient idamClient;
 
     @Mock
     private AuthTokenGenerator authTokenGenerator;
@@ -59,11 +58,6 @@ public class CcdUpdateServiceImplTest {
         Field caseTypeField = ReflectionUtils.findField(CcdUpdateServiceImpl.class, "caseType");
         ReflectionUtils.makeAccessible(caseTypeField);
         ReflectionUtils.setField(caseTypeField, underTest, CASE_TYPE);
-
-        Field createEventIdField = ReflectionUtils.findField(CcdUpdateServiceImpl.class, "createEventId");
-        ReflectionUtils.makeAccessible(createEventIdField);
-        ReflectionUtils.setField(createEventIdField, underTest, CREATE);
-
     }
 
     @Test
@@ -100,7 +94,7 @@ public class CcdUpdateServiceImplTest {
     }
 
     private void setupMocks(UserDetails userDetails, LinkedHashMap<String, Object> data) {
-        when(idamUserService.retrieveUserDetails(AUTH_TOKEN)).thenReturn(userDetails);
+        when(idamClient.getUserDetails(AUTH_TOKEN)).thenReturn(userDetails);
 
         when(authTokenGenerator.generate()).thenReturn(AUTH_TOKEN);
 

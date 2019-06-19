@@ -7,9 +7,6 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.NewRespondent;
 import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.Respondent;
-import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.common.Email;
-import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.common.Party;
-import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.common.TelephoneNumber;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,11 +31,15 @@ public class MigrateRespondentService {
         // ADD NEW STRUCTURE TO CASE DATA
 
         data.put("respondents1", migrateRespondents(objectMapper.convertValue(data.get("respondents"), Map.class)));
-        data.remove("respondents");
+        data.put("respondents", null);
 
-        return CaseDetails.builder()
+        CaseDetails caseDetails1 = CaseDetails.builder()
             .data(data)
             .build();
+
+        log.info("new case details: {}", caseDetails1);
+
+        return caseDetails1;
     }
 
     // Will be old case -> new case. For now oldRespondent -> newRespondent
@@ -69,10 +70,14 @@ public class MigrateRespondentService {
 
         /// BUILD NEW STRUCTURE
 
-        migratedRespondentCollection.forEach(item ->
+        migratedRespondentCollection.forEach(item -> {
+            Map map = objectMapper.convertValue(item, Map.class);
+            System.out.println("map = " + map);
+
             newStructure.add(ImmutableMap.of(
                 "id", UUID.randomUUID().toString(),
-                "value", item)));
+                "value", map));
+        });
 
         log.info("returning new structure {}", newStructure);
 
@@ -88,27 +93,11 @@ public class MigrateRespondentService {
         }
 
         return NewRespondent.builder()
-            .party(Party.builder()
-                .partyID(UUID.randomUUID().toString())
-                .idamID("")
-                .partyType("Individual")
-                .title("")
-                .firstName(firstName)
-                .lastName(lastName)
-                .organisationName("")
-                .dateOfBirth(or.getDob())
-                .address(or.getAddress())
-                .email(Email.builder()
-                    .email("")
-                    .emailUsageType("")
-                    .build())
-                .telephoneNumber(TelephoneNumber.builder()
-                    .telephoneNumber(or.getTelephone())
-                    .telephoneUsageType("")
-                    .contactDirection("")
-                    .build())
-                .build())
-            .leadRespondentIndicator("")
+            .partyType("Individual")
+            .firstName(firstName)
+            .lastName(lastName)
+            .dateOfBirth("1111-11-11")
+            .address(or.getAddress())
             .build();
     }
 }
