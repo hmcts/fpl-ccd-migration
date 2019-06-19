@@ -8,8 +8,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
-import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.UserDetails;
-import uk.gov.hmcts.reform.fpl.ccddatamigration.idam.IdamUserService;
+import uk.gov.hmcts.reform.idam.client.IdamClient;
+import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -25,7 +25,7 @@ public class BaseCcdCaseServiceTest {
     private static final String AUTH_TOKEN = "Bearer eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJubGJoN";
 
     @Mock
-    private IdamUserService idamUserService;
+    private IdamClient idamClient;
 
     @Mock
     private AuthTokenGenerator authTokenGenerator;
@@ -40,7 +40,7 @@ public class BaseCcdCaseServiceTest {
             .surname("Surname")
             .build();
 
-        when(idamUserService.retrieveUserDetails(AUTH_TOKEN)).thenReturn(userDetails);
+        when(idamClient.getUserDetails(AUTH_TOKEN)).thenReturn(userDetails);
     }
 
     @Test

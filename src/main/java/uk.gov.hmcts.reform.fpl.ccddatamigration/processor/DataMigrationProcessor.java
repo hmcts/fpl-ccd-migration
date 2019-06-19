@@ -1,8 +1,6 @@
 package uk.gov.hmcts.reform.fpl.ccddatamigration.processor;
 
-import groovy.util.logging.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
@@ -11,11 +9,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
-import uk.gov.hmcts.reform.fpl.ccddatamigration.idam.IdamUserClient;
-import uk.gov.hmcts.reform.fpl.ccddatamigration.idam.IdamUserService;
 import uk.gov.hmcts.reform.fpl.ccddatamigration.service.MigrationService;
-
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import uk.gov.hmcts.reform.idam.client.IdamClient;
 
 @Slf4j
 @Component
@@ -24,10 +19,10 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 public class DataMigrationProcessor implements CommandLineRunner {
 
     @Value("${idam.username}")
-    private String idamUserName;
+    private String idamUsername;
 
-    @Value("${idam.userpassword}")
-    private String idamUserPassword;
+    @Value("${idam.password}")
+    private String idamPassword;
 
     @Value("${ccd.jurisdictionid}")
     private String jurisdictionId;
@@ -45,19 +40,13 @@ public class DataMigrationProcessor implements CommandLineRunner {
     private boolean debugEnabled;
 
     @Autowired
-    private IdamUserClient idamClient;
-
-
-    @Autowired
-    private IdamUserService idamUserService;
+    private IdamClient idamClient;
 
     @Autowired
     private AuthTokenGenerator authTokenGenerator;
 
     @Autowired
     private MigrationService migrationService;
-
-    private static final Logger log = LoggerFactory.getLogger(DataMigrationProcessor.class);
 
     public static void main(String[] args) {
         SpringApplication.run(DataMigrationProcessor.class, args);
@@ -70,7 +59,7 @@ public class DataMigrationProcessor implements CommandLineRunner {
             if (debugEnabled) {
                 log.info("Start processing cases");
             }
-            String userToken = idamClient.generateUserTokenWithNoRoles(idamUserName, idamUserPassword);
+            String userToken = idamClient.authenticateUser(idamUsername, idamPassword);
             if (debugEnabled) {
                 log.info("  userToken  : {}", userToken);
             }
@@ -78,19 +67,19 @@ public class DataMigrationProcessor implements CommandLineRunner {
             if (debugEnabled) {
                 log.info("  s2sToken : {}", s2sToken);
             }
-            String userId = idamUserService.retrieveUserDetails(userToken).getId();
+            String userId = idamClient.getUserDetails(userToken).getId();
             if (debugEnabled) {
                 log.info("  userId  : {}", userId);
             }
 
-            if (isNotBlank(ccdCaseId)) {
+            if (ccdCaseId != null && !ccdCaseId.isBlank()) {
                 log.info("migrate case, caseId  {}", ccdCaseId);
                 migrationService.processSingleCase(userToken, s2sToken, ccdCaseId);
             } else {
                 migrationService.processAllTheCases(userToken, s2sToken, userId, jurisdictionId, caseType);
             }
             log.info("Migrated Cases {} ",
-                isNotBlank(migrationService.getMigratedCases()) ? migrationService.getMigratedCases() : "NONE");
+                migrationService.getMigratedCases() != null && !migrationService.getMigratedCases().isBlank() ? migrationService.getMigratedCases() : "NONE");
 
             log.info("-----------------------------");
             log.info("Data migration completed");
@@ -99,7 +88,7 @@ public class DataMigrationProcessor implements CommandLineRunner {
             log.info("Total migrations performed: " + migrationService.getTotalMigrationsPerformed());
             log.info("-----------------------------");
             log.info("Failed Cases {}",
-                isNotBlank(migrationService.getFailedCases()) ? migrationService.getFailedCases() : "NONE");
+                migrationService.getFailedCases() != null && !migrationService.getFailedCases().isBlank() ? migrationService.getFailedCases() : "NONE");
 
         } catch (Throwable e) {
             log.error("Migration failed with the following reason :", e.getMessage());
