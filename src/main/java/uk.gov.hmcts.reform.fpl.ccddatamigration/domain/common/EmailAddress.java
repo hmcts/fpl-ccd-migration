@@ -7,7 +7,7 @@ import lombok.Data;
 @Data
 @Builder
 @AllArgsConstructor
-public class Email {
+public class EmailAddress {
     private final String email;
     private final String emailUsageType;
 }

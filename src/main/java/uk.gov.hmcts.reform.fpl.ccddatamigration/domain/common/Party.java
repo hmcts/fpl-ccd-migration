@@ -19,6 +19,6 @@ public class Party {
     private final String organisationName;
     private final Date dateOfBirth;
     private final Address address;
-    private final Email email;
+    private final EmailAddress email;
     private final TelephoneNumber telephoneNumber;
 }

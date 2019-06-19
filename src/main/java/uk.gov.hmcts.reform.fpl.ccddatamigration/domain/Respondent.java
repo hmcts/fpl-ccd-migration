@@ -8,7 +8,7 @@ import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.common.Party;
 @Data
 @Builder
 @AllArgsConstructor
-public class NewRespondent {
+public class Respondent {
     private final Party party;
     private final String leadRespondentIndicator;
 }
