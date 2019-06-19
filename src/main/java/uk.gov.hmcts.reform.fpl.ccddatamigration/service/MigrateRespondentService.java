@@ -5,8 +5,9 @@ import com.google.common.collect.ImmutableMap;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
-import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.NewRespondent;
+import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.OldRespondent;
 import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.Respondent;
+import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.common.Party;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,24 +43,23 @@ public class MigrateRespondentService {
         return caseDetails1;
     }
 
-    // Will be old case -> new case. For now oldRespondent -> newRespondent
-
-    // Give method a Respondent object and it will return the new data structure
     private List<Map<String, Object>> migrateRespondents(Map<String, Object> respondents) {
         log.info("beginning to migrate respondents {}", respondents);
+
         /// FIRST RESPONDENT
 
-        Respondent firstRespondent = objectMapper.convertValue(respondents.get("firstRespondent"), Respondent.class);
-        NewRespondent migratedFirstRespondent = migrateIndividualRespondent(firstRespondent);
+        OldRespondent firstRespondent =
+            objectMapper.convertValue(respondents.get("firstRespondent"), OldRespondent.class);
+        Respondent migratedFirstRespondent = migrateIndividualRespondent(firstRespondent);
 
         /// ADDITIONAL RESPONDENT
 
         List<Map<String, Object>> additionalRespondents =
             (List<Map<String, Object>>) objectMapper.convertValue(respondents.get("additional"), List.class);
 
-        List<NewRespondent> migratedRespondentCollection = additionalRespondents.stream()
+        List<Respondent> migratedRespondentCollection = additionalRespondents.stream()
             .map(respondent ->
-                migrateIndividualRespondent(objectMapper.convertValue(respondent.get("value"), Respondent.class)))
+                migrateIndividualRespondent(objectMapper.convertValue(respondent.get("value"), OldRespondent.class)))
             .collect(toList());
 
         // ADD FIRST RESPONDENT TO ADDITIONAL RESPONDENT LIST
@@ -84,7 +84,7 @@ public class MigrateRespondentService {
         return newStructure;
     }
 
-    private NewRespondent migrateIndividualRespondent(Respondent or) {
+    private Respondent migrateIndividualRespondent(OldRespondent or) {
         log.info("migrating respondent {}", or);
 
         if (or.getName() != null) {
@@ -92,12 +92,14 @@ public class MigrateRespondentService {
             lastName = or.getName().split("\\s+")[1];
         }
 
-        return NewRespondent.builder()
-            .partyType("Individual")
-            .firstName(firstName)
-            .lastName(lastName)
-            .dateOfBirth("1111-11-11")
-            .address(or.getAddress())
+        return Respondent.builder()
+            .party(Party.builder()
+                .partyType("Individual")
+                .firstName(firstName)
+                .lastName(lastName)
+                .dateOfBirth("1111-11-11")
+                .address(or.getAddress())
+                .build())
             .build();
     }
 }

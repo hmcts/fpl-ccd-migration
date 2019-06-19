@@ -5,8 +5,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import org.junit.Test;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
-import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.Respondent;
-import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.Respondents;
+import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.OldRespondent;
+import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.OldRespondents;
 import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.common.Address;
 
 import java.util.Date;
@@ -27,7 +27,7 @@ public class MigrationRespondentServiceTest {
     public void shouldMapCaseDetailsToNewCaseDetails() {
         Map<String, Object> data = new HashMap<>();
 
-        Respondent respondent = Respondent.builder()
+        OldRespondent respondent = OldRespondent.builder()
             .name("An Other")
             .dob(new Date(System.currentTimeMillis()))
             .address(Address.builder()
@@ -47,7 +47,7 @@ public class MigrationRespondentServiceTest {
             .telephone("")
             .build();
 
-        data.put("respondents", Respondents.builder()
+        data.put("respondents", OldRespondents.builder()
             .firstRespondent(respondent)
             .additional(ImmutableList.of(
                 ImmutableMap.of(

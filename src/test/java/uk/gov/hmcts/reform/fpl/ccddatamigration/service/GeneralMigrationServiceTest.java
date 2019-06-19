@@ -12,8 +12,8 @@ import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.PaginatedSearchMetadata;
 import uk.gov.hmcts.reform.fpl.ccddatamigration.ccd.CcdUpdateService;
-import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.Respondent;
-import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.Respondents;
+import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.OldRespondent;
+import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.OldRespondents;
 import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.common.Address;
 
 import java.lang.reflect.Field;
@@ -254,7 +254,7 @@ public class GeneralMigrationServiceTest {
     private CaseDetails createCaseDetails(long id) {
         Map<String, Object> data1 = new HashMap<>();
 
-        Respondent respondent = Respondent.builder()
+        OldRespondent respondent = OldRespondent.builder()
             .name("An Other")
             .dob(new Date(System.currentTimeMillis()))
             .address(Address.builder()
@@ -274,7 +274,7 @@ public class GeneralMigrationServiceTest {
             .telephone("")
             .build();
 
-        data1.put("respondents", Respondents.builder()
+        data1.put("respondents", OldRespondents.builder()
             .firstRespondent(respondent)
             .additional(ImmutableList.of(
                 ImmutableMap.of(

@@ -12,14 +12,14 @@ import java.util.Map;
 @Data
 @Builder
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Respondents {
+public class OldRespondents {
 
-    private final Respondent firstRespondent;
+    private final OldRespondent firstRespondent;
     private final List<Map<String, Object>> additional;
 
     @JsonCreator
-    public Respondents(@JsonProperty("firstRespondent") Respondent firstRespondent,
-                       @JsonProperty("additional") List<Map<String, Object>> additional) {
+    public OldRespondents(@JsonProperty("firstRespondent") OldRespondent firstRespondent,
+                          @JsonProperty("additional") List<Map<String, Object>> additional) {
         this.firstRespondent = firstRespondent;
         this.additional = additional;
     }

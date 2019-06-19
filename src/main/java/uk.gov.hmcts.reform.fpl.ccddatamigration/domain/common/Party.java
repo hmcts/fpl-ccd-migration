@@ -4,8 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
-import java.util.Date;
-
 @Data
 @Builder
 @AllArgsConstructor
@@ -17,8 +15,8 @@ public class Party {
     private final String firstName;
     private final String lastName;
     private final String organisationName;
-    private final Date dateOfBirth;
+    private final String dateOfBirth;
     private final Address address;
-    private final Email email;
+    private final EmailAddress email;
     private final TelephoneNumber telephoneNumber;
 }
