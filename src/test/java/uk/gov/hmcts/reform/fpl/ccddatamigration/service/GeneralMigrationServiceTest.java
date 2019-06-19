@@ -256,7 +256,7 @@ public class GeneralMigrationServiceTest {
 
         OldRespondent respondent = OldRespondent.builder()
             .name("An Other")
-            .dob(new Date(System.currentTimeMillis()))
+            .dob("1999-12-31")
             .address(Address.builder()
                 .addressLine1("address")
                 .addressLine2("")

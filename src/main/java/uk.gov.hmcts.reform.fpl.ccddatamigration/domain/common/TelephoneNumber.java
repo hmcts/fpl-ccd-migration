@@ -9,6 +9,4 @@ import lombok.Data;
 @AllArgsConstructor
 public class TelephoneNumber {
     private final String telephoneNumber;
-    private final String telephoneUsageType;
-    private final String contactDirection;
 }

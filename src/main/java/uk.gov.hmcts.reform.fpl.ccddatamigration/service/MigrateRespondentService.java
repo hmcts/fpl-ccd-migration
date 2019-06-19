@@ -7,7 +7,9 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.OldRespondent;
 import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.Respondent;
+import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.common.Address;
 import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.common.Party;
+import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.common.TelephoneNumber;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +17,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import static java.util.stream.Collectors.toList;
+import static org.apache.commons.lang3.StringUtils.defaultIfBlank;
 
 @Slf4j
 @Service
@@ -22,9 +25,6 @@ import static java.util.stream.Collectors.toList;
 public class MigrateRespondentService {
 
     private ObjectMapper objectMapper = new ObjectMapper();
-
-    private String firstName;
-    private String lastName;
 
     CaseDetails migrateCase(CaseDetails caseDetails) {
         Map<String, Object> data = caseDetails.getData();
@@ -87,19 +87,39 @@ public class MigrateRespondentService {
     private Respondent migrateIndividualRespondent(OldRespondent or) {
         log.info("migrating respondent {}", or);
 
-        if (or.getName() != null) {
-            firstName = or.getName().split("\\s+")[0];
-            lastName = or.getName().split("\\s+")[1];
-        }
+        Address.AddressBuilder addressBuilder = Address.builder();
+        addressBuilder.addressLine1(defaultIfBlank(or.getAddress().getAddressLine1(), null));
+        addressBuilder.addressLine2(defaultIfBlank(or.getAddress().getAddressLine2(), null));
+        addressBuilder.addressLine3(defaultIfBlank(or.getAddress().getAddressLine3(), null));
+        addressBuilder.postTown(defaultIfBlank(or.getAddress().getPostTown(), null));
+        addressBuilder.postcode(defaultIfBlank(or.getAddress().getPostcode(), null));
+        addressBuilder.county(defaultIfBlank(or.getAddress().getCounty(), null));
+        addressBuilder.country(defaultIfBlank(or.getAddress().getCountry(), null));
+        Address address = addressBuilder.build();
+
+        TelephoneNumber.TelephoneNumberBuilder telephoneNumberBuilder = TelephoneNumber.builder();
+        telephoneNumberBuilder.telephoneNumber(defaultIfBlank(or.getTelephone(), null));
+        TelephoneNumber telephoneNumber = telephoneNumberBuilder.build();
+
+        Party.PartyBuilder partyBuilder = Party.builder();
+        partyBuilder.partyID(UUID.randomUUID().toString());
+        partyBuilder.partyType("Individual");
+        partyBuilder.firstName(defaultIfBlank(or.getName().split("\\s+")[0], null));
+        partyBuilder.lastName(defaultIfBlank(or.getName().split("\\s+")[1], null));
+        partyBuilder.dateOfBirth(defaultIfBlank(or.getDob(), null));
+        partyBuilder.address(address);
+        partyBuilder.telephoneNumber(telephoneNumber);
+        partyBuilder.gender(defaultIfBlank(or.getGender(), null));
+        partyBuilder.genderIdentification(defaultIfBlank(or.getGenderIdentify(), null));
+        partyBuilder.placeOfBirth(defaultIfBlank(or.getPlaceOfBirth(), null));
+        partyBuilder.relationshipToChild(defaultIfBlank(or.getRelationshipToChild(), null));
+        partyBuilder.contactDetailsHidden(defaultIfBlank(or.getContactDetailsHidden(), null));
+        partyBuilder.litigationIssues(defaultIfBlank(or.getLitigationIssues(), null));
+        partyBuilder.litigationIssuesDetails(defaultIfBlank(or.getLitigationIssuesDetails(), null));
+        Party party = partyBuilder.build();
 
         return Respondent.builder()
-            .party(Party.builder()
-                .partyType("Individual")
-                .firstName(firstName)
-                .lastName(lastName)
-                .dateOfBirth("1111-11-11")
-                .address(or.getAddress())
-                .build())
+            .party(party)
             .build();
     }
 }
