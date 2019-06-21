@@ -9,14 +9,11 @@ import lombok.Data;
 @AllArgsConstructor
 public class Party {
     private final String partyID;
-    private final String idamID;
     private final String partyType;
-    private final String title;
-    private final String firstName;
-    private final String lastName;
-    private final String organisationName;
-    private final String dateOfBirth;
+    private final String name;
     private final Address address;
-    private final EmailAddress email;
+    private final Email email;
     private final TelephoneNumber telephoneNumber;
+    private final MobileNumber mobileNumber;
+    private final JobTitle jobTitle;
 }

@@ -7,7 +7,6 @@ import lombok.Data;
 @Data
 @Builder
 @AllArgsConstructor
-public class TelephoneNumber {
+public class MobileNumber {
     private final String telephoneNumber;
-    private final String contactDirection;
 }
