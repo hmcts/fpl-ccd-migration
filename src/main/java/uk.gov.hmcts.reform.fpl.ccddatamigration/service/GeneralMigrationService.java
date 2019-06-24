@@ -22,7 +22,7 @@ import static java.util.Objects.nonNull;
 @Slf4j
 @Component("generalMigrationService")
 public class GeneralMigrationService implements MigrationService {
-    private static final String EVENT_ID = "enterApplicantNew";
+    private static final String EVENT_ID = "enterApplicant";
     private static final String EVENT_SUMMARY = "Migrate Case";
     private static final String EVENT_DESCRIPTION = "Migrate Case";
 
