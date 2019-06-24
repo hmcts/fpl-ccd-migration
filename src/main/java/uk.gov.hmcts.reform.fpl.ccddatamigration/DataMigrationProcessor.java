@@ -7,7 +7,6 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.PropertySource;
-import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.fpl.ccddatamigration.service.MigrationService;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 
@@ -41,9 +40,6 @@ public class DataMigrationProcessor implements CommandLineRunner {
     private IdamClient idamClient;
 
     @Autowired
-    private AuthTokenGenerator authTokenGenerator;
-
-    @Autowired
     private MigrationService migrationService;
 
     public static void main(String[] args) {
@@ -65,19 +61,15 @@ public class DataMigrationProcessor implements CommandLineRunner {
             if (debugEnabled) {
                 log.info("  userToken: {}", userToken);
             }
-            String s2sToken = authTokenGenerator.generate();
-            if (debugEnabled) {
-                log.info("  s2sToken: {}", s2sToken);
-            }
             String userId = idamClient.getUserDetails(userToken).getId();
             if (debugEnabled) {
                 log.info("  userId: {}", userId);
             }
 
             if (ccdCaseId != null && !ccdCaseId.isBlank()) {
-                migrationService.processSingleCase(userToken, s2sToken, ccdCaseId);
+                migrationService.processSingleCase(userToken, ccdCaseId);
             } else {
-                migrationService.processAllTheCases(userToken, s2sToken, userId, jurisdiction, caseType);
+                migrationService.processAllCases(userToken, userId, jurisdiction, caseType);
             }
 
             log.info("Migrated cases: {} ", !migrationService.getMigratedCases().isEmpty() ? migrationService.getMigratedCases() : "NONE");

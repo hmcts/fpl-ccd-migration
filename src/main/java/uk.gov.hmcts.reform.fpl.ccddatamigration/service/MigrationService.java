@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.PaginatedSearchMetadata;
@@ -26,16 +27,13 @@ public class MigrationService {
     private static final String EVENT_DESCRIPTION = "Migrate Case";
 
     @Autowired
+    private AuthTokenGenerator authTokenGenerator;
+
+    @Autowired
     private CoreCaseDataService coreCaseDataService;
 
     @Autowired
     private CoreCaseDataApi ccdApi;
-
-    @Getter
-    private List<Long> migratedCases = new ArrayList<>();
-
-    @Getter
-    private List<Long> failedCases = new ArrayList<>();
 
     @Value("${log.debug}")
     private boolean debugEnabled;
@@ -43,40 +41,43 @@ public class MigrationService {
     @Value("${ccd.dryrun}")
     private boolean dryRun;
 
+    @Getter
+    private List<Long> migratedCases = new ArrayList<>();
+
+    @Getter
+    private List<Long> failedCases = new ArrayList<>();
+
     private static Predicate<CaseDetails> accepts() {
         return caseDetails -> caseDetails != null && caseDetails.getData() != null;
     }
 
-    public void processSingleCase(String userToken, String s2sToken, String ccdCaseId) {
-        CaseDetails aCase;
+    public void processSingleCase(String userToken, String ccdCaseId) {
         try {
-            aCase = ccdApi.getCase(userToken, s2sToken, ccdCaseId);
-            log.info("case data {} ", aCase);
+            CaseDetails caseDetails = ccdApi.getCase(userToken, authTokenGenerator.generate(), ccdCaseId);
+            log.info("case data {} ", caseDetails);
 
-            // ADD CHECK FOR NEW CASE DATA STRUCTURE
-            if (aCase != null && aCase.getData() != null) {
-                updateOneCase(userToken, aCase);
+            if (accepts().test(caseDetails)) {
+                updateCase(userToken, caseDetails);
             } else {
-                log.info("Case {} already migrated.", aCase.getId());
+                log.info("Case {} already migrated.", caseDetails.getId());
             }
         } catch (Exception ex) {
             log.error("case Id {} not found, {}", ccdCaseId, ex.getMessage());
         }
     }
 
-    public void processAllTheCases(String userToken, String s2sToken, String userId,
-                                   String jurisdiction, String caseType) {
-        Map<String, String> searchCriteria = new HashMap<>();
-        int numberOfPages = requestNumberOfPage(userToken, s2sToken, userId, jurisdiction, caseType, searchCriteria);
+    public void processAllCases(String userToken, String userId,
+                                String jurisdiction, String caseType) {
+        int numberOfPages = requestNumberOfPage(userToken, authTokenGenerator.generate(), userId, jurisdiction, caseType, new HashMap<>());
 
         if (dryRun) {
             log.info("dryRun for one case ...");
-            dryRunWithOneCase(userToken, s2sToken, userId, jurisdiction, caseType, numberOfPages);
+            dryRunWithOneCase(userToken, authTokenGenerator.generate(), userId, jurisdiction, caseType, numberOfPages);
 
         } else {
             log.info("migrating all the cases ...");
             IntStream.rangeClosed(1, numberOfPages)
-                .forEach(page -> migrateCasesForPage(userToken, s2sToken, userId,
+                .forEach(page -> migrateCasesForPage(userToken, authTokenGenerator.generate(), userId,
                     jurisdiction, caseType, page));
         }
     }
@@ -109,7 +110,7 @@ public class MigrationService {
             if (casesForPage.size() > 0) {
                 found = true;
                 log.info("Migrating Case Id {} for the dryRun", casesForPage.get(0).getId());
-                updateOneCase(userToken, casesForPage.get(0));
+                updateCase(userToken, casesForPage.get(0));
             }
         }
     }
@@ -137,37 +138,27 @@ public class MigrationService {
         getCasesForPage(userToken, s2sToken, userId, jurisdiction, caseType, pageNumber)
             .stream()
             .filter(accepts())
-            .forEach(cd -> updateOneCase(userToken, cd));
+            .forEach(cd -> updateCase(userToken, cd));
     }
 
-
-    private void updateOneCase(String authorisation, CaseDetails cd) {
-        String caseId = cd.getId().toString();
+    private void updateCase(String authorisation, CaseDetails caseDetails) {
         if (debugEnabled) {
-            log.info("updating case with id :" + caseId);
+            log.info("updating case with id: {}", caseDetails.getId());
         }
         try {
-            updateCase(authorisation, cd);
             if (debugEnabled) {
-                log.info(caseId + " updated!");
+                log.info("data: {}", caseDetails.getData());
             }
-            migratedCases.add(cd.getId());
+            coreCaseDataService.update(authorisation, caseDetails.getId().toString(),
+                EVENT_ID, EVENT_SUMMARY, EVENT_DESCRIPTION, caseDetails.getData());
+            if (debugEnabled) {
+                log.info("{} updated!", caseDetails.getId());
+            }
+            migratedCases.add(caseDetails.getId());
         } catch (Exception e) {
-            log.error("update failed for case with id [{}] with error [{}] ", cd.getId().toString(),
-                e.getMessage());
-
-            failedCases.add(cd.getId());
+            log.error("update failed for case with id [{}] with error [{}] ", caseDetails.getId(), e.getMessage());
+            failedCases.add(caseDetails.getId());
         }
     }
 
-    private void updateCase(String authorisation, CaseDetails cd) {
-        String caseId = cd.getId().toString();
-        Object data = cd.getData();
-        if (debugEnabled) {
-            log.info("data {}", data.toString());
-        }
-        coreCaseDataService.update(authorisation, caseId,
-            EVENT_ID, EVENT_SUMMARY, EVENT_DESCRIPTION, data
-        );
-    }
 }

@@ -107,7 +107,7 @@ public class MigrationServiceTest {
     public void shouldProcessOnlyOneCandidateCase_whenDryRunIsTrue() {
         setupFields(true, true);
         setupMocks();
-        migrationService.processAllTheCases(USER_TOKEN, S2S_TOKEN, USER_ID, JURISDICTION_ID, CASE_TYPE);
+        migrationService.processAllCases(USER_TOKEN, S2S_TOKEN, USER_ID, JURISDICTION_ID, CASE_TYPE);
         assertNull(migrationService.getFailedCases());
         assertThat(migrationService.getMigratedCases(), is("1111"));
     }
@@ -121,7 +121,7 @@ public class MigrationServiceTest {
         when(coreCaseDataService.update(USER_TOKEN, caseDetails3.getId().toString(),
                 EVENT_ID, EVENT_SUMMARY, EVENT_DESCRIPTION, caseDetails3.getData()
         )).thenThrow(new RuntimeException("Internal server error"));
-        migrationService.processAllTheCases(USER_TOKEN, S2S_TOKEN, USER_ID, JURISDICTION_ID, CASE_TYPE);
+        migrationService.processAllCases(USER_TOKEN, S2S_TOKEN, USER_ID, JURISDICTION_ID, CASE_TYPE);
         assertThat(migrationService.getFailedCases(), is("1113"));
         assertThat(migrationService.getMigratedCases(), is("1111,1112"));
     }
@@ -137,7 +137,7 @@ public class MigrationServiceTest {
         when(coreCaseDataService.update(USER_TOKEN, caseDetails3.getId().toString(),
                 EVENT_ID, EVENT_SUMMARY, EVENT_DESCRIPTION, caseDetails3.getData()
         )).thenThrow(new RuntimeException("Internal server error"));
-        migrationService.processAllTheCases(USER_TOKEN, S2S_TOKEN, USER_ID, JURISDICTION_ID, CASE_TYPE);
+        migrationService.processAllCases(USER_TOKEN, S2S_TOKEN, USER_ID, JURISDICTION_ID, CASE_TYPE);
         assertThat(migrationService.getFailedCases(), is("1112,1113"));
         assertThat(migrationService.getMigratedCases(), is("1111"));
     }
@@ -151,7 +151,7 @@ public class MigrationServiceTest {
 
         setupMocksForSearchCases(EMPTY_LIST, paginatedSearchMetadata);
 
-        migrationService.processAllTheCases(USER_TOKEN, S2S_TOKEN, USER_ID, JURISDICTION_ID, CASE_TYPE);
+        migrationService.processAllCases(USER_TOKEN, S2S_TOKEN, USER_ID, JURISDICTION_ID, CASE_TYPE);
         assertNull(migrationService.getFailedCases());
         assertNull(migrationService.getFailedCases());
     }
@@ -165,7 +165,7 @@ public class MigrationServiceTest {
 
         setupMocksForSearchCases(EMPTY_LIST, paginatedSearchMetadata);
 
-        migrationService.processAllTheCases(USER_TOKEN, S2S_TOKEN, USER_ID, JURISDICTION_ID, CASE_TYPE);
+        migrationService.processAllCases(USER_TOKEN, S2S_TOKEN, USER_ID, JURISDICTION_ID, CASE_TYPE);
         assertNull(migrationService.getFailedCases());
         assertNull(migrationService.getFailedCases());
     }
