@@ -11,7 +11,7 @@ import static uk.gov.hmcts.reform.authorisation.generators.AuthTokenGeneratorFac
 
 @Configuration
 @Lazy
-public class ServiceTokenGeneratorConfiguration {
+public class AuthTokenGeneratorConfiguration {
 
     @Bean
     public AuthTokenGenerator serviceAuthTokenGenerator(

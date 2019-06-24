@@ -24,7 +24,7 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class CcdUpdateServiceImplTest {
+public class CoreCaseDataServiceTest {
 
     private static final String EVENT_ID = "migrateCase";
     private static final String CASE_TYPE = "CARE_SUPERVISION_EPO";
@@ -37,7 +37,7 @@ public class CcdUpdateServiceImplTest {
     private static final String EVENT_DESC = "Migrate Case";
 
     @InjectMocks
-    private CcdUpdateServiceImpl underTest;
+    private CoreCaseDataService underTest;
 
     @Mock
     CoreCaseDataApi coreCaseDataApi;
@@ -51,11 +51,11 @@ public class CcdUpdateServiceImplTest {
 
     @Before
     public void setUp() {
-        Field field = ReflectionUtils.findField(CcdUpdateServiceImpl.class, "jurisdictionId");
+        Field field = ReflectionUtils.findField(CoreCaseDataService.class, "jurisdiction");
         ReflectionUtils.makeAccessible(field);
         ReflectionUtils.setField(field, underTest, JURISDICTION_ID);
 
-        Field caseTypeField = ReflectionUtils.findField(CcdUpdateServiceImpl.class, "caseType");
+        Field caseTypeField = ReflectionUtils.findField(CoreCaseDataService.class, "caseType");
         ReflectionUtils.makeAccessible(caseTypeField);
         ReflectionUtils.setField(caseTypeField, underTest, CASE_TYPE);
     }
@@ -81,8 +81,8 @@ public class CcdUpdateServiceImplTest {
         setupMocks(userDetails, data);
 
         //when
-        CaseDetails update = underTest.update(CASE_ID, data, EVENT_ID, AUTH_TOKEN,
-            EVENT_SUMMARY, EVENT_DESC);
+        CaseDetails update = underTest.update(AUTH_TOKEN, CASE_ID, EVENT_ID, EVENT_SUMMARY, EVENT_DESC, data
+        );
         //then
         assertThat(update.getId(), is(Long.parseLong(CASE_ID)));
         assertThat(update.getData().get("solicitorEmail"), is("Padmaja.Ramisetti@hmcts.net"));

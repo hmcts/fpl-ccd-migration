@@ -9,16 +9,16 @@ public class AuthUtilTest {
 
     @Test
     public void shouldGetBearToken() {
-        assertThat(AuthUtil.getBearToken("aaaa"), is("Bearer aaaa"));
+        assertThat(AuthUtil.getBearerToken("aaaa"), is("Bearer aaaa"));
     }
 
     @Test
     public void shouldReturnGetBearToken() {
-        assertThat(AuthUtil.getBearToken("Bearer aaaa"), is("Bearer aaaa"));
+        assertThat(AuthUtil.getBearerToken("Bearer aaaa"), is("Bearer aaaa"));
     }
 
     @Test
     public void shouldReturnBlankToken() {
-        assertThat(AuthUtil.getBearToken(""), is(""));
+        assertThat(AuthUtil.getBearerToken(""), is(""));
     }
 }

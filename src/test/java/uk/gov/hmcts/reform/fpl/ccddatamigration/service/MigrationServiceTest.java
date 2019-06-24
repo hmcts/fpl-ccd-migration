@@ -9,7 +9,7 @@ import org.springframework.util.ReflectionUtils;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.PaginatedSearchMetadata;
-import uk.gov.hmcts.reform.fpl.ccddatamigration.ccd.CcdUpdateService;
+import uk.gov.hmcts.reform.fpl.ccddatamigration.ccd.CoreCaseDataService;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
@@ -27,7 +27,7 @@ import static org.mockito.Mockito.when;
 
 
 @RunWith(MockitoJUnitRunner.class)
-public class GeneralMigrationServiceTest {
+public class MigrationServiceTest {
 
     private static final String USER_TOKEN = "Bearer eeeejjjttt";
     private static final String S2S_TOKEN = "eeeejjjttt";
@@ -40,10 +40,10 @@ public class GeneralMigrationServiceTest {
     private static final String EVENT_DESCRIPTION = "Migrate Case";
 
     @InjectMocks
-    private GeneralMigrationService migrationService;
+    private MigrationService migrationService;
 
     @Mock
-    private CcdUpdateService ccdUpdateService;
+    private CoreCaseDataService coreCaseDataService;
 
     @Mock
     private CoreCaseDataApi ccdApi;
@@ -66,8 +66,6 @@ public class GeneralMigrationServiceTest {
             .thenReturn(caseDetails);
         migrationService.processSingleCase(USER_TOKEN, S2S_TOKEN, CASE_ID);
         verify(ccdApi, times(1)).getCase(USER_TOKEN, S2S_TOKEN, CASE_ID);
-        assertThat(migrationService.getTotalNumberOfCases(), is(1));
-        assertThat(migrationService.getTotalMigrationsPerformed(), is(1));
         assertNull(migrationService.getFailedCases());
         assertThat(migrationService.getMigratedCases(), is("1111"));
     }
@@ -81,8 +79,6 @@ public class GeneralMigrationServiceTest {
             .thenReturn(caseDetails);
         migrationService.processSingleCase(USER_TOKEN, S2S_TOKEN, CASE_ID);
         verify(ccdApi, times(1)).getCase(USER_TOKEN, S2S_TOKEN, CASE_ID);
-        assertThat(migrationService.getTotalNumberOfCases(), is(0));
-        assertThat(migrationService.getTotalMigrationsPerformed(), is(0));
         assertNull(migrationService.getFailedCases());
         assertNull(migrationService.getMigratedCases());
     }
@@ -94,23 +90,15 @@ public class GeneralMigrationServiceTest {
             .id(1111L)
             .data(data)
             .build();
-        when(ccdUpdateService.update(caseDetails.getId().toString(),
-            caseDetails.getData(),
-            EVENT_ID,
-            USER_TOKEN,
-            EVENT_SUMMARY,
-            EVENT_DESCRIPTION)).thenThrow(new RuntimeException("Internal server error"));
+        when(coreCaseDataService.update(USER_TOKEN, caseDetails.getId().toString(),
+                EVENT_ID, EVENT_SUMMARY, EVENT_DESCRIPTION, caseDetails.getData()
+        )).thenThrow(new RuntimeException("Internal server error"));
         when(ccdApi.getCase(USER_TOKEN, S2S_TOKEN, CASE_ID))
             .thenReturn(caseDetails);
         migrationService.processSingleCase(USER_TOKEN, S2S_TOKEN, CASE_ID);
         verify(ccdApi, times(1)).getCase(USER_TOKEN, S2S_TOKEN, CASE_ID);
-        verify(ccdUpdateService, times(1)).update("1111", caseDetails.getData(),
-            EVENT_ID,
-            USER_TOKEN,
-            EVENT_SUMMARY,
-            EVENT_DESCRIPTION);
-        assertThat(migrationService.getTotalNumberOfCases(), is(1));
-        assertThat(migrationService.getTotalMigrationsPerformed(), is(0));
+        verify(coreCaseDataService, times(1)).update(USER_TOKEN, "1111", EVENT_ID, EVENT_SUMMARY, EVENT_DESCRIPTION, caseDetails.getData()
+        );
         assertThat(migrationService.getFailedCases(), is("1111"));
         assertNull(migrationService.getMigratedCases());
     }
@@ -120,8 +108,6 @@ public class GeneralMigrationServiceTest {
         setupFields(true, true);
         setupMocks();
         migrationService.processAllTheCases(USER_TOKEN, S2S_TOKEN, USER_ID, JURISDICTION_ID, CASE_TYPE);
-        assertThat(migrationService.getTotalNumberOfCases(), is(1));
-        assertThat(migrationService.getTotalMigrationsPerformed(), is(1));
         assertNull(migrationService.getFailedCases());
         assertThat(migrationService.getMigratedCases(), is("1111"));
     }
@@ -132,15 +118,10 @@ public class GeneralMigrationServiceTest {
         setupMocks();
         setUpMockForUpdate(caseDetails1);
         setUpMockForUpdate(caseDetails2);
-        when(ccdUpdateService.update(caseDetails3.getId().toString(),
-            caseDetails3.getData(),
-            EVENT_ID,
-            USER_TOKEN,
-            EVENT_SUMMARY,
-            EVENT_DESCRIPTION)).thenThrow(new RuntimeException("Internal server error"));
+        when(coreCaseDataService.update(USER_TOKEN, caseDetails3.getId().toString(),
+                EVENT_ID, EVENT_SUMMARY, EVENT_DESCRIPTION, caseDetails3.getData()
+        )).thenThrow(new RuntimeException("Internal server error"));
         migrationService.processAllTheCases(USER_TOKEN, S2S_TOKEN, USER_ID, JURISDICTION_ID, CASE_TYPE);
-        assertThat(migrationService.getTotalNumberOfCases(), is(3));
-        assertThat(migrationService.getTotalMigrationsPerformed(), is(2));
         assertThat(migrationService.getFailedCases(), is("1113"));
         assertThat(migrationService.getMigratedCases(), is("1111,1112"));
     }
@@ -150,21 +131,13 @@ public class GeneralMigrationServiceTest {
         setupFields(false, false);
         setupMocks();
         setUpMockForUpdate(caseDetails1);
-        when(ccdUpdateService.update(caseDetails2.getId().toString(),
-            caseDetails2.getData(),
-            EVENT_ID,
-            USER_TOKEN,
-            EVENT_SUMMARY,
-            EVENT_DESCRIPTION)).thenThrow(new RuntimeException("Internal server error"));
-        when(ccdUpdateService.update(caseDetails3.getId().toString(),
-            caseDetails3.getData(),
-            EVENT_ID,
-            USER_TOKEN,
-            EVENT_SUMMARY,
-            EVENT_DESCRIPTION)).thenThrow(new RuntimeException("Internal server error"));
+        when(coreCaseDataService.update(USER_TOKEN, caseDetails2.getId().toString(),
+                EVENT_ID, EVENT_SUMMARY, EVENT_DESCRIPTION, caseDetails2.getData()
+        )).thenThrow(new RuntimeException("Internal server error"));
+        when(coreCaseDataService.update(USER_TOKEN, caseDetails3.getId().toString(),
+                EVENT_ID, EVENT_SUMMARY, EVENT_DESCRIPTION, caseDetails3.getData()
+        )).thenThrow(new RuntimeException("Internal server error"));
         migrationService.processAllTheCases(USER_TOKEN, S2S_TOKEN, USER_ID, JURISDICTION_ID, CASE_TYPE);
-        assertThat(migrationService.getTotalNumberOfCases(), is(3));
-        assertThat(migrationService.getTotalMigrationsPerformed(), is(1));
         assertThat(migrationService.getFailedCases(), is("1112,1113"));
         assertThat(migrationService.getMigratedCases(), is("1111"));
     }
@@ -179,8 +152,6 @@ public class GeneralMigrationServiceTest {
         setupMocksForSearchCases(EMPTY_LIST, paginatedSearchMetadata);
 
         migrationService.processAllTheCases(USER_TOKEN, S2S_TOKEN, USER_ID, JURISDICTION_ID, CASE_TYPE);
-        assertThat(migrationService.getTotalNumberOfCases(), is(0));
-        assertThat(migrationService.getTotalMigrationsPerformed(), is(0));
         assertNull(migrationService.getFailedCases());
         assertNull(migrationService.getFailedCases());
     }
@@ -195,8 +166,6 @@ public class GeneralMigrationServiceTest {
         setupMocksForSearchCases(EMPTY_LIST, paginatedSearchMetadata);
 
         migrationService.processAllTheCases(USER_TOKEN, S2S_TOKEN, USER_ID, JURISDICTION_ID, CASE_TYPE);
-        assertThat(migrationService.getTotalNumberOfCases(), is(0));
-        assertThat(migrationService.getTotalMigrationsPerformed(), is(0));
         assertNull(migrationService.getFailedCases());
         assertNull(migrationService.getFailedCases());
     }
@@ -214,23 +183,20 @@ public class GeneralMigrationServiceTest {
     }
 
     private void setupFields(boolean dryRun, boolean debug) {
-        Field field = ReflectionUtils.findField(GeneralMigrationService.class, "dryRun");
+        Field field = ReflectionUtils.findField(MigrationService.class, "dryRun");
         ReflectionUtils.makeAccessible(field);
         ReflectionUtils.setField(field, migrationService, dryRun);
         if (debug) {
-            Field debugEnabled = ReflectionUtils.findField(GeneralMigrationService.class, "debugEnabled");
+            Field debugEnabled = ReflectionUtils.findField(MigrationService.class, "debugEnabled");
             ReflectionUtils.makeAccessible(debugEnabled);
             ReflectionUtils.setField(debugEnabled, migrationService, debug);
         }
     }
 
     private void setUpMockForUpdate(CaseDetails caseDetails1) {
-        when(ccdUpdateService.update(caseDetails1.getId().toString(),
-            caseDetails1.getData(),
-            EVENT_ID,
-            USER_TOKEN,
-            EVENT_SUMMARY,
-            EVENT_DESCRIPTION)).thenReturn(caseDetails1);
+        when(coreCaseDataService.update(USER_TOKEN, caseDetails1.getId().toString(),
+                EVENT_ID, EVENT_SUMMARY, EVENT_DESCRIPTION, caseDetails1.getData()
+        )).thenReturn(caseDetails1);
     }
 
     private void setupMocksForSearchCases(List<CaseDetails> caseDetails,
