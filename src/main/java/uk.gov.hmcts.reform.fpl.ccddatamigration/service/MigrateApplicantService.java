@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.fpl.ccddatamigration.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableMap;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
@@ -24,9 +25,14 @@ public class MigrateApplicantService {
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
-        CaseDetails migrateCase(CaseDetails caseDetails) { Map<String, Object> data = caseDetails.getData();
+    CaseDetails migrateCase(CaseDetails caseDetails) {
+        Map<String, Object> data = caseDetails.getData();
 
-        data.put("applicantNew", migrateApplicant(objectMapper.convertValue(data.get("applicant"), OldApplicant.class)));
+        Map map = ImmutableMap.of(
+            "id", UUID.randomUUID().toString(),
+            "value", migrateApplicant(objectMapper.convertValue(data.get("applicant"), OldApplicant.class)));
+
+        data.put("applicants", map);
         data.put("applicant", null);
 
         CaseDetails caseDetails1 = CaseDetails.builder()
@@ -38,7 +44,7 @@ public class MigrateApplicantService {
         return caseDetails1;
     }
 
-    private Applicant migrateApplicant(OldApplicant or){
+    private Applicant migrateApplicant(OldApplicant or) {
         log.info("Migrating applicant", or);
 
         Address.AddressBuilder addressBuilder = Address.builder();
@@ -61,7 +67,7 @@ public class MigrateApplicantService {
         TelephoneNumber telephoneNumber = telephoneNumberBuilder.build();
 
         MobileNumber.MobileNumberBuilder mobileNumberBuilder = MobileNumber.builder();
-        mobileNumberBuilder.telephoneNumber(defaultIfBlank(or.getMobile(),null));
+        mobileNumberBuilder.telephoneNumber(defaultIfBlank(or.getMobile(), null));
         MobileNumber mobileNumber = mobileNumberBuilder.build();
 
         JobTitle.JobTitleBuilder jobTitleBuilder = JobTitle.builder();

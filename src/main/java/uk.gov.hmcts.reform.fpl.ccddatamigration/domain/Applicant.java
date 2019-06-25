@@ -10,5 +10,5 @@ import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.common.Party;
 @AllArgsConstructor
 public class Applicant {
     private final Party party;
-    private final String leadRespondentIndicator;
+    private final String leadApplicantIndicator;
 }
