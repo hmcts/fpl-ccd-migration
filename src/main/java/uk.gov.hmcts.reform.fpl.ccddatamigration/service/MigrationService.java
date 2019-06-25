@@ -38,9 +38,6 @@ public class MigrationService {
     @Value("${log.debug}")
     private boolean debugEnabled;
 
-    @Value("${ccd.dryrun}")
-    private boolean dryRun;
-
     @Getter
     private List<Long> migratedCases = new ArrayList<>();
 
@@ -70,16 +67,10 @@ public class MigrationService {
                                 String jurisdiction, String caseType) {
         int numberOfPages = requestNumberOfPage(userToken, authTokenGenerator.generate(), userId, jurisdiction, caseType, new HashMap<>());
 
-        if (dryRun) {
-            log.info("dryRun for one case ...");
-            dryRunWithOneCase(userToken, authTokenGenerator.generate(), userId, jurisdiction, caseType, numberOfPages);
-
-        } else {
             log.info("migrating all the cases ...");
             IntStream.rangeClosed(1, numberOfPages)
                 .forEach(page -> migrateCasesForPage(userToken, authTokenGenerator.generate(), userId,
                     jurisdiction, caseType, page));
-        }
     }
 
     private int requestNumberOfPage(String authorisation,
@@ -99,20 +90,6 @@ public class MigrationService {
             log.debug("Pagination>>" + paginationInfoForSearchForCaseworkers.toString());
         }
         return paginationInfoForSearchForCaseworkers.getTotalPagesCount();
-    }
-
-    private void dryRunWithOneCase(String userToken, String s2sToken, String userId,
-                                   String jurisdiction, String caseType, int numberOfPages) {
-        boolean found = false;
-        for (int i = 1; i <= numberOfPages && !found; i++) {
-            List<CaseDetails> casesForPage = getCasesForPage(userToken, s2sToken, userId,
-                jurisdiction, caseType, i);
-            if (casesForPage.size() > 0) {
-                found = true;
-                log.info("Migrating Case Id {} for the dryRun", casesForPage.get(0).getId());
-                updateCase(userToken, casesForPage.get(0));
-            }
-        }
     }
 
     private List<CaseDetails> getCasesForPage(String userToken,

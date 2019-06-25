@@ -30,9 +30,6 @@ public class DataMigrationProcessor implements CommandLineRunner {
     @Value("${ccd.caseId}")
     private String ccdCaseId;
 
-    @Value("${ccd.dryrun}")
-    private boolean dryRun;
-
     @Value("${log.debug}")
     private boolean debugEnabled;
 

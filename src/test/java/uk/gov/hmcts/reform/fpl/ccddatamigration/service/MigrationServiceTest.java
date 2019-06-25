@@ -64,7 +64,7 @@ public class MigrationServiceTest {
             .build();
         when(ccdApi.getCase(USER_TOKEN, S2S_TOKEN, CASE_ID))
             .thenReturn(caseDetails);
-        migrationService.processSingleCase(USER_TOKEN, S2S_TOKEN, CASE_ID);
+        migrationService.processSingleCase(USER_TOKEN, CASE_ID);
         verify(ccdApi, times(1)).getCase(USER_TOKEN, S2S_TOKEN, CASE_ID);
         assertNull(migrationService.getFailedCases());
         assertThat(migrationService.getMigratedCases(), is("1111"));
@@ -77,7 +77,7 @@ public class MigrationServiceTest {
             .build();
         when(ccdApi.getCase(USER_TOKEN, S2S_TOKEN, CASE_ID))
             .thenReturn(caseDetails);
-        migrationService.processSingleCase(USER_TOKEN, S2S_TOKEN, CASE_ID);
+        migrationService.processSingleCase(USER_TOKEN, CASE_ID);
         verify(ccdApi, times(1)).getCase(USER_TOKEN, S2S_TOKEN, CASE_ID);
         assertNull(migrationService.getFailedCases());
         assertNull(migrationService.getMigratedCases());
@@ -95,7 +95,7 @@ public class MigrationServiceTest {
         )).thenThrow(new RuntimeException("Internal server error"));
         when(ccdApi.getCase(USER_TOKEN, S2S_TOKEN, CASE_ID))
             .thenReturn(caseDetails);
-        migrationService.processSingleCase(USER_TOKEN, S2S_TOKEN, CASE_ID);
+        migrationService.processSingleCase(USER_TOKEN, CASE_ID);
         verify(ccdApi, times(1)).getCase(USER_TOKEN, S2S_TOKEN, CASE_ID);
         verify(coreCaseDataService, times(1)).update(USER_TOKEN, "1111", EVENT_ID, EVENT_SUMMARY, EVENT_DESCRIPTION, caseDetails.getData()
         );
@@ -104,31 +104,22 @@ public class MigrationServiceTest {
     }
 
     @Test
-    public void shouldProcessOnlyOneCandidateCase_whenDryRunIsTrue() {
-        setupFields(true, true);
-        setupMocks();
-        migrationService.processAllCases(USER_TOKEN, S2S_TOKEN, USER_ID, JURISDICTION_ID, CASE_TYPE);
-        assertNull(migrationService.getFailedCases());
-        assertThat(migrationService.getMigratedCases(), is("1111"));
-    }
-
-    @Test
-    public void shouldProcessAllTheCandidateCases_whenDryRunIsFalseAndOneCaseFailed() {
-        setupFields(false, true);
+    public void shouldProcessAllTheCandidateCases_whenOneCaseFailed() {
+        setupFields(true);
         setupMocks();
         setUpMockForUpdate(caseDetails1);
         setUpMockForUpdate(caseDetails2);
         when(coreCaseDataService.update(USER_TOKEN, caseDetails3.getId().toString(),
                 EVENT_ID, EVENT_SUMMARY, EVENT_DESCRIPTION, caseDetails3.getData()
         )).thenThrow(new RuntimeException("Internal server error"));
-        migrationService.processAllCases(USER_TOKEN, S2S_TOKEN, USER_ID, JURISDICTION_ID, CASE_TYPE);
+        migrationService.processAllCases(USER_TOKEN, USER_ID, JURISDICTION_ID, CASE_TYPE);
         assertThat(migrationService.getFailedCases(), is("1113"));
         assertThat(migrationService.getMigratedCases(), is("1111,1112"));
     }
 
     @Test
-    public void shouldProcessAllTheCandidateCases_whenDryRunIsFalseAndTwoCasesFailed() {
-        setupFields(false, false);
+    public void shouldProcessAllTheCandidateCases_whenTwoCasesFailed() {
+        setupFields(false);
         setupMocks();
         setUpMockForUpdate(caseDetails1);
         when(coreCaseDataService.update(USER_TOKEN, caseDetails2.getId().toString(),
@@ -137,35 +128,21 @@ public class MigrationServiceTest {
         when(coreCaseDataService.update(USER_TOKEN, caseDetails3.getId().toString(),
                 EVENT_ID, EVENT_SUMMARY, EVENT_DESCRIPTION, caseDetails3.getData()
         )).thenThrow(new RuntimeException("Internal server error"));
-        migrationService.processAllCases(USER_TOKEN, S2S_TOKEN, USER_ID, JURISDICTION_ID, CASE_TYPE);
+        migrationService.processAllCases(USER_TOKEN, USER_ID, JURISDICTION_ID, CASE_TYPE);
         assertThat(migrationService.getFailedCases(), is("1112,1113"));
         assertThat(migrationService.getMigratedCases(), is("1111"));
     }
 
     @Test
-    public void shouldProcessNoCaseWhenNoCasesAvailableWithDryRun() {
-        setupFields(true, false);
+    public void shouldProcessNoCaseWhenNoCasesAvailable() {
+        setupFields(false);
         PaginatedSearchMetadata paginatedSearchMetadata = new PaginatedSearchMetadata();
         paginatedSearchMetadata.setTotalPagesCount(0);
         paginatedSearchMetadata.setTotalResultsCount(0);
 
         setupMocksForSearchCases(EMPTY_LIST, paginatedSearchMetadata);
 
-        migrationService.processAllCases(USER_TOKEN, S2S_TOKEN, USER_ID, JURISDICTION_ID, CASE_TYPE);
-        assertNull(migrationService.getFailedCases());
-        assertNull(migrationService.getFailedCases());
-    }
-
-    @Test
-    public void shouldProcessNoCaseWhenNoCasesAvailableWithDryRunAsFalse() {
-        setupFields(false, false);
-        PaginatedSearchMetadata paginatedSearchMetadata = new PaginatedSearchMetadata();
-        paginatedSearchMetadata.setTotalPagesCount(0);
-        paginatedSearchMetadata.setTotalResultsCount(0);
-
-        setupMocksForSearchCases(EMPTY_LIST, paginatedSearchMetadata);
-
-        migrationService.processAllCases(USER_TOKEN, S2S_TOKEN, USER_ID, JURISDICTION_ID, CASE_TYPE);
+        migrationService.processAllCases(USER_TOKEN, USER_ID, JURISDICTION_ID, CASE_TYPE);
         assertNull(migrationService.getFailedCases());
         assertNull(migrationService.getFailedCases());
     }
@@ -182,10 +159,7 @@ public class MigrationServiceTest {
         setupMocksForSearchCases(asList(caseDetails1, caseDetails2, caseDetails3), paginatedSearchMetadata);
     }
 
-    private void setupFields(boolean dryRun, boolean debug) {
-        Field field = ReflectionUtils.findField(MigrationService.class, "dryRun");
-        ReflectionUtils.makeAccessible(field);
-        ReflectionUtils.setField(field, migrationService, dryRun);
+    private void setupFields(boolean debug) {
         if (debug) {
             Field debugEnabled = ReflectionUtils.findField(MigrationService.class, "debugEnabled");
             ReflectionUtils.makeAccessible(debugEnabled);
