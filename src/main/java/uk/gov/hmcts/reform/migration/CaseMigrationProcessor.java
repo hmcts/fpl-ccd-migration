@@ -51,7 +51,7 @@ public class CaseMigrationProcessor {
     private void updateCase(String authorisation, CaseDetails caseDetails) {
         log.info("Updating case {}", caseDetails.getId());
         try {
-            log.debug("  case data: {}", caseDetails.getData());
+            log.debug("Case data: {}", caseDetails.getData());
             dataMigrationService.migrate(caseDetails);
             coreCaseDataService.update(authorisation, caseDetails.getId().toString(),
                 EVENT_ID, EVENT_SUMMARY, EVENT_DESCRIPTION, caseDetails.getData());

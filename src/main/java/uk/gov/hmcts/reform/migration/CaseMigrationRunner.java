@@ -38,9 +38,9 @@ public class CaseMigrationRunner implements CommandLineRunner {
     public void run(String... args) {
         try {
             String userToken = idamClient.authenticateUser(idamUsername, idamPassword);
-            log.debug("  userToken: {}", userToken);
+            log.debug("User token: {}", userToken);
             String userId = idamClient.getUserDetails(userToken).getId();
-            log.debug("  userId: {}", userId);
+            log.debug("User ID: {}", userId);
 
             if (ccdCaseId != null && !ccdCaseId.isBlank()) {
                 log.info("Data migration of single case started");
