@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.migration;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -11,11 +10,9 @@ import uk.gov.hmcts.reform.migration.ccd.CoreCaseDataService;
 import uk.gov.hmcts.reform.migration.service.DataMigrationService;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static java.util.Arrays.asList;
-import static java.util.Collections.EMPTY_LIST;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
@@ -34,24 +31,20 @@ public class CaseMigrationProcessorTest {
     private static final String EVENT_SUMMARY = "Migrate Case";
     private static final String EVENT_DESCRIPTION = "Migrate Case";
 
+    private final CaseDetails caseDetails1 = createCaseDetails(1111L, "FPL1");
+    private final CaseDetails caseDetails2 = createCaseDetails(1112L, "FPL2");
+    private final CaseDetails caseDetails3 = createCaseDetails(1113L, "FPL3");
+
     @InjectMocks
     private CaseMigrationProcessor caseMigrationProcessor;
-
     @Mock
     private CoreCaseDataService coreCaseDataService;
     @Mock
     private DataMigrationService dataMigrationService;
 
-    private CaseDetails caseDetails1;
-    private CaseDetails caseDetails2;
-    private CaseDetails caseDetails3;
-
     @Test
     public void shouldNotProcessASingleCaseWithOutRedundantFields() {
-        CaseDetails caseDetails = CaseDetails.builder()
-            .id(1111L)
-            .build();
-        when(coreCaseDataService.fetchOne(USER_TOKEN, CASE_ID)).thenReturn(caseDetails);
+        when(coreCaseDataService.fetchOne(USER_TOKEN, CASE_ID)).thenReturn(caseDetails1);
         when(dataMigrationService.accepts()).thenReturn(candidate -> false);
         caseMigrationProcessor.processSingleCase(USER_TOKEN, CASE_ID);
         verify(coreCaseDataService, times(1)).fetchOne(USER_TOKEN, CASE_ID);
@@ -61,10 +54,7 @@ public class CaseMigrationProcessorTest {
 
     @Test
     public void shouldProcessASingleCaseAndMigrationIsSuccessful() {
-        CaseDetails caseDetails = CaseDetails.builder()
-            .id(1111L)
-            .build();
-        when(coreCaseDataService.fetchOne(USER_TOKEN, CASE_ID)).thenReturn(caseDetails);
+        when(coreCaseDataService.fetchOne(USER_TOKEN, CASE_ID)).thenReturn(caseDetails1);
         when(dataMigrationService.accepts()).thenReturn(candidate -> true);
         caseMigrationProcessor.processSingleCase(USER_TOKEN, CASE_ID);
         verify(coreCaseDataService, times(1)).fetchOne(USER_TOKEN, CASE_ID);
@@ -74,22 +64,19 @@ public class CaseMigrationProcessorTest {
 
     @Test
     public void shouldProcessASingleCaseAndMigrationIsFailed() {
-        CaseDetails caseDetails = CaseDetails.builder()
-            .id(1111L)
-            .build();
-        when(coreCaseDataService.fetchOne(USER_TOKEN, CASE_ID)).thenReturn(caseDetails);
+        when(coreCaseDataService.fetchOne(USER_TOKEN, CASE_ID)).thenReturn(caseDetails1);
         when(dataMigrationService.accepts()).thenReturn(candidate -> true);
-        when(coreCaseDataService.update(USER_TOKEN, caseDetails.getId().toString(), EVENT_ID, EVENT_SUMMARY, EVENT_DESCRIPTION, caseDetails.getData())).thenThrow(new RuntimeException("Internal server error"));
+        when(coreCaseDataService.update(USER_TOKEN, caseDetails1.getId().toString(), EVENT_ID, EVENT_SUMMARY, EVENT_DESCRIPTION, caseDetails1.getData())).thenThrow(new RuntimeException("Internal server error"));
         caseMigrationProcessor.processSingleCase(USER_TOKEN, CASE_ID);
         verify(coreCaseDataService, times(1)).fetchOne(USER_TOKEN, CASE_ID);
-        verify(coreCaseDataService, times(1)).update(USER_TOKEN, "1111", EVENT_ID, EVENT_SUMMARY, EVENT_DESCRIPTION, caseDetails.getData());
+        verify(coreCaseDataService, times(1)).update(USER_TOKEN, "1111", EVENT_ID, EVENT_SUMMARY, EVENT_DESCRIPTION, caseDetails1.getData());
         assertThat(caseMigrationProcessor.getFailedCases(), contains(1111L));
         assertThat(caseMigrationProcessor.getMigratedCases(), hasSize(0));
     }
 
     @Test
     public void shouldProcessAllTheCandidateCases_whenOneCaseFailed() {
-        mockDataFetch();
+        mockDataFetch(caseDetails1, caseDetails2, caseDetails3);
         mockDataUpdate(caseDetails1);
         mockDataUpdate(caseDetails2);
         when(dataMigrationService.accepts()).thenReturn(candidate -> true);
@@ -101,7 +88,7 @@ public class CaseMigrationProcessorTest {
 
     @Test
     public void shouldProcessAllTheCandidateCases_whenTwoCasesFailed() {
-        mockDataFetch();
+        mockDataFetch(caseDetails1, caseDetails2, caseDetails3);
         mockDataUpdate(caseDetails1);
         when(dataMigrationService.accepts()).thenReturn(candidate -> true);
         when(coreCaseDataService.update(USER_TOKEN, caseDetails2.getId().toString(), EVENT_ID, EVENT_SUMMARY, EVENT_DESCRIPTION, caseDetails2.getData())).thenThrow(new RuntimeException("Internal server error"));
@@ -113,7 +100,7 @@ public class CaseMigrationProcessorTest {
 
     @Test
     public void shouldProcessNoCaseWhenNoCasesAvailable() {
-        mockDataFetch(EMPTY_LIST);
+        mockDataFetch();
 
         when(dataMigrationService.accepts()).thenReturn(candidate -> true);
         caseMigrationProcessor.processAllCases(USER_TOKEN, USER_ID);
@@ -121,16 +108,8 @@ public class CaseMigrationProcessorTest {
         assertThat(caseMigrationProcessor.getFailedCases(), hasSize(0));
     }
 
-    private void mockDataFetch() {
-        caseDetails1 = createCaseDetails(1111L, "FPL1");
-        caseDetails2 = createCaseDetails(1112L, "FPL2");
-        caseDetails3 = createCaseDetails(1113L, "FPL3");
-
-        mockDataFetch(asList(caseDetails1, caseDetails2, caseDetails3));
-    }
-
-    private void mockDataFetch(List<CaseDetails> caseDetails) {
-        when(coreCaseDataService.fetchAll(USER_TOKEN, USER_ID)).thenReturn(caseDetails);
+    private void mockDataFetch(CaseDetails... caseDetails) {
+        when(coreCaseDataService.fetchAll(USER_TOKEN, USER_ID)).thenReturn(asList(caseDetails));
     }
 
     private void mockDataUpdate(CaseDetails caseDetails) {
