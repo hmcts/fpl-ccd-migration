@@ -18,11 +18,12 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static java.util.Objects.nonNull;
+import static org.springframework.util.ObjectUtils.isEmpty;
 
 @Slf4j
 @Component("generalMigrationService")
 public class GeneralMigrationService implements MigrationService {
-    private static final String EVENT_ID = "migrateCase";
+    private static final String EVENT_ID = "enterHearingNew";
     private static final String EVENT_SUMMARY = "Migrate Case";
     private static final String EVENT_DESCRIPTION = "Migrate Case";
 
@@ -31,6 +32,9 @@ public class GeneralMigrationService implements MigrationService {
 
     @Getter
     private int totalNumberOfCases;
+
+    @Autowired
+    private MigrateHearingService service;
 
     @Autowired
     private CcdUpdateService ccdUpdateService;
@@ -52,7 +56,8 @@ public class GeneralMigrationService implements MigrationService {
 
     // ADD CHECK FOR OLD CASE STRUCTURE
     private static Predicate<CaseDetails> accepts() {
-        return caseDetails -> caseDetails != null && caseDetails.getData() != null;
+        return caseDetails -> caseDetails != null && caseDetails.getData() != null &&
+                !isEmpty(caseDetails.getData().get("hearing"));
     }
 
     @Override
@@ -174,7 +179,9 @@ public class GeneralMigrationService implements MigrationService {
 
     private void updateCase(String authorisation, CaseDetails cd) {
         String caseId = cd.getId().toString();
-        Object data = cd.getData();
+        // added
+        CaseDetails caseDetails = service.migrateCase(cd);
+        Object data = caseDetails.getData();
         if (debugEnabled) {
             log.info("data {}", data.toString());
         }
