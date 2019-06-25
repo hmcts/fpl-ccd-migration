@@ -40,13 +40,13 @@ public class CoreCaseDataService {
     }
 
     public List<CaseDetails> fetchAll(String authorisation, String userId) {
-        int numberOfPages = requestNumberOfPage(authorisation, userId, new HashMap<>());
+        int numberOfPages = getNumberOfPages(authorisation, userId, new HashMap<>());
         return IntStream.rangeClosed(1, numberOfPages).boxed()
             .flatMap(pageNumber -> fetchPage(authorisation, userId, pageNumber).stream())
             .collect(Collectors.toList());
     }
 
-    private int requestNumberOfPage(String authorisation, String userId, Map<String, String> searchCriteria) {
+    private int getNumberOfPages(String authorisation, String userId, Map<String, String> searchCriteria) {
         PaginatedSearchMetadata metadata = coreCaseDataApi.getPaginationInfoForSearchForCaseworkers(authorisation,
             authTokenGenerator.generate(), userId, jurisdiction, caseType, searchCriteria);
         return metadata.getTotalPagesCount();
