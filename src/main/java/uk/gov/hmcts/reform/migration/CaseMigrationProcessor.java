@@ -22,10 +22,8 @@ public class CaseMigrationProcessor {
     private CoreCaseDataService coreCaseDataService;
     @Autowired
     private DataMigrationService dataMigrationService;
-
     @Getter
     private List<Long> migratedCases = new ArrayList<>();
-
     @Getter
     private List<Long> failedCases = new ArrayList<>();
 

@@ -16,16 +16,12 @@ public class CaseMigrationRunner implements CommandLineRunner {
 
     @Value("${idam.username}")
     private String idamUsername;
-
     @Value("${idam.password}")
     private String idamPassword;
-
     @Value("${ccd.caseId}")
     private String ccdCaseId;
-
     @Autowired
     private IdamClient idamClient;
-
     @Autowired
     private CaseMigrationProcessor caseMigrationProcessor;
 
