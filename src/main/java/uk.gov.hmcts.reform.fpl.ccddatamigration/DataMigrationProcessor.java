@@ -21,17 +21,8 @@ public class DataMigrationProcessor implements CommandLineRunner {
     @Value("${idam.password}")
     private String idamPassword;
 
-    @Value("${ccd.jurisdiction}")
-    private String jurisdiction;
-
-    @Value("${ccd.casetype}")
-    private String caseType;
-
     @Value("${ccd.caseId}")
     private String ccdCaseId;
-
-    @Value("${log.debug}")
-    private boolean debugEnabled;
 
     @Autowired
     private IdamClient idamClient;
@@ -51,33 +42,27 @@ public class DataMigrationProcessor implements CommandLineRunner {
     @Override
     public void run(String... args) {
         try {
-            if (debugEnabled) {
-                log.info("Data migration started");
-            }
             String userToken = idamClient.authenticateUser(idamUsername, idamPassword);
-            if (debugEnabled) {
-                log.info("  userToken: {}", userToken);
-            }
+            log.debug("  userToken: {}", userToken);
             String userId = idamClient.getUserDetails(userToken).getId();
-            if (debugEnabled) {
-                log.info("  userId: {}", userId);
-            }
+            log.debug("  userId: {}", userId);
 
             if (ccdCaseId != null && !ccdCaseId.isBlank()) {
+                log.info("Data migration of single case started");
                 migrationService.processSingleCase(userToken, ccdCaseId);
             } else {
-                migrationService.processAllCases(userToken, userId, jurisdiction, caseType);
+                log.info("Data migration of all cases started");
+                migrationService.processAllCases(userToken, userId);
             }
 
+            log.info("-----------------------------------------");
+            log.info("Data migration completed");
+            log.info("-----------------------------------------");
+            log.info("Total number of processed cases: {}", migrationService.getMigratedCases().size() + migrationService.getFailedCases().size());
+            log.info("Total number of migrations performed: {}", migrationService.getMigratedCases().size());
+            log.info("-----------------------------------------");
             log.info("Migrated cases: {} ", !migrationService.getMigratedCases().isEmpty() ? migrationService.getMigratedCases() : "NONE");
             log.info("Failed cases: {}", !migrationService.getFailedCases().isEmpty() ? migrationService.getFailedCases() : "NONE");
-
-            log.info("-----------------------------");
-            log.info("Data migration completed");
-            log.info("-----------------------------");
-            log.info("Total number of cases: {}", migrationService.getMigratedCases().size() + migrationService.getFailedCases().size());
-            log.info("Total migrations performed: {}", migrationService.getMigratedCases().size());
-            log.info("-----------------------------");
         } catch (Throwable e) {
             log.error("Migration failed with the following reason: {}", e.getMessage(), e);
         }
