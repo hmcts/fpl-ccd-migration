@@ -7,7 +7,6 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.PropertySource;
-import uk.gov.hmcts.reform.fpl.ccddatamigration.service.CaseMigrationProcessor;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 
 @Slf4j
