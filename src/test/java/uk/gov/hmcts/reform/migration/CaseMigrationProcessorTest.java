@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.fpl.ccddatamigration;
+package uk.gov.hmcts.reform.migration;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -9,8 +9,7 @@ import org.springframework.util.ReflectionUtils;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.PaginatedSearchMetadata;
-import uk.gov.hmcts.reform.fpl.ccddatamigration.CaseMigrationProcessor;
-import uk.gov.hmcts.reform.fpl.ccddatamigration.ccd.CoreCaseDataService;
+import uk.gov.hmcts.reform.migration.ccd.CoreCaseDataService;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;

@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.fpl.ccddatamigration.auth;
+package uk.gov.hmcts.reform.migration.auth;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;

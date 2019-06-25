@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.fpl.ccddatamigration;
+package uk.gov.hmcts.reform.migration;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

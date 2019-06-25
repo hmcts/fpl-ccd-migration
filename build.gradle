@@ -12,7 +12,7 @@ version = '1.0.0'
 sourceCompatibility = '11'
 targetCompatibility = '11'
 
-mainClassName = 'uk.gov.hmcts.reform.fpl.ccddatamigration.CaseMigrationRunner'
+mainClassName = 'uk.gov.hmcts.reform.migration.CaseMigrationRunner'
 
 compileJava {
     options.compilerArgs << '-parameters' << '-Xlint:deprecation'

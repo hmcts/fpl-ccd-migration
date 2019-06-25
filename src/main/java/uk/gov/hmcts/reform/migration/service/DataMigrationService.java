@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.fpl.ccddatamigration.service;
+package uk.gov.hmcts.reform.migration.service;
 
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 

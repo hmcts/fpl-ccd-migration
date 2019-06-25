@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.fpl.ccddatamigration.ccd;
+package uk.gov.hmcts.reform.migration.ccd;
 
 import org.junit.Before;
 import org.junit.Test;

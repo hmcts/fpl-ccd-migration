@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.fpl.ccddatamigration.ccd;
+package uk.gov.hmcts.reform.migration.ccd;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.PaginatedSearchMetadata;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
+import uk.gov.hmcts.reform.migration.auth.AuthUtil;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
@@ -18,8 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
-import static uk.gov.hmcts.reform.fpl.ccddatamigration.auth.AuthUtil.getBearerToken;
 
 @Service
 public class CoreCaseDataService {
@@ -61,10 +60,10 @@ public class CoreCaseDataService {
     }
 
     public CaseDetails update(String authorisation, String caseId, String eventId, String eventSummary, String eventDescription, Object data) {
-        UserDetails userDetails = idamClient.getUserDetails(getBearerToken(authorisation));
+        UserDetails userDetails = idamClient.getUserDetails(AuthUtil.getBearerToken(authorisation));
 
         StartEventResponse startEventResponse = coreCaseDataApi.startEventForCaseWorker(
-            getBearerToken(authorisation),
+            AuthUtil.getBearerToken(authorisation),
             authTokenGenerator.generate(),
             userDetails.getId(),
             jurisdiction,
@@ -84,7 +83,7 @@ public class CoreCaseDataService {
             .build();
 
         return coreCaseDataApi.submitEventForCaseWorker(
-            getBearerToken(authorisation),
+            AuthUtil.getBearerToken(authorisation),
             authTokenGenerator.generate(),
             userDetails.getId(),
             jurisdiction,
