@@ -22,7 +22,7 @@ public class MigrateHearingService {
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
-    CaseDetails migrateCase(CaseDetails caseDetails) {
+    public CaseDetails migrateCase(CaseDetails caseDetails) {
         Map<String, Object> data = caseDetails.getData();
 
         // ADD NEW STRUCTURE TO CASE DATA

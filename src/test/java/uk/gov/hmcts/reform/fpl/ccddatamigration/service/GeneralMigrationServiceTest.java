@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.fpl.ccddatamigration.service;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -10,11 +12,13 @@ import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.PaginatedSearchMetadata;
 import uk.gov.hmcts.reform.fpl.ccddatamigration.ccd.CcdUpdateService;
+import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.OldHearing;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.EMPTY_LIST;
@@ -58,10 +62,7 @@ public class GeneralMigrationServiceTest {
     @Test
     public void shouldProcessASingleCaseAndMigrationIsSuccessful() {
         Map<String, Object> data = new HashMap<>();
-        CaseDetails caseDetails = CaseDetails.builder()
-            .id(1111L)
-            .data(data)
-            .build();
+        CaseDetails caseDetails = createCaseDetails(1111L);
         when(ccdApi.getCase(USER_TOKEN, S2S_TOKEN, CASE_ID))
             .thenReturn(caseDetails);
         migrationService.processSingleCase(USER_TOKEN, S2S_TOKEN, CASE_ID);
@@ -90,10 +91,7 @@ public class GeneralMigrationServiceTest {
     @Test
     public void shouldProcessASingleCaseAndMigrationIsFailed() {
         Map<String, Object> data = new HashMap<>();
-        CaseDetails caseDetails = CaseDetails.builder()
-            .id(1111L)
-            .data(data)
-            .build();
+        CaseDetails caseDetails = createCaseDetails(1111L);
         when(ccdUpdateService.update(caseDetails.getId().toString(),
             caseDetails.getData(),
             EVENT_ID,
@@ -202,9 +200,9 @@ public class GeneralMigrationServiceTest {
     }
 
     private void setupMocks() {
-        caseDetails1 = createCaseDetails(1111L, "FPL1");
-        caseDetails2 = createCaseDetails(1112L, "FPL2");
-        caseDetails3 = createCaseDetails(1113L, "FPL3");
+        caseDetails1 = createCaseDetails(1111L);
+        caseDetails2 = createCaseDetails(1112L);
+        caseDetails3 = createCaseDetails(1113L);
 
         PaginatedSearchMetadata paginatedSearchMetadata = new PaginatedSearchMetadata();
         paginatedSearchMetadata.setTotalPagesCount(1);
@@ -252,12 +250,30 @@ public class GeneralMigrationServiceTest {
             .thenReturn(caseDetails);
     }
 
-    private CaseDetails createCaseDetails(long id, String hwfQuestion) {
+    private CaseDetails createCaseDetails(long id) {
+
         Map<String, Object> data1 = new HashMap<>();
-        data1.put("", hwfQuestion);
+
+        OldHearing hearing = OldHearing.builder()
+                .timeFrame("old timeframe")
+                .reason("old reason")
+                .type("old type")
+                .type_GiveReason("old type give reason")
+                .withoutNotice("old without notice")
+                .withoutNoticeReason("old without notice reason")
+                .reducedNotice("old reduced notice")
+                .reducedNoticeReason("reduced notice reason")
+                .respondentsAware("respondents aware")
+                .respondentsAwareReason("respondents aware reason")
+                .build();
+
+        data1.put("hearing", ImmutableMap.of(
+                "id", UUID.randomUUID().toString(),
+                "value", hearing));
+
         return CaseDetails.builder()
-            .id(id)
-            .data(data1)
-            .build();
+                .id(id)
+                .data(data1)
+                .build();
     }
 }
