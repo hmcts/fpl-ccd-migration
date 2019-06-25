@@ -9,27 +9,24 @@ import uk.gov.hmcts.reform.fpl.ccddatamigration.ccd.CoreCaseDataService;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Predicate;
 
 @Slf4j
 @Component
-public class MigrationService {
+public class CaseMigrationProcessor {
     private static final String EVENT_ID = "migrateCase";
     private static final String EVENT_SUMMARY = "Migrate Case";
     private static final String EVENT_DESCRIPTION = "Migrate Case";
 
     @Autowired
     private CoreCaseDataService coreCaseDataService;
+    @Autowired
+    private DataMigrationService dataMigrationService;
 
     @Getter
     private List<Long> migratedCases = new ArrayList<>();
 
     @Getter
     private List<Long> failedCases = new ArrayList<>();
-
-    private static Predicate<CaseDetails> accepts() {
-        return caseDetails -> caseDetails != null && caseDetails.getData() != null;
-    }
 
     public void processSingleCase(String userToken, String caseId) {
         CaseDetails caseDetails;
@@ -39,7 +36,7 @@ public class MigrationService {
             log.error("Case {} not found due to: {}", caseId, ex.getMessage());
             return;
         }
-        if (accepts().test(caseDetails)) {
+        if (dataMigrationService.accepts().test(caseDetails)) {
             updateCase(userToken, caseDetails);
         } else {
             log.info("Case {} already migrated", caseDetails.getId());
@@ -48,14 +45,15 @@ public class MigrationService {
 
     public void processAllCases(String userToken, String userId) {
         coreCaseDataService.fetchAll(userToken, userId).stream()
-            .filter(accepts())
-            .forEach(cd -> updateCase(userToken, cd));
+            .filter(dataMigrationService.accepts())
+            .forEach(caseDetails -> updateCase(userToken, caseDetails));
     }
 
     private void updateCase(String authorisation, CaseDetails caseDetails) {
         log.info("Updating case {}", caseDetails.getId());
         try {
             log.debug("  case data: {}", caseDetails.getData());
+            dataMigrationService.migrate(caseDetails);
             coreCaseDataService.update(authorisation, caseDetails.getId().toString(),
                 EVENT_ID, EVENT_SUMMARY, EVENT_DESCRIPTION, caseDetails.getData());
             log.info("Case {} successfully updated", caseDetails.getId());

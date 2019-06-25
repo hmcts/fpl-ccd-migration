@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static uk.gov.hmcts.reform.fpl.ccddatamigration.s2s.AuthUtil.getBearerToken;
+import static uk.gov.hmcts.reform.fpl.ccddatamigration.auth.AuthUtil.getBearerToken;
 
 @Service
 public class CoreCaseDataService {

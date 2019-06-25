@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.fpl.ccddatamigration.s2s;
+package uk.gov.hmcts.reform.fpl.ccddatamigration.auth;
 
 import org.junit.Test;
 

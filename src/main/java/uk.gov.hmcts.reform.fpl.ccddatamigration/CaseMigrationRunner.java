@@ -7,13 +7,13 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.PropertySource;
-import uk.gov.hmcts.reform.fpl.ccddatamigration.service.MigrationService;
+import uk.gov.hmcts.reform.fpl.ccddatamigration.service.CaseMigrationProcessor;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 
 @Slf4j
 @SpringBootApplication
 @PropertySource("classpath:application.properties")
-public class DataMigrationProcessor implements CommandLineRunner {
+public class CaseMigrationRunner implements CommandLineRunner {
 
     @Value("${idam.username}")
     private String idamUsername;
@@ -28,7 +28,7 @@ public class DataMigrationProcessor implements CommandLineRunner {
     private IdamClient idamClient;
 
     @Autowired
-    private MigrationService migrationService;
+    private CaseMigrationProcessor caseMigrationProcessor;
 
     public static void main(String[] args) {
         System.setProperty("http.proxyHost", "proxyout.reform.hmcts.net");
@@ -36,7 +36,7 @@ public class DataMigrationProcessor implements CommandLineRunner {
         System.setProperty("https.proxyHost", "proxyout.reform.hmcts.net");
         System.setProperty("https.proxyPort", "8080");
 
-        SpringApplication.run(DataMigrationProcessor.class, args);
+        SpringApplication.run(CaseMigrationRunner.class, args);
     }
 
     @Override
@@ -49,20 +49,20 @@ public class DataMigrationProcessor implements CommandLineRunner {
 
             if (ccdCaseId != null && !ccdCaseId.isBlank()) {
                 log.info("Data migration of single case started");
-                migrationService.processSingleCase(userToken, ccdCaseId);
+                caseMigrationProcessor.processSingleCase(userToken, ccdCaseId);
             } else {
                 log.info("Data migration of all cases started");
-                migrationService.processAllCases(userToken, userId);
+                caseMigrationProcessor.processAllCases(userToken, userId);
             }
 
             log.info("-----------------------------------------");
             log.info("Data migration completed");
             log.info("-----------------------------------------");
-            log.info("Total number of processed cases: {}", migrationService.getMigratedCases().size() + migrationService.getFailedCases().size());
-            log.info("Total number of migrations performed: {}", migrationService.getMigratedCases().size());
+            log.info("Total number of processed cases: {}", caseMigrationProcessor.getMigratedCases().size() + caseMigrationProcessor.getFailedCases().size());
+            log.info("Total number of migrations performed: {}", caseMigrationProcessor.getMigratedCases().size());
             log.info("-----------------------------------------");
-            log.info("Migrated cases: {} ", !migrationService.getMigratedCases().isEmpty() ? migrationService.getMigratedCases() : "NONE");
-            log.info("Failed cases: {}", !migrationService.getFailedCases().isEmpty() ? migrationService.getFailedCases() : "NONE");
+            log.info("Migrated cases: {} ", !caseMigrationProcessor.getMigratedCases().isEmpty() ? caseMigrationProcessor.getMigratedCases() : "NONE");
+            log.info("Failed cases: {}", !caseMigrationProcessor.getFailedCases().isEmpty() ? caseMigrationProcessor.getFailedCases() : "NONE");
         } catch (Throwable e) {
             log.error("Migration failed with the following reason: {}", e.getMessage(), e);
         }
