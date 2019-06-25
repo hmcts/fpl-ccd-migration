@@ -16,6 +16,7 @@ public class OldApplicant {
         private final String jobTitle;
         private final String telephone;
         private final String personToContact;
+        private final String pbaNumber;
 
         @JsonCreator
         public OldApplicant( @JsonProperty("name") final String name,
@@ -24,7 +25,8 @@ public class OldApplicant {
                              @JsonProperty("address") final Address address,
                              @JsonProperty("jobTitle") final String jobTitle,
                              @JsonProperty("telephone") final String telephone,
-                             @JsonProperty("personToContact") final String personToContact ) {
+                             @JsonProperty("personToContact") final String personToContact,
+                             @JsonProperty("pbaNumber") final String pbaNumber) {
 
             this.name = name;
             this.email = email;
@@ -33,5 +35,6 @@ public class OldApplicant {
             this.jobTitle = jobTitle;
             this.telephone = telephone;
             this.personToContact = personToContact;
+            this.pbaNumber = pbaNumber;
         }
 }

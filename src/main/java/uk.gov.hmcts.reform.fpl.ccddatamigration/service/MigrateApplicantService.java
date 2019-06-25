@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.fpl.ccddatamigration.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -9,7 +10,6 @@ import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.Applicant;
 import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.OldApplicant;
 import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.common.Address;
 import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.common.Email;
-import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.common.JobTitle;
 import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.common.MobileNumber;
 import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.common.Party;
 import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.common.TelephoneNumber;
@@ -28,24 +28,24 @@ public class MigrateApplicantService {
     CaseDetails migrateCase(CaseDetails caseDetails) {
         Map<String, Object> data = caseDetails.getData();
 
-        Map map = ImmutableMap.of(
+        Map<String, Object> map = ImmutableMap.of(
             "id", UUID.randomUUID().toString(),
             "value", migrateApplicant(objectMapper.convertValue(data.get("applicant"), OldApplicant.class)));
 
-        data.put("applicants", map);
+        data.put("applicants", ImmutableList.of(map));
         data.put("applicant", null);
 
         CaseDetails caseDetails1 = CaseDetails.builder()
             .data(data)
             .build();
 
-        log.info("New case details: ", caseDetails1);
+        log.info("New case details: {}", caseDetails1);
 
         return caseDetails1;
     }
 
     private Applicant migrateApplicant(OldApplicant or) {
-        log.info("Migrating applicant", or);
+        log.info("Migrating applicant: {}", or);
 
         Address.AddressBuilder addressBuilder = Address.builder();
         addressBuilder.addressLine1(defaultIfBlank(or.getAddress().getAddressLine1(), null));
@@ -70,19 +70,16 @@ public class MigrateApplicantService {
         mobileNumberBuilder.telephoneNumber(defaultIfBlank(or.getMobile(), null));
         MobileNumber mobileNumber = mobileNumberBuilder.build();
 
-        JobTitle.JobTitleBuilder jobTitleBuilder = JobTitle.builder();
-        jobTitleBuilder.jobTitle(defaultIfBlank(or.getJobTitle(), null));
-        JobTitle jobTitle = jobTitleBuilder.build();
-
         Party.PartyBuilder partyBuilder = Party.builder();
-        partyBuilder.partyID(UUID.randomUUID().toString());
+        partyBuilder.partyId(UUID.randomUUID().toString());
         partyBuilder.partyType("Individual");
         partyBuilder.name(defaultIfBlank(or.getName().split("\\s+")[0], null));
         partyBuilder.address(address);
-        partyBuilder.email(email);
+        partyBuilder.emailAddress(email);
         partyBuilder.telephoneNumber(telephoneNumber);
         partyBuilder.mobileNumber(mobileNumber);
-        partyBuilder.jobTitle(jobTitle);
+        partyBuilder.jobTitle(defaultIfBlank(or.getJobTitle(), null));
+        partyBuilder.pbaNumber(defaultIfBlank(or.getPbaNumber(), null));
         Party party = partyBuilder.build();
 
         return Applicant.builder()

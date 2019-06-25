@@ -8,12 +8,13 @@ import lombok.Data;
 @Builder
 @AllArgsConstructor
 public class Party {
-    private final String partyID;
+    private final String partyId;
     private final String partyType;
     private final String name;
     private final Address address;
-    private final Email email;
+    private final Email emailAddress;
     private final TelephoneNumber telephoneNumber;
     private final MobileNumber mobileNumber;
-    private final JobTitle jobTitle;
+    private final String jobTitle;
+    private final String pbaNumber;
 }

@@ -1,8 +1,5 @@
 package uk.gov.hmcts.reform.fpl.ccddatamigration.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
@@ -10,7 +7,6 @@ import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.Applicant;
 import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.OldApplicant;
 import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.common.Address;
 import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.common.Email;
-import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.common.JobTitle;
 import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.common.MobileNumber;
 import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.common.Party;
 import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.common.TelephoneNumber;
@@ -38,6 +34,7 @@ public class MigrateApplicantServiceTest {
     private final String PARTYTYPE = "Party type";
     private final String LEADAPPLICANTINDICATOR = "Yes";
     private final String PARTYID = UUID.randomUUID().toString();
+    private final String PBANUMBER= "PBA123456";
 
     @InjectMocks
     private final MigrateApplicantService service = new MigrateApplicantService();
@@ -67,7 +64,7 @@ public class MigrateApplicantServiceTest {
     private Applicant newApplicantBuilder() {
         Applicant newApplicant = Applicant.builder()
             .party(Party.builder()
-                .partyID(PARTYID)
+                .partyId(PARTYID)
                 .partyType(PARTYTYPE)
                 .name(APPLICANT)
                 .address(Address.builder()
@@ -79,7 +76,7 @@ public class MigrateApplicantServiceTest {
                     .county(COUNTY)
                     .country(COUNTRY)
                     .build())
-                .email(Email.builder()
+                .emailAddress(Email.builder()
                     .email(EMAIL)
                     .build())
                 .telephoneNumber(TelephoneNumber.builder()
@@ -89,9 +86,8 @@ public class MigrateApplicantServiceTest {
                 .mobileNumber(MobileNumber.builder()
                     .telephoneNumber(MOBILE)
                     .build())
-                .jobTitle(JobTitle.builder()
-                    .jobTitle(JOBTITLE)
-                    .build())
+                .jobTitle(JOBTITLE)
+                .pbaNumber(PBANUMBER)
                 .build())
             .leadApplicantIndicator(LEADAPPLICANTINDICATOR)
             .build();
@@ -115,6 +111,7 @@ public class MigrateApplicantServiceTest {
                 .jobTitle(JOBTITLE)
                 .telephone(TELEPHONE)
                 .personToContact(PERSONTOCONTACT)
+                .pbaNumber(PBANUMBER)
                 .build();
     }
 }

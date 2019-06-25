@@ -38,6 +38,9 @@ public class GeneralMigrationService implements MigrationService {
     @Autowired
     private CoreCaseDataApi ccdApi;
 
+    @Autowired
+    private MigrateApplicantService service;
+
     @Getter
     private String failedCases;
 
@@ -174,7 +177,8 @@ public class GeneralMigrationService implements MigrationService {
 
     private void updateCase(String authorisation, CaseDetails cd) {
         String caseId = cd.getId().toString();
-        Object data = cd.getData();
+        CaseDetails newCaseDetails = service.migrateCase(cd);
+        Object data = newCaseDetails.getData();
         if (debugEnabled) {
             log.info("data {}", data.toString());
         }
