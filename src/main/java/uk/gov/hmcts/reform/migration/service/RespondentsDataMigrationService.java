@@ -5,11 +5,11 @@ import com.google.common.collect.ImmutableMap;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
-import uk.gov.hmcts.reform.migration.domain.OldRespondent;
-import uk.gov.hmcts.reform.migration.domain.Respondent;
-import uk.gov.hmcts.reform.migration.domain.common.Address;
-import uk.gov.hmcts.reform.migration.domain.common.Party;
-import uk.gov.hmcts.reform.migration.domain.common.TelephoneNumber;
+import uk.gov.hmcts.reform.domain.OldRespondent;
+import uk.gov.hmcts.reform.domain.Respondent;
+import uk.gov.hmcts.reform.domain.common.Address;
+import uk.gov.hmcts.reform.domain.common.Party;
+import uk.gov.hmcts.reform.domain.common.TelephoneNumber;
 
 import java.util.ArrayList;
 import java.util.List;
