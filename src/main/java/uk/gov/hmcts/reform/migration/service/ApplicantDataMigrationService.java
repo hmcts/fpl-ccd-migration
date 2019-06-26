@@ -27,7 +27,7 @@ public class ApplicantDataMigrationService implements DataMigrationService {
 
     @Override
     public Predicate<CaseDetails> accepts() {
-        return null;
+        return caseDetails -> caseDetails != null && caseDetails.getData() != null;
     }
 
     @Override
