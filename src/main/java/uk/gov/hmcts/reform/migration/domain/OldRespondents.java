@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.fpl.domain;
+package uk.gov.hmcts.reform.migration.domain;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;

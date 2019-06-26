@@ -5,9 +5,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import org.junit.Test;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
-import uk.gov.hmcts.reform.fpl.domain.OldRespondent;
-import uk.gov.hmcts.reform.fpl.domain.OldRespondents;
-import uk.gov.hmcts.reform.fpl.domain.common.Address;
+import uk.gov.hmcts.reform.migration.domain.OldRespondent;
+import uk.gov.hmcts.reform.migration.domain.OldRespondents;
+import uk.gov.hmcts.reform.migration.domain.common.Address;
 
 import java.util.HashMap;
 import java.util.List;

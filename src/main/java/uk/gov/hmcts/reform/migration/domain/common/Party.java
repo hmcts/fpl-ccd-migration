@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.fpl.domain.common;
+package uk.gov.hmcts.reform.migration.domain.common;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

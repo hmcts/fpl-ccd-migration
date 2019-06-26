@@ -1,9 +1,9 @@
-package uk.gov.hmcts.reform.fpl.domain;
+package uk.gov.hmcts.reform.migration.domain;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import uk.gov.hmcts.reform.fpl.domain.common.Party;
+import uk.gov.hmcts.reform.migration.domain.common.Party;
 
 @Data
 @Builder
