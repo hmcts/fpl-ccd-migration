@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.fpl.ccddatamigration.s2s;
+package uk.gov.hmcts.reform.migration.auth;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -9,7 +9,7 @@ public class AuthUtil {
 
     private static final String BEARER = "Bearer ";
 
-    public static String getBearToken(String token) {
+    public static String getBearerToken(String token) {
         if (token == null || token.isBlank()) {
             return token;
         }
