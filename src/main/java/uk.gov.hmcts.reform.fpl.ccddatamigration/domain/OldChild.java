@@ -15,7 +15,7 @@ import java.util.Date;
 public class OldChild {
 
     private final String childName;
-    private final Date childDOB;
+    private final String childDOB;
     private final String childGender;
     private final String childGenderIdentification;
     private final String livingSituation;
@@ -41,7 +41,7 @@ public class OldChild {
 
     @JsonCreator
     public OldChild(@JsonProperty("childName") final String childName,
-                    @JsonProperty("childDOB") final Date childDOB,
+                    @JsonProperty("childDOB") final String childDOB,
                     @JsonProperty("childGender") final String childGender,
                     @JsonProperty("childGenderIdentification") final String childGenderIdentification,
                     @JsonProperty("livingSituation") final String livingSituation,
