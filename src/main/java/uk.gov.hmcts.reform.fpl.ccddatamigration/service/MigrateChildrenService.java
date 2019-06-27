@@ -89,14 +89,14 @@ public class MigrateChildrenService {
         addressBuilder.country(defaultIfBlank(oc.getAddress().getCountry(), null));
         Address address = addressBuilder.build();
 
-        TelephoneNumber telephoneNumber = TelephoneNumber.build();
+        TelephoneNumber telephoneNumber = TelephoneNumber.builder().build();
 
         Party.PartyBuilder partyBuilder = Party.builder();
         partyBuilder.partyID(UUID.randomUUID().toString());
         partyBuilder.partyType("Individual");
         partyBuilder.firstName(defaultIfBlank(oc.getChildName().split("\\s+")[0], null));
         partyBuilder.lastName(defaultIfBlank(oc.getChildName().split("\\s+")[1], null));
-        partyBuilder.dateOfBirth(defaultIfBlank(oc.getChildDOB(), null));
+        partyBuilder.dateOfBirth(defaultIfBlank(oc.getChildDOB().toString(), null));
         partyBuilder.address(address);
         partyBuilder.telephoneNumber(telephoneNumber);
         partyBuilder.gender(defaultIfBlank(oc.getChildGender(), null));

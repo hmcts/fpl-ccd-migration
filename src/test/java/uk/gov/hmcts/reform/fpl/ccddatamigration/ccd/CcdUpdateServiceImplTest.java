@@ -43,7 +43,7 @@ public class CcdUpdateServiceImplTest {
     CoreCaseDataApi coreCaseDataApi;
 
     @Mock
-    private IdamClient idamClient;
+    IdamClient idamClient;
 
     @Mock
     private AuthTokenGenerator authTokenGenerator;

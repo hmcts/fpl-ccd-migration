@@ -10,8 +10,13 @@ import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.PaginatedSearchMetadata;
 import uk.gov.hmcts.reform.fpl.ccddatamigration.ccd.CcdUpdateService;
+import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.OldChild;
+import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.common.Address;
 
 import java.lang.reflect.Field;
+import java.text.DateFormat;
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,7 +40,7 @@ public class GeneralMigrationServiceTest {
     private static final String USER_ID = "30";
     private static final String JURISDICTION_ID = "PUBLICLAW";
     private static final String CASE_TYPE = "CARE_SUPERVISION_EPO";
-    private static final String EVENT_ID = "migrateCase";
+    private static final String EVENT_ID = "enterChildren";
     private static final String EVENT_SUMMARY = "Migrate Case";
     private static final String EVENT_DESCRIPTION = "Migrate Case";
 
@@ -57,11 +62,7 @@ public class GeneralMigrationServiceTest {
 
     @Test
     public void shouldProcessASingleCaseAndMigrationIsSuccessful() {
-        Map<String, Object> data = new HashMap<>();
-        CaseDetails caseDetails = CaseDetails.builder()
-            .id(1111L)
-            .data(data)
-            .build();
+        CaseDetails caseDetails = createCaseDetails(1111L);
         when(ccdApi.getCase(USER_TOKEN, S2S_TOKEN, CASE_ID))
             .thenReturn(caseDetails);
         migrationService.processSingleCase(USER_TOKEN, S2S_TOKEN, CASE_ID);
@@ -89,11 +90,7 @@ public class GeneralMigrationServiceTest {
 
     @Test
     public void shouldProcessASingleCaseAndMigrationIsFailed() {
-        Map<String, Object> data = new HashMap<>();
-        CaseDetails caseDetails = CaseDetails.builder()
-            .id(1111L)
-            .data(data)
-            .build();
+        CaseDetails caseDetails = createCaseDetails(1111L);
         when(ccdUpdateService.update(caseDetails.getId().toString(),
             caseDetails.getData(),
             EVENT_ID,
@@ -202,9 +199,9 @@ public class GeneralMigrationServiceTest {
     }
 
     private void setupMocks() {
-        caseDetails1 = createCaseDetails(1111L, "FPL1");
-        caseDetails2 = createCaseDetails(1112L, "FPL2");
-        caseDetails3 = createCaseDetails(1113L, "FPL3");
+        caseDetails1 = createCaseDetails(1111L);
+        caseDetails2 = createCaseDetails(1112L);
+        caseDetails3 = createCaseDetails(1113L);
 
         PaginatedSearchMetadata paginatedSearchMetadata = new PaginatedSearchMetadata();
         paginatedSearchMetadata.setTotalPagesCount(1);
@@ -252,9 +249,45 @@ public class GeneralMigrationServiceTest {
             .thenReturn(caseDetails);
     }
 
-    private CaseDetails createCaseDetails(long id, String hwfQuestion) {
+    private CaseDetails createCaseDetails(long id) {
         Map<String, Object> data1 = new HashMap<>();
-        data1.put("", hwfQuestion);
+
+        OldChild oldChild = OldChild.builder()
+                .childName("Child one")
+                .childDOB("1999-12-31")
+                .childGender("Boy")
+                .childGenderIdentification("")
+                .livingSituation("Living with parents")
+                .situationDetails("")
+                .situationDate("")
+                .keyDates("")
+                .careAndContact("")
+                .adoption("")
+                .placementOrderApplication("")
+                .placementCourt("Craigavon")
+                .mothersName("Mandy Burns")
+                .fathersName("Ted Burns")
+                .fathersResponsibility("Yes")
+                .socialWorkerName("Laura Wilson")
+                .socialWorkerTel("02838882333")
+                .additionalNeeds("Yes")
+                .additionalNeedsDetails("")
+                .detailsHidden("Yes")
+                .detailsHiddenReason("")
+                .litigationIssues("Yes")
+                .litigationIssuesDetails("")
+                .address(Address.builder()
+                        .addressLine1("1 some flat")
+                        .addressLine2("1 some street")
+                        .addressLine3("1 some road")
+                        .county("some county")
+                        .postTown("Craigavon")
+                        .postcode("BT66 636")
+                        .country("Northern Ireland")
+                        .build()
+                ).build();
+
+
         return CaseDetails.builder()
             .id(id)
             .data(data1)
