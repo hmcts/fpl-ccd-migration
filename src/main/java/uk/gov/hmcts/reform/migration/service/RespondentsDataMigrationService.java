@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.migration.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -18,6 +19,7 @@ import java.util.UUID;
 import java.util.function.Predicate;
 
 import static java.util.stream.Collectors.toList;
+import static net.logstash.logback.encoder.org.apache.commons.lang.ObjectUtils.defaultIfNull;
 import static org.apache.commons.lang3.StringUtils.defaultIfBlank;
 import static org.springframework.util.ObjectUtils.isEmpty;
 
@@ -56,7 +58,7 @@ public class RespondentsDataMigrationService implements DataMigrationService {
         /// ADDITIONAL RESPONDENT
 
         List<Map<String, Object>> additionalRespondents =
-            (List<Map<String, Object>>) objectMapper.convertValue(respondents.get("additional"), List.class);
+            (List<Map<String, Object>>) objectMapper.convertValue(defaultIfNull(respondents.get("additional"), new ArrayList<>()), List.class);
 
         List<Respondent> migratedRespondentCollection = additionalRespondents.stream()
             .map(respondent ->
@@ -73,7 +75,6 @@ public class RespondentsDataMigrationService implements DataMigrationService {
 
         migratedRespondentCollection.forEach(item -> {
             Map map = objectMapper.convertValue(item, Map.class);
-            System.out.println("map = " + map);
 
             newStructure.add(ImmutableMap.of(
                 "id", UUID.randomUUID().toString(),
@@ -89,13 +90,15 @@ public class RespondentsDataMigrationService implements DataMigrationService {
         log.info("migrating respondent {}", or);
 
         Address.AddressBuilder addressBuilder = Address.builder();
-        addressBuilder.addressLine1(defaultIfBlank(or.getAddress().getAddressLine1(), null));
-        addressBuilder.addressLine2(defaultIfBlank(or.getAddress().getAddressLine2(), null));
-        addressBuilder.addressLine3(defaultIfBlank(or.getAddress().getAddressLine3(), null));
-        addressBuilder.postTown(defaultIfBlank(or.getAddress().getPostTown(), null));
-        addressBuilder.postcode(defaultIfBlank(or.getAddress().getPostcode(), null));
-        addressBuilder.county(defaultIfBlank(or.getAddress().getCounty(), null));
-        addressBuilder.country(defaultIfBlank(or.getAddress().getCountry(), null));
+        if (!isEmpty(or.getAddress())) {
+            addressBuilder.addressLine1(defaultIfBlank(or.getAddress().getAddressLine1(), null));
+            addressBuilder.addressLine2(defaultIfBlank(or.getAddress().getAddressLine2(), null));
+            addressBuilder.addressLine3(defaultIfBlank(or.getAddress().getAddressLine3(), null));
+            addressBuilder.postTown(defaultIfBlank(or.getAddress().getPostTown(), null));
+            addressBuilder.postcode(defaultIfBlank(or.getAddress().getPostcode(), null));
+            addressBuilder.county(defaultIfBlank(or.getAddress().getCounty(), null));
+            addressBuilder.country(defaultIfBlank(or.getAddress().getCountry(), null));
+        }
         Address address = addressBuilder.build();
 
         TelephoneNumber.TelephoneNumberBuilder telephoneNumberBuilder = TelephoneNumber.builder();
@@ -105,8 +108,15 @@ public class RespondentsDataMigrationService implements DataMigrationService {
         Party.PartyBuilder partyBuilder = Party.builder();
         partyBuilder.partyID(UUID.randomUUID().toString());
         partyBuilder.partyType("Individual");
-        partyBuilder.firstName(defaultIfBlank(or.getName().split("\\s+")[0], null));
-        partyBuilder.lastName(defaultIfBlank(or.getName().split("\\s+")[1], null));
+
+        if (!isEmpty(or.getName())) {
+            partyBuilder.firstName(splitName(or.getName()).get(0));
+
+            if (splitName(or.getName()).size() > 1) {
+                partyBuilder.lastName(splitName(or.getName()).get(1));
+            }
+        }
+
         partyBuilder.dateOfBirth(defaultIfBlank(or.getDob(), null));
         partyBuilder.address(address);
         partyBuilder.telephoneNumber(telephoneNumber);
@@ -122,5 +132,19 @@ public class RespondentsDataMigrationService implements DataMigrationService {
         return Respondent.builder()
             .party(party)
             .build();
+    }
+
+    private List<String> splitName(String name) {
+        ImmutableList.Builder<String> names = ImmutableList.builder();
+        int index = name.lastIndexOf(" ");
+
+        if (index == -1) {
+            names.add(name);
+        } else {
+            names.add(name.substring(0, index));
+            names.add(name.substring(index + 1));
+        }
+
+        return names.build();
     }
 }
