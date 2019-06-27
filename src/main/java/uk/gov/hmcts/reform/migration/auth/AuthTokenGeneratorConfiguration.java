@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.fpl.ccddatamigration.s2s;
+package uk.gov.hmcts.reform.migration.auth;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -11,7 +11,7 @@ import static uk.gov.hmcts.reform.authorisation.generators.AuthTokenGeneratorFac
 
 @Configuration
 @Lazy
-public class ServiceTokenGeneratorConfiguration {
+public class AuthTokenGeneratorConfiguration {
 
     @Bean
     public AuthTokenGenerator serviceAuthTokenGenerator(

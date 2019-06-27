@@ -1,20 +1,20 @@
-package uk.gov.hmcts.reform.fpl.ccddatamigration.service;
+package uk.gov.hmcts.reform.migration.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
-import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.Child;
-import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.OldChild;
-import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.common.Address;
-import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.common.Party;
-import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.common.TelephoneNumber;
+import uk.gov.hmcts.reform.domain.Child;
+import uk.gov.hmcts.reform.domain.OldChild;
+import uk.gov.hmcts.reform.domain.common.Party;
+import uk.gov.hmcts.reform.domain.common.TelephoneNumber;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Predicate;
 
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.defaultIfBlank;
@@ -22,22 +22,22 @@ import static org.apache.commons.lang3.StringUtils.defaultIfBlank;
 @Slf4j
 @Service
 @SuppressWarnings("unchecked")
-public class MigrateChildrenService {
+public class ChildrenDataMigrationService implements DataMigrationService {
     private ObjectMapper objectMapper = new ObjectMapper();
 
-    CaseDetails migrateCase(CaseDetails caseDetails) {
+    @Override
+    public Predicate<CaseDetails> accepts() {
+        return null;
+    }
+
+    @Override
+    public void migrate(CaseDetails caseDetails) {
         Map<String, Object> data = caseDetails.getData();
 
         data.put("children1", migrateChildren(objectMapper.convertValue(data.get("children"), Map.class)));
         data.put("children", null);
 
-        CaseDetails caseDetails1 = CaseDetails.builder()
-                .data(data)
-                .build();
-
-        log.info("new case details: {}", caseDetails1);
-
-        return caseDetails;
+        log.info("new case details: {}", caseDetails);
     }
 
     private List<Map<String, Object>> migrateChildren(Map<String, Object> children) {
