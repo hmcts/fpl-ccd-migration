@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.fpl.ccddatamigration.service;
 
 import com.google.common.collect.ImmutableMap;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -9,7 +8,6 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.util.ReflectionUtils;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
-import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.PaginatedSearchMetadata;
 import uk.gov.hmcts.reform.fpl.ccddatamigration.ccd.CcdUpdateService;
@@ -65,12 +63,6 @@ public class GeneralMigrationServiceTest {
     private CaseDetails caseDetails2;
     private CaseDetails caseDetails3;
 
-    @Before
-    public void setUp(){
-       //when(service.migrateCase(any(CaseDetails.class))).thenCallRealMethod();
-        //when(service)
-    }
-
     @Test
     public void shouldProcessASingleCaseAndMigrationIsSuccessful() {
         Map<String, Object> data = new HashMap<>();
@@ -93,7 +85,6 @@ public class GeneralMigrationServiceTest {
             .build();
         when(ccdApi.getCase(USER_TOKEN, S2S_TOKEN, CASE_ID))
             .thenReturn(caseDetails);
-       // when(migrateHearingService.migrateCase(any(CaseDetails.class))).thenReturn(caseDetails);
         migrationService.processSingleCase(USER_TOKEN, S2S_TOKEN, CASE_ID);
         verify(ccdApi, times(1)).getCase(USER_TOKEN, S2S_TOKEN, CASE_ID);
         assertThat(migrationService.getTotalNumberOfCases(), is(0));
@@ -129,11 +120,14 @@ public class GeneralMigrationServiceTest {
     }
 
 
-/*
+
     @Test
     public void shouldProcessOnlyOneCandidateCase_whenDryRunIsTrue() {
         setupFields(true, true);
         setupMocks();
+        when(migrateHearingService.migrateCase(eq(caseDetails1))).thenReturn(caseDetails1);
+        when(migrateHearingService.migrateCase(eq(caseDetails2))).thenReturn(caseDetails2);
+        when(migrateHearingService.migrateCase(eq(caseDetails3))).thenReturn(caseDetails3);
         migrationService.processAllTheCases(USER_TOKEN, S2S_TOKEN, USER_ID, JURISDICTION_ID, CASE_TYPE);
         assertThat(migrationService.getTotalNumberOfCases(), is(1));
         assertThat(migrationService.getTotalMigrationsPerformed(), is(1));
@@ -141,7 +135,7 @@ public class GeneralMigrationServiceTest {
         assertThat(migrationService.getMigratedCases(), is("1111"));
     }
 
-*/
+
 
     @Test
     public void shouldProcessAllTheCandidateCases_whenDryRunIsFalseAndOneCaseFailed() {
