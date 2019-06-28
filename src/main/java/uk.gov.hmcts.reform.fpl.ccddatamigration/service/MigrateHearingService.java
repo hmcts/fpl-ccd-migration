@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.fpl.ccddatamigration.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.Hearing;
@@ -20,14 +21,19 @@ import static org.apache.commons.lang3.StringUtils.defaultIfBlank;
 @SuppressWarnings("unchecked")
 public class MigrateHearingService {
 
-    private ObjectMapper objectMapper = new ObjectMapper();
+    //private ObjectMapper objectMapper = new ObjectMapper();
+    @Autowired
+    private ObjectMapper objectMapper;
 
     public CaseDetails migrateCase(CaseDetails caseDetails) {
         Map<String, Object> data = caseDetails.getData();
 
         // ADD NEW STRUCTURE TO CASE DATA
 
-        data.put("hearingNew", migrateHearing(objectMapper.convertValue(data.get("hearing"), Map.class)));
+        Map<String, Object> hearingMapObject = objectMapper.convertValue(data.get("hearing"), Map.class);
+        List<Map<String, Object>> listOfNewHearings = migrateHearing(hearingMapObject);
+        data.put("hearingNew", listOfNewHearings);
+        //data.put("hearingNew", migrateHearing(objectMapper.convertValue(data.get("hearing"), Map.class)));
         data.put("hearing", null);
 
         CaseDetails caseDetails1 = CaseDetails.builder()
