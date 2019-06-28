@@ -10,7 +10,6 @@ import lombok.Data;
 public class Party {
     private final String partyID;
     private final String partyType;
-    private final String title;
     private final String firstName;
     private final String lastName;
     private final String dateOfBirth;

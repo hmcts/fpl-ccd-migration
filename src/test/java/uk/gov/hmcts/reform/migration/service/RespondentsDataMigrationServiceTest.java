@@ -62,8 +62,7 @@ public class RespondentsDataMigrationServiceTest {
 
         assertThat(respondents).hasSize(1);
         assertThat(firstRespondentParty.get("partyID")).isInstanceOf(String.class);
-        assertThat(firstRespondentParty.get("partyType")).isEqualTo(expectedRespondent.getParty().getPartyType());
-        assertThat(firstRespondentParty.get("title")).isNull();
+        assertThat(firstRespondentParty.get("partyType")).isNull();
         assertThat(firstRespondentParty.get("firstName")).isEqualTo(expectedRespondent.getParty().getFirstName());
         assertThat(firstRespondentParty.get("lastName")).isEqualTo(expectedRespondent.getParty().getLastName());
         assertThat(firstRespondentParty.get("dateOfBirth")).isEqualTo(expectedRespondent.getParty().getDateOfBirth());
@@ -94,8 +93,7 @@ public class RespondentsDataMigrationServiceTest {
         Respondent expectedRespondent = createNewRespondent();
 
         assertThat(respondents).hasSize(1);
-        assertThat(firstRespondentParty.get("partyType")).isEqualTo(expectedRespondent.getParty().getPartyType());
-        assertThat(firstRespondentParty.get("title")).isNull();
+        assertThat(firstRespondentParty.get("partyType")).isNull();
         assertThat(firstRespondentParty.get("firstName")).isEqualTo(expectedRespondent.getParty().getFirstName());
         assertThat(firstRespondentParty.get("lastName")).isEqualTo(expectedRespondent.getParty().getLastName());
         assertThat(firstRespondentParty.get("dateOfBirth")).isNull();
@@ -140,8 +138,7 @@ public class RespondentsDataMigrationServiceTest {
         Respondent expectedRespondent = createNewRespondent();
 
         assertThat(respondents).hasSize(1);
-        assertThat(firstRespondentParty.get("partyType")).isEqualTo(expectedRespondent.getParty().getPartyType());
-        assertThat(firstRespondentParty.get("title")).isNull();
+        assertThat(firstRespondentParty.get("partyType")).isNull();
         assertThat(firstRespondentParty.get("firstName")).isNull();
         assertThat(firstRespondentParty.get("lastName")).isNull();
         assertThat(firstRespondentParty.get("dateOfBirth")).isNull();
@@ -274,8 +271,6 @@ public class RespondentsDataMigrationServiceTest {
         return Respondent.builder()
             .party(Party.builder()
                 .partyID("")
-                .partyType("Individual")
-                .title("")
                 .firstName("An")
                 .lastName("Other")
                 .address(Address.builder()
