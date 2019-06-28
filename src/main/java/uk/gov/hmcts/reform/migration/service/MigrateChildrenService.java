@@ -1,43 +1,49 @@
-package uk.gov.hmcts.reform.fpl.ccddatamigration.service;
+package uk.gov.hmcts.reform.migration.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
-import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.Child;
-import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.OldChild;
-import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.common.Address;
-import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.common.Party;
-import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.common.TelephoneNumber;
+import uk.gov.hmcts.reform.domain.OldChild;
+import uk.gov.hmcts.reform.domain.Child;
+import uk.gov.hmcts.reform.domain.common.Address;
+import uk.gov.hmcts.reform.domain.common.Party;
+import uk.gov.hmcts.reform.domain.common.TelephoneNumber;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Predicate;
 
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.defaultIfBlank;
+import static org.springframework.util.ObjectUtils.isEmpty;
 
 @Slf4j
-@Service
-@SuppressWarnings("unchecked")
-public class MigrateChildrenService {
+@Component
+public class MigrateChildrenService implements DataMigrationService {
     private ObjectMapper objectMapper = new ObjectMapper();
 
-    CaseDetails migrateCase(CaseDetails caseDetails) {
+    @Override
+    public Predicate<CaseDetails> accepts() {
+        return caseDetails -> caseDetails != null && caseDetails.getData() != null &&
+            !isEmpty(caseDetails.getData().get("children"));
+    }
+
+    @Override
+    public void migrate(CaseDetails caseDetails) {
         Map<String, Object> data = caseDetails.getData();
 
         data.put("children1", migrateChildren(objectMapper.convertValue(data.get("children"), Map.class)));
         data.put("children", null);
 
         CaseDetails caseDetails1 = CaseDetails.builder()
-                .data(data)
-                .build();
+            .data(data)
+            .build();
 
         log.info("new case details: {}", caseDetails1);
-
-        return caseDetails;
     }
 
     private List<Map<String, Object>> migrateChildren(Map<String, Object> children) {
@@ -45,17 +51,17 @@ public class MigrateChildrenService {
 
         /// FIRST CHILD
         OldChild firstChild =
-                objectMapper.convertValue(children.get("firstChild"), OldChild.class);
+            objectMapper.convertValue(children.get("firstChild"), OldChild.class);
         Child migratedFirstChild = migrateIndividualChild(firstChild);
 
         /// ADDITIONAL RESPONDENT
         List<Map<String, Object>> additionalChildren =
-                (List<Map<String, Object>>) objectMapper.convertValue(children.get("additionalChildren"), List.class);
+            (List<Map<String, Object>>) objectMapper.convertValue(children.get("additionalChildren"), List.class);
 
         List<Child> migratedChildrenCollection = additionalChildren.stream()
-                .map(child ->
-                        migrateIndividualChild(objectMapper.convertValue(child.get("value"), OldChild.class)))
-                .collect(toList());
+            .map(child ->
+                migrateIndividualChild(objectMapper.convertValue(child.get("value"), OldChild.class)))
+            .collect(toList());
 
         // ADD FIRST RESPONDENT TO ADDITIONAL RESPONDENT LIST
         migratedChildrenCollection.add(migratedFirstChild);
@@ -67,8 +73,8 @@ public class MigrateChildrenService {
             System.out.println("map = " + map);
 
             newStructure.add(ImmutableMap.of(
-                    "id", UUID.randomUUID().toString(),
-                    "value", map));
+                "id", UUID.randomUUID().toString(),
+                "value", map));
         });
 
         log.info("returning new structure {}", newStructure);
@@ -77,7 +83,7 @@ public class MigrateChildrenService {
     }
 
     private Child migrateIndividualChild(OldChild oc) {
-        log.info("migrating respondent {}", oc);
+        log.info("migrating children {}", oc);
 
         Address.AddressBuilder addressBuilder = Address.builder();
         addressBuilder.addressLine1(defaultIfBlank(oc.getAddress().getAddressLine1(), null));
@@ -123,8 +129,7 @@ public class MigrateChildrenService {
         Party party = partyBuilder.build();
 
         return Child.builder()
-                .party(party)
-                .build();
-
+            .party(party)
+            .build();
     }
 }

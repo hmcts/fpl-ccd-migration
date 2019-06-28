@@ -1,11 +1,10 @@
-package uk.gov.hmcts.reform.fpl.ccddatamigration.domain;
+package uk.gov.hmcts.reform.domain;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
-
 import java.util.List;
 import java.util.Map;
 
@@ -13,7 +12,7 @@ import java.util.Map;
 @Builder
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class OldChildren {
-    private final OldChild firstChild;
+    private final uk.gov.hmcts.reform.domain.OldChild firstChild;
     private final List<Map<String, Object>> additionalChildren;
 
     @JsonCreator

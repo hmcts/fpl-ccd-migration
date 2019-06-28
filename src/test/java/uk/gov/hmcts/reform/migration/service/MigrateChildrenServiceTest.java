@@ -1,13 +1,13 @@
-package uk.gov.hmcts.reform.fpl.ccddatamigration.service;
+package uk.gov.hmcts.reform.migration.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import org.junit.Test;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
-import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.OldChild;
-import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.OldChildren;
-import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.common.Address;
+import uk.gov.hmcts.reform.domain.OldChild;
+import uk.gov.hmcts.reform.domain.OldChildren;
+import uk.gov.hmcts.reform.domain.common.Address;
 
 import java.util.HashMap;
 import java.util.List;

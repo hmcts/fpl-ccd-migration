@@ -44,7 +44,7 @@ dependencies {
     compile group: 'uk.gov.hmcts.reform', name: 'service-auth-provider-client', version: '3.0.0'
     compile group: 'uk.gov.hmcts.reform', name: 'core-case-data-store-client', version: '4.6.4'
     compile group: 'io.rest-assured', name: 'rest-assured', version: '3.3.0'
-
+    compile group: 'com.google.guava', name: 'guava', version: '27.1-jre'
     testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test'
     testCompile group: 'com.github.tomakehurst', name: 'wiremock', version: '2.23.2'
 }
