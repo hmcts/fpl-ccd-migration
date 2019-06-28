@@ -23,7 +23,7 @@ import static org.springframework.util.ObjectUtils.isEmpty;
 @Slf4j
 @Component("generalMigrationService")
 public class GeneralMigrationService implements MigrationService {
-    private static final String EVENT_ID = "enterHearingNew";
+    private static final String EVENT_ID = "migrateCase";
     private static final String EVENT_SUMMARY = "Migrate Case";
     private static final String EVENT_DESCRIPTION = "Migrate Case";
 
