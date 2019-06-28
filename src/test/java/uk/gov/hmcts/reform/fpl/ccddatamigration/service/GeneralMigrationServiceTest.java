@@ -126,8 +126,6 @@ public class GeneralMigrationServiceTest {
         setupFields(true, true);
         setupMocks();
         when(migrateHearingService.migrateCase(eq(caseDetails1))).thenReturn(caseDetails1);
-        when(migrateHearingService.migrateCase(eq(caseDetails2))).thenReturn(caseDetails2);
-        when(migrateHearingService.migrateCase(eq(caseDetails3))).thenReturn(caseDetails3);
         migrationService.processAllTheCases(USER_TOKEN, S2S_TOKEN, USER_ID, JURISDICTION_ID, CASE_TYPE);
         assertThat(migrationService.getTotalNumberOfCases(), is(1));
         assertThat(migrationService.getTotalMigrationsPerformed(), is(1));
@@ -145,6 +143,7 @@ public class GeneralMigrationServiceTest {
         setUpMockForUpdate(caseDetails2);
         when(migrateHearingService.migrateCase(eq(caseDetails1))).thenReturn(caseDetails1);
         when(migrateHearingService.migrateCase(eq(caseDetails2))).thenReturn(caseDetails2);
+        when(migrateHearingService.migrateCase(eq(caseDetails3))).thenReturn(caseDetails3);
         when(ccdUpdateService.update(caseDetails3.getId().toString(),
             caseDetails3.getData(),
             EVENT_ID,
@@ -167,6 +166,8 @@ public class GeneralMigrationServiceTest {
         setupMocks();
         setUpMockForUpdate(caseDetails1);
         when(migrateHearingService.migrateCase(eq(caseDetails1))).thenReturn(caseDetails1);
+        when(migrateHearingService.migrateCase(eq(caseDetails2))).thenReturn(caseDetails2);
+        when(migrateHearingService.migrateCase(eq(caseDetails3))).thenReturn(caseDetails3);
         when(ccdUpdateService.update(caseDetails2.getId().toString(),
             caseDetails2.getData(),
             EVENT_ID,
