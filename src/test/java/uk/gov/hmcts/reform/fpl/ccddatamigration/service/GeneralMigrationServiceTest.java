@@ -1,11 +1,13 @@
 package uk.gov.hmcts.reform.fpl.ccddatamigration.service;
 
 import com.google.common.collect.ImmutableMap;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.util.ReflectionUtils;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
@@ -62,6 +64,12 @@ public class GeneralMigrationServiceTest {
     private CaseDetails caseDetails1;
     private CaseDetails caseDetails2;
     private CaseDetails caseDetails3;
+
+    @Before
+    public void setUp() {
+        ReflectionTestUtils.setField(migrationService, "debugEnabled", false);
+        ReflectionTestUtils.setField(migrationService, "dryRun", true);
+    }
 
     @Test
     public void shouldProcessASingleCaseAndMigrationIsSuccessful() {
