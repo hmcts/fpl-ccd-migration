@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.migration.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableList;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
@@ -9,7 +10,6 @@ import uk.gov.hmcts.reform.domain.OldChild;
 import uk.gov.hmcts.reform.domain.Child;
 import uk.gov.hmcts.reform.domain.common.Address;
 import uk.gov.hmcts.reform.domain.common.Party;
-import uk.gov.hmcts.reform.domain.common.TelephoneNumber;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +19,7 @@ import java.util.function.Predicate;
 
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.defaultIfBlank;
+import static net.logstash.logback.encoder.org.apache.commons.lang.ObjectUtils.defaultIfNull;
 import static org.springframework.util.ObjectUtils.isEmpty;
 
 @Slf4j
@@ -39,38 +40,31 @@ public class MigrateChildrenService implements DataMigrationService {
         data.put("children1", migrateChildren(objectMapper.convertValue(data.get("children"), Map.class)));
         data.put("children", null);
 
-        CaseDetails caseDetails1 = CaseDetails.builder()
-            .data(data)
-            .build();
-
-        log.info("new case details: {}", caseDetails1);
+        log.info("new case details: {}", caseDetails);
     }
 
     private List<Map<String, Object>> migrateChildren(Map<String, Object> children) {
         log.info("beginning to migrate children {}", children);
 
-        /// FIRST CHILD
         OldChild firstChild =
             objectMapper.convertValue(children.get("firstChild"), OldChild.class);
         Child migratedFirstChild = migrateIndividualChild(firstChild);
 
-        /// ADDITIONAL RESPONDENT
+
         List<Map<String, Object>> additionalChildren =
-            (List<Map<String, Object>>) objectMapper.convertValue(children.get("additionalChildren"), List.class);
+            (List<Map<String, Object>>) objectMapper.convertValue(defaultIfNull(children.get("additionalChildren"), new ArrayList<>()), List.class);
 
         List<Child> migratedChildrenCollection = additionalChildren.stream()
             .map(child ->
                 migrateIndividualChild(objectMapper.convertValue(child.get("value"), OldChild.class)))
             .collect(toList());
 
-        // ADD FIRST RESPONDENT TO ADDITIONAL RESPONDENT LIST
         migratedChildrenCollection.add(migratedFirstChild);
+
         List<Map<String, Object>> newStructure = new ArrayList<>();
 
-        /// BUILD NEW STRUCTURE
         migratedChildrenCollection.forEach(item -> {
             Map map = objectMapper.convertValue(item, Map.class);
-            System.out.println("map = " + map);
 
             newStructure.add(ImmutableMap.of(
                 "id", UUID.randomUUID().toString(),
@@ -86,25 +80,35 @@ public class MigrateChildrenService implements DataMigrationService {
         log.info("migrating children {}", oc);
 
         Address.AddressBuilder addressBuilder = Address.builder();
-        addressBuilder.addressLine1(defaultIfBlank(oc.getAddress().getAddressLine1(), null));
-        addressBuilder.addressLine2(defaultIfBlank(oc.getAddress().getAddressLine2(), null));
-        addressBuilder.addressLine3(defaultIfBlank(oc.getAddress().getAddressLine3(), null));
-        addressBuilder.postTown(defaultIfBlank(oc.getAddress().getPostTown(), null));
-        addressBuilder.postcode(defaultIfBlank(oc.getAddress().getPostcode(), null));
-        addressBuilder.county(defaultIfBlank(oc.getAddress().getCounty(), null));
-        addressBuilder.country(defaultIfBlank(oc.getAddress().getCountry(), null));
-        Address address = addressBuilder.build();
 
-        TelephoneNumber telephoneNumber = TelephoneNumber.builder().build();
+        if(!isEmpty(oc.getAddress())) {
+            addressBuilder.addressLine1(defaultIfBlank(oc.getAddress().getAddressLine1(), null));
+            addressBuilder.addressLine2(defaultIfBlank(oc.getAddress().getAddressLine2(), null));
+            addressBuilder.addressLine3(defaultIfBlank(oc.getAddress().getAddressLine3(), null));
+            addressBuilder.postTown(defaultIfBlank(oc.getAddress().getPostTown(), null));
+            addressBuilder.postcode(defaultIfBlank(oc.getAddress().getPostcode(), null));
+            addressBuilder.county(defaultIfBlank(oc.getAddress().getCounty(), null));
+            addressBuilder.country(defaultIfBlank(oc.getAddress().getCountry(), null));
+        }
+
+        Address address = addressBuilder.build();
 
         Party.PartyBuilder partyBuilder = Party.builder();
         partyBuilder.partyID(UUID.randomUUID().toString());
-        partyBuilder.partyType("Individual");
-        partyBuilder.firstName(defaultIfBlank(oc.getChildName().split("\\s+")[0], null));
-        partyBuilder.lastName(defaultIfBlank(oc.getChildName().split("\\s+")[1], null));
-        partyBuilder.dateOfBirth(defaultIfBlank(oc.getChildDOB().toString(), null));
+
+        if (!isEmpty(oc.getChildName())) {
+            partyBuilder.firstName(splitName(oc.getChildName()).get(0));
+
+            if (splitName(oc.getChildName()).size() > 1) {
+                partyBuilder.lastName(splitName(oc.getChildName()).get(1));
+            }
+        }
+
+        if(!isEmpty((oc.getChildDOB()))) {
+            partyBuilder.dateOfBirth(defaultIfBlank(oc.getChildDOB().toString(), null));
+        }
+
         partyBuilder.address(address);
-        partyBuilder.telephoneNumber(telephoneNumber);
         partyBuilder.gender(defaultIfBlank(oc.getChildGender(), null));
         partyBuilder.genderIdentification(defaultIfBlank(oc.getChildGenderIdentification(), null));
         partyBuilder.livingSituation(defaultIfBlank(oc.getLivingSituation(), null));
@@ -131,5 +135,19 @@ public class MigrateChildrenService implements DataMigrationService {
         return Child.builder()
             .party(party)
             .build();
+    }
+
+    private List<String> splitName(String name) {
+        ImmutableList.Builder<String> names = ImmutableList.builder();
+        int index = name.lastIndexOf(" ");
+
+        if (index == -1) {
+            names.add(name);
+        } else {
+            names.add(name.substring(0, index));
+            names.add(name.substring(index + 1));
+        }
+
+        return names.build();
     }
 }
