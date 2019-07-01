@@ -6,10 +6,10 @@ import com.google.common.collect.ImmutableMap;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
-import uk.gov.hmcts.reform.domain.OldRespondent;
-import uk.gov.hmcts.reform.domain.Respondent;
+import uk.gov.hmcts.reform.fpl.domain.OldRespondent;
+import uk.gov.hmcts.reform.fpl.domain.Respondent;
 import uk.gov.hmcts.reform.domain.common.Address;
-import uk.gov.hmcts.reform.domain.common.Party;
+import uk.gov.hmcts.reform.fpl.domain.common.RespondentParty;
 import uk.gov.hmcts.reform.domain.common.TelephoneNumber;
 
 import java.util.ArrayList;
@@ -105,7 +105,7 @@ public class RespondentsDataMigrationService implements DataMigrationService {
         telephoneNumberBuilder.telephoneNumber(defaultIfBlank(or.getTelephone(), null));
         TelephoneNumber telephoneNumber = telephoneNumberBuilder.build();
 
-        Party.PartyBuilder partyBuilder = Party.builder();
+        RespondentParty.RespondentPartyBuilder partyBuilder = RespondentParty.builder();
         partyBuilder.partyID(UUID.randomUUID().toString());
 
         if (!isEmpty(or.getName())) {
@@ -126,7 +126,7 @@ public class RespondentsDataMigrationService implements DataMigrationService {
         partyBuilder.contactDetailsHidden(defaultIfBlank(or.getContactDetailsHidden(), null));
         partyBuilder.litigationIssues(defaultIfBlank(or.getLitigationIssues(), null));
         partyBuilder.litigationIssuesDetails(defaultIfBlank(or.getLitigationIssuesDetails(), null));
-        Party party = partyBuilder.build();
+        RespondentParty party = partyBuilder.build();
 
         return Respondent.builder()
             .party(party)

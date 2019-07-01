@@ -5,12 +5,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import org.junit.Test;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
-import uk.gov.hmcts.reform.domain.OldRespondent;
-import uk.gov.hmcts.reform.domain.OldRespondents;
-import uk.gov.hmcts.reform.domain.Respondent;
+import uk.gov.hmcts.reform.fpl.domain.OldRespondent;
+import uk.gov.hmcts.reform.fpl.domain.OldRespondents;
+import uk.gov.hmcts.reform.fpl.domain.Respondent;
 import uk.gov.hmcts.reform.domain.common.Address;
 import uk.gov.hmcts.reform.domain.common.EmailAddress;
-import uk.gov.hmcts.reform.domain.common.Party;
+import uk.gov.hmcts.reform.fpl.domain.common.RespondentParty;
 import uk.gov.hmcts.reform.domain.common.TelephoneNumber;
 
 import java.util.HashMap;
@@ -269,7 +269,7 @@ public class RespondentsDataMigrationServiceTest {
 
     private Respondent createNewRespondent() {
         return Respondent.builder()
-            .party(Party.builder()
+            .party(RespondentParty.builder()
                 .partyID("")
                 .firstName("An")
                 .lastName("Other")
