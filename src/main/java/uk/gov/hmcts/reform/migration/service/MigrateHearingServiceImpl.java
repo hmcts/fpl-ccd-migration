@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.reform.DateUtils;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.domain.Hearing;
 import uk.gov.hmcts.reform.domain.OldHearing;
@@ -18,6 +19,7 @@ import static org.apache.commons.lang3.StringUtils.defaultIfBlank;
 @Slf4j
 @Service
 public class MigrateHearingServiceImpl implements DataMigrationService {
+
     private ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
@@ -31,7 +33,7 @@ public class MigrateHearingServiceImpl implements DataMigrationService {
 
         Map<String, Object> map = ImmutableMap.of(
             "id", UUID.randomUUID().toString(),
-            "value", migrateHearing(objectMapper.convertValue(data.get("hearing"), OldHearing.class)));
+            "value", migrateHearing(objectMapper.convertValue(data.get("hearing"), OldHearing.class), caseDetails));
 
         data.put("hearings", ImmutableList.of(map));
         data.put("hearing", null);
@@ -39,7 +41,7 @@ public class MigrateHearingServiceImpl implements DataMigrationService {
         log.info("New case details: {}", caseDetails);
     }
 
-    private Hearing migrateHearing(OldHearing oldHearing) {
+    private Hearing migrateHearing(OldHearing oldHearing, CaseDetails caseDetails) {
         log.info("Migrating hearing: {}", oldHearing);
 
         Hearing.HearingBuilder hearingBuilder = Hearing.builder();
@@ -64,9 +66,14 @@ public class MigrateHearingServiceImpl implements DataMigrationService {
         hearingBuilder.reasonsForRespondentsNotBeingAware(defaultIfBlank(oldHearing.getRespondentsAwareReason(), null));
 
         // created by and when
+        hearingBuilder.createdBy("TODO - CREATED BY");
+        hearingBuilder.createdDate(DateUtils.convertLocalDateTimeToString(caseDetails.getCreatedDate()));
 
         // updated by and when
+        hearingBuilder.updatedBy(null);
+        hearingBuilder.updatedDate(null);
 
         return hearingBuilder.build();
     }
+
 }

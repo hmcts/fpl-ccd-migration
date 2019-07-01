@@ -8,6 +8,9 @@ import uk.gov.hmcts.reform.domain.Hearing;
 
 import uk.gov.hmcts.reform.domain.OldHearing;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,11 +36,38 @@ public class MigrateHearingServiceImplTest {
             .data(data)
             .build();
 
+        caseDetails.setCreatedDate(LocalDateTime.now());
+
         service.migrate(caseDetails);
 
         Map<String, Object> valueInHearing = (Map<String, Object>) ((List) caseDetails.getData().get("hearings")).get(0);
 
-        assertThat(valueInHearing.get("value").equals(newHearing));
+        Hearing actualNewHearing = (Hearing) valueInHearing.get("value");
+        assertThat(actualNewHearing.equals(newHearing));
+
+        // check fields are mapped to the new hearing correctly.
+        assertThat(actualNewHearing.getHearingDescription()).isEqualTo("old type");
+        assertThat(actualNewHearing.getReason()).isEqualTo("old type give reason");
+        assertThat(actualNewHearing.getTimeFrame()).isEqualTo("old timeframe");
+
+        assertThat(actualNewHearing.getSameDayHearingReason()).isEqualTo("old reason");
+
+        assertThat(actualNewHearing.getWithoutNotice()).isEqualTo("old without notice");
+        assertThat(actualNewHearing.getReasonForNoNotice()).isEqualTo("old without notice reason");
+
+        assertThat(actualNewHearing.getReducedNotice()).isEqualTo("old reduced notice");
+        assertThat(actualNewHearing.getReasonForReducedNotice()).isEqualTo("old reduced notice reason");
+
+        assertThat(actualNewHearing.getRespondentsAware()).isEqualTo("old respondents aware");
+        assertThat(actualNewHearing.getReasonsForRespondentsNotBeingAware()).isEqualTo("old respondents aware reason");
+
+        String expectedDate = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
+
+        assertThat(actualNewHearing.getCreatedBy()).isEqualTo("TODO - CREATED BY");
+        assertThat(actualNewHearing.getCreatedDate()).isEqualTo(expectedDate);
+
+        assertThat(actualNewHearing.getUpdatedBy()).isNull();
+        assertThat(actualNewHearing.getUpdatedDate()).isNull();
     }
 
     private Hearing newHearingBuilder() {
@@ -56,9 +86,9 @@ public class MigrateHearingServiceImplTest {
             .withoutNotice("old without notice")
             .withoutNoticeReason("old without notice reason")
             .reducedNotice("old reduced notice")
-            .reducedNoticeReason("reduced notice reason")
-            .respondentsAware("respondents aware")
-            .respondentsAwareReason("respondents aware reason")
+            .reducedNoticeReason("old reduced notice reason")
+            .respondentsAware("old respondents aware")
+            .respondentsAwareReason("old respondents aware reason")
             .build();
     }
 }
