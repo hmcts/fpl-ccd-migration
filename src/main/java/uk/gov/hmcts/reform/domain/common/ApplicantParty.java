@@ -7,7 +7,7 @@ import lombok.Data;
 @Data
 @Builder
 @AllArgsConstructor
-public class Party {
+public class ApplicantParty {
     private final String partyId;
     private final String partyType;
     private final String name;

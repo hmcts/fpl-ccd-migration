@@ -1,16 +1,14 @@
 package uk.gov.hmcts.reform.migration.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableMap;
-import org.junit.Test;
-import org.mockito.InjectMocks;
+import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.domain.Applicant;
 import uk.gov.hmcts.reform.domain.OldApplicant;
 import uk.gov.hmcts.reform.domain.common.Address;
 import uk.gov.hmcts.reform.domain.common.EmailAddress;
 import uk.gov.hmcts.reform.domain.common.MobileNumber;
-import uk.gov.hmcts.reform.domain.common.Party;
+import uk.gov.hmcts.reform.domain.common.ApplicantParty;
 import uk.gov.hmcts.reform.domain.common.TelephoneNumber;
 
 import java.util.HashMap;
@@ -18,9 +16,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
-public class ApplicantDataMigrationServiceTest {
+class ApplicantDataMigrationServiceTest {
     private final String APPLICANT = "Applicant name";
     private final String EMAIL = "email@email.com";
     private final String MOBILE = "07778987656";
@@ -34,17 +32,16 @@ public class ApplicantDataMigrationServiceTest {
     private final String JOBTITLE = "JobTitle";
     private final String TELEPHONE = "02825674837";
     private final String PERSONTOCONTACT = "Person to contact";
-    private final String PARTYTYPE = "Party type";
+    private final String PARTYTYPE = "ApplicantParty type";
     private final String LEADAPPLICANTINDICATOR = "Yes";
     private final String PARTYID = UUID.randomUUID().toString();
     private final String PBANUMBER= "PBA123456";
 
-    @InjectMocks
     private final ApplicantDataMigrationService service = new ApplicantDataMigrationService();
     private ObjectMapper objectMapper = new ObjectMapper();
 
     @Test
-    public void mapOldApplicantToNewApplicant() {
+    void mapOldApplicantToNewApplicant() {
         Map<String, Object> data = new HashMap<>();
 
         OldApplicant applicant = getOldApplicant();
@@ -108,7 +105,7 @@ public class ApplicantDataMigrationServiceTest {
 
     private Applicant newApplicantBuilder() {
         Applicant newApplicant = Applicant.builder()
-            .party(Party.builder()
+            .party(ApplicantParty.builder()
                 .partyId(PARTYID)
                 .partyType(PARTYTYPE)
                 .name(APPLICANT)

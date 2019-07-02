@@ -11,7 +11,7 @@ import uk.gov.hmcts.reform.domain.OldApplicant;
 import uk.gov.hmcts.reform.domain.common.Address;
 import uk.gov.hmcts.reform.domain.common.EmailAddress;
 import uk.gov.hmcts.reform.domain.common.MobileNumber;
-import uk.gov.hmcts.reform.domain.common.Party;
+import uk.gov.hmcts.reform.domain.common.ApplicantParty;
 import uk.gov.hmcts.reform.domain.common.TelephoneNumber;
 
 import java.util.Map;
@@ -70,7 +70,7 @@ public class ApplicantDataMigrationService implements DataMigrationService {
         mobileNumberBuilder.telephoneNumber(defaultIfBlank(or.getMobile(), null));
         MobileNumber mobileNumber = mobileNumberBuilder.build();
 
-        Party.PartyBuilder partyBuilder = Party.builder();
+        ApplicantParty.ApplicantPartyBuilder partyBuilder = ApplicantParty.builder();
         partyBuilder.partyId(UUID.randomUUID().toString());
         partyBuilder.partyType("Individual");
         partyBuilder.name(defaultIfBlank(or.getName().split("\\s+")[0], null));
@@ -80,7 +80,7 @@ public class ApplicantDataMigrationService implements DataMigrationService {
         partyBuilder.mobileNumber(mobileNumber);
         partyBuilder.jobTitle(defaultIfBlank(or.getJobTitle(), null));
         partyBuilder.pbaNumber(defaultIfBlank(or.getPbaNumber(), null));
-        Party party = partyBuilder.build();
+        ApplicantParty party = partyBuilder.build();
 
         return Applicant.builder()
             .party(party)
