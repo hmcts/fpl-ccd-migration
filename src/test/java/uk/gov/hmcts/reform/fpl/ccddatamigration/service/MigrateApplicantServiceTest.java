@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.fpl.ccddatamigration.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableMap;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
@@ -12,6 +14,7 @@ import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.common.Party;
 import uk.gov.hmcts.reform.fpl.ccddatamigration.domain.common.TelephoneNumber;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -38,6 +41,7 @@ public class MigrateApplicantServiceTest {
 
     @InjectMocks
     private final MigrateApplicantService service = new MigrateApplicantService();
+    private ObjectMapper objectMapper = new ObjectMapper();
 
     @Test
     public void mapOldApplicantToNewApplicant() {
@@ -56,9 +60,49 @@ public class MigrateApplicantServiceTest {
 
         CaseDetails caseDetails1 = service.migrateCase(caseDetails);
 
-        Map<String, Object> valueInApplicant = (Map<String, Object>) caseDetails1.getData().get("applicants");
+        List<Map<String, Object>> valueInApplicant = (List<Map<String, Object>>) caseDetails1.getData().get("applicants");
 
-        assertThat(valueInApplicant.get("value").equals(newApplicant));
+        assertThat(valueInApplicant.get(0).get("value").equals(newApplicant));
+    }
+
+
+    private Map<String, Object> createPartialOldApplicant() {
+        Map<String, Object> data = new HashMap<>();
+        OldApplicant applicant;
+
+        applicant = OldApplicant.builder()
+            .name(APPLICANT)
+            .build();
+
+        data.put("applicant", OldApplicant.builder().build());
+        return data;
+    }
+
+    private Map<String, Object> createOldApplicant() {
+        Map<String, Object> data = new HashMap<>();
+        OldApplicant applicant;
+
+            applicant = OldApplicant.builder()
+                .name(APPLICANT)
+                .email(EMAIL)
+                .mobile(MOBILE)
+                .address(Address.builder()
+                    .addressLine1(ADDRESSLINE1)
+                    .addressLine2(ADDRESSLINE2)
+                    .addressLine3(ADDRESSLINE3)
+                    .country(COUNTRY)
+                    .county(COUNTY)
+                    .postcode(POSTCODE)
+                    .postTown(POSTTOWN)
+                    .build())
+                .jobTitle(JOBTITLE)
+                .telephone(TELEPHONE)
+                .personToContact(PERSONTOCONTACT)
+                .pbaNumber(PBANUMBER)
+                .build();
+
+        data.put("applicant", OldApplicant.builder().build());
+        return data;
     }
 
     private Applicant newApplicantBuilder() {
