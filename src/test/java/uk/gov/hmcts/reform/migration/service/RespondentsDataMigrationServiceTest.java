@@ -3,7 +3,7 @@ package uk.gov.hmcts.reform.migration.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.fpl.domain.OldRespondent;
 import uk.gov.hmcts.reform.fpl.domain.OldRespondents;
@@ -19,13 +19,13 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class RespondentsDataMigrationServiceTest {
+class RespondentsDataMigrationServiceTest {
 
     private RespondentsDataMigrationService service = new RespondentsDataMigrationService();
     private ObjectMapper objectMapper = new ObjectMapper();
 
     @Test
-    public void whenOldStructureDoesNotExistAcceptsShouldReturnFalse() {
+    void whenOldStructureDoesNotExistAcceptsShouldReturnFalse() {
         CaseDetails caseDetails = CaseDetails.builder()
             .id(1111L)
             .data(ImmutableMap.of("data", "someData"))
@@ -35,7 +35,7 @@ public class RespondentsDataMigrationServiceTest {
     }
 
     @Test
-    public void whenDataIsNullAcceptsShouldReturnFalse() {
+    void whenDataIsNullAcceptsShouldReturnFalse() {
         CaseDetails caseDetails = CaseDetails.builder()
             .id(1111L)
             .data(null)
@@ -46,7 +46,7 @@ public class RespondentsDataMigrationServiceTest {
 
     @SuppressWarnings({"unchecked", "LineLength"})
     @Test
-    public void whenOldRespondentStructureIsMigratedShouldReturnNewListStructure() {
+    void whenOldRespondentStructureIsMigratedShouldReturnNewListStructure() {
         CaseDetails caseDetails = CaseDetails.builder()
             .id(1111L)
             .data(createOldRespondent(false, false))
@@ -78,7 +78,7 @@ public class RespondentsDataMigrationServiceTest {
     }
 
     @Test
-    public void whenPartiallyFilledInOldRespondentStructureIsMigratedShouldReturnNewListStructureWithNullFields() {
+    void whenPartiallyFilledInOldRespondentStructureIsMigratedShouldReturnNewListStructureWithNullFields() {
         CaseDetails caseDetails = CaseDetails.builder()
             .id(1111L)
             .data(createOldRespondent(false, true))
@@ -110,7 +110,7 @@ public class RespondentsDataMigrationServiceTest {
     }
 
     @Test
-    public void whenPartiallyFilledInOldRespondentAddressIsMigratedShouldReturnNewListStructureWithNullAddressFields() {
+    void whenPartiallyFilledInOldRespondentAddressIsMigratedShouldReturnNewListStructureWithNullAddressFields() {
         Map<String, Object> data = new HashMap<>();
 
         OldRespondent respondent = OldRespondent.builder()
@@ -163,7 +163,7 @@ public class RespondentsDataMigrationServiceTest {
     }
 
     @Test
-    public void whenOldRespondentWithOneNameIsMigratedShouldReturnNewListStructureWithOnlyFirstName() {
+    void whenOldRespondentWithOneNameIsMigratedShouldReturnNewListStructureWithOnlyFirstName() {
         Map<String, Object> data = new HashMap<>();
 
         OldRespondent respondent = OldRespondent.builder()
@@ -192,7 +192,7 @@ public class RespondentsDataMigrationServiceTest {
     }
 
     @Test
-    public void whenOldRespondentWithManyNamesIsMigratedShouldReturnNewListStructureWithMultipleFirstNames() {
+    void whenOldRespondentWithManyNamesIsMigratedShouldReturnNewListStructureWithMultipleFirstNames() {
         Map<String, Object> data = new HashMap<>();
 
         OldRespondent respondent = OldRespondent.builder()
