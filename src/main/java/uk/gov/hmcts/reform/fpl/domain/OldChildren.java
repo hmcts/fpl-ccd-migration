@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.domain;
+package uk.gov.hmcts.reform.fpl.domain;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -12,7 +12,7 @@ import java.util.Map;
 @Builder
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class OldChildren {
-    private final uk.gov.hmcts.reform.domain.OldChild firstChild;
+    private final OldChild firstChild;
     private final List<Map<String, Object>> additionalChildren;
 
     @JsonCreator

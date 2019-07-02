@@ -3,13 +3,13 @@ package uk.gov.hmcts.reform.migration.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
-import uk.gov.hmcts.reform.domain.Child;
-import uk.gov.hmcts.reform.domain.OldChild;
-import uk.gov.hmcts.reform.domain.OldChildren;
 import uk.gov.hmcts.reform.domain.common.Address;
-import uk.gov.hmcts.reform.domain.common.Party;
+import uk.gov.hmcts.reform.fpl.domain.Child;
+import uk.gov.hmcts.reform.fpl.domain.OldChild;
+import uk.gov.hmcts.reform.fpl.domain.OldChildren;
+import uk.gov.hmcts.reform.fpl.domain.common.ChildParty;
 
 import java.util.HashMap;
 import java.util.List;
@@ -318,7 +318,7 @@ public class MigrateChildrenServiceTest {
 
     private Child createNewChild() {
         return Child.builder()
-            .party(Party.builder()
+            .party(ChildParty.builder()
                 .partyID("")
                 .firstName("Child")
                 .lastName("One")

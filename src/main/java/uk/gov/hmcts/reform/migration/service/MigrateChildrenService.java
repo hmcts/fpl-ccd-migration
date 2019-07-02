@@ -6,10 +6,10 @@ import com.google.common.collect.ImmutableList;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
-import uk.gov.hmcts.reform.domain.OldChild;
-import uk.gov.hmcts.reform.domain.Child;
 import uk.gov.hmcts.reform.domain.common.Address;
-import uk.gov.hmcts.reform.domain.common.Party;
+import uk.gov.hmcts.reform.fpl.domain.Child;
+import uk.gov.hmcts.reform.fpl.domain.OldChild;
+import uk.gov.hmcts.reform.fpl.domain.common.ChildParty;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -93,7 +93,7 @@ public class MigrateChildrenService implements DataMigrationService {
 
         Address address = addressBuilder.build();
 
-        Party.PartyBuilder partyBuilder = Party.builder();
+        ChildParty.ChildPartyBuilder partyBuilder = ChildParty.builder();
         partyBuilder.partyID(UUID.randomUUID().toString());
 
         if (!isEmpty(oc.getChildName())) {
@@ -130,7 +130,7 @@ public class MigrateChildrenService implements DataMigrationService {
         partyBuilder.detailsHiddenReason(defaultIfBlank(oc.getDetailsHiddenReason(), null));
         partyBuilder.litigationIssues(defaultIfBlank(oc.getLitigationIssues(), null));
         partyBuilder.litigationIssuesDetails(defaultIfBlank(oc.getLitigationIssuesDetails(), null));
-        Party party = partyBuilder.build();
+        ChildParty party = partyBuilder.build();
 
         return Child.builder()
             .party(party)
