@@ -17,12 +17,12 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class MigrateChildrenServiceTest {
+class MigrateChildrenServiceTest {
     private final MigrateChildrenService service = new MigrateChildrenService();
     private ObjectMapper objectMapper = new ObjectMapper();
 
     @Test
-    public void whenOldStructureDoesNotExistAcceptsShouldReturnFalse() {
+    void whenOldStructureDoesNotExistAcceptsShouldReturnFalse() {
         CaseDetails caseDetails = CaseDetails.builder()
             .id(1111L)
             .data(ImmutableMap.of("data", "someData"))
@@ -32,7 +32,7 @@ public class MigrateChildrenServiceTest {
     }
 
     @Test
-    public void whenDataIsNullAcceptsShouldReturnFalse() {
+    void whenDataIsNullAcceptsShouldReturnFalse() {
         CaseDetails caseDetails = CaseDetails.builder()
             .id(1111L)
             .data(null)
@@ -43,7 +43,7 @@ public class MigrateChildrenServiceTest {
 
     @SuppressWarnings({"unchecked", "LineLength"})
     @Test
-    public void whenOldChildrenStructureIsMigratedShouldReturnNewListStructure() {
+    void whenOldChildrenStructureIsMigratedShouldReturnNewListStructure() {
         CaseDetails caseDetails = CaseDetails.builder()
             .id(1111L)
             .data(createOldChild(false, false))
@@ -88,7 +88,7 @@ public class MigrateChildrenServiceTest {
     }
 
     @Test
-    public void whenPartiallyFilledInOldChildStructureIsMigratedShouldReturnNewListStructureWithNullFields() {
+    void whenPartiallyFilledInOldChildStructureIsMigratedShouldReturnNewListStructureWithNullFields() {
         CaseDetails caseDetails = CaseDetails.builder()
             .id(1111L)
             .data(createOldChild(false, true))
@@ -133,7 +133,7 @@ public class MigrateChildrenServiceTest {
     }
 
     @Test
-    public void whenPartiallyFilledInOldChildAddressIsMigratedShouldReturnNewListStructureWithNullAddressFields() {
+    void whenPartiallyFilledInOldChildAddressIsMigratedShouldReturnNewListStructureWithNullAddressFields() {
         Map<String, Object> data = new HashMap<>();
 
         OldChild child = OldChild.builder()
@@ -197,7 +197,7 @@ public class MigrateChildrenServiceTest {
     }
 
     @Test
-    public void whenOldChildWithOneNameIsMigratedShouldReturnNewListStructureWithOnlyFirstName() {
+    void whenOldChildWithOneNameIsMigratedShouldReturnNewListStructureWithOnlyFirstName() {
         Map<String, Object> data = new HashMap<>();
 
         OldChild child = OldChild.builder()
@@ -226,7 +226,7 @@ public class MigrateChildrenServiceTest {
     }
 
     @Test
-    public void whenOldChildtWithManyNamesIsMigratedShouldReturnNewListStructureWithMultipleFirstNames() {
+    void whenOldChildWithManyNamesIsMigratedShouldReturnNewListStructureWithMultipleFirstNames() {
         Map<String, Object> data = new HashMap<>();
 
         OldChild child = OldChild.builder()
