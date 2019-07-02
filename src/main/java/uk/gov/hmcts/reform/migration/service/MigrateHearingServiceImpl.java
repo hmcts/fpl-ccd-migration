@@ -15,6 +15,7 @@ import java.util.UUID;
 import java.util.function.Predicate;
 
 import static org.apache.commons.lang3.StringUtils.defaultIfBlank;
+import static org.springframework.util.ObjectUtils.isEmpty;
 
 @Slf4j
 @Service
@@ -24,7 +25,8 @@ public class MigrateHearingServiceImpl implements DataMigrationService {
 
     @Override
     public Predicate<CaseDetails> accepts() {
-        return caseDetails -> caseDetails != null && caseDetails.getData() != null;
+        return caseDetails -> caseDetails != null && caseDetails.getData() != null &&
+            !isEmpty(caseDetails.getData().get("hearing"));
     }
 
     @Override
@@ -65,9 +67,10 @@ public class MigrateHearingServiceImpl implements DataMigrationService {
         // reason for respondants not being aware (respondents aware reason)
         hearingBuilder.reasonsForRespondentsNotBeingAware(defaultIfBlank(oldHearing.getRespondentsAwareReason(), null));
 
-        // created by and when
-        hearingBuilder.createdBy("TODO - CREATED BY");
-        hearingBuilder.createdDate(DateUtils.convertLocalDateTimeToString(caseDetails.getCreatedDate()));
+        // created by and when - can't populate in hindsight / pre migration
+        // can only populate going forward / post migration
+        //hearingBuilder.createdBy("TODO - CREATED BY");
+        //hearingBuilder.createdDate(DateUtils.convertLocalDateTimeToString(caseDetails.getCreatedDate()));
 
         // updated by and when
         hearingBuilder.updatedBy(null);
