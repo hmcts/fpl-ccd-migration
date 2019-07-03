@@ -124,6 +124,7 @@ public class RespondentsDataMigrationService implements DataMigrationService {
         partyBuilder.placeOfBirth(defaultIfBlank(or.getPlaceOfBirth(), null));
         partyBuilder.relationshipToChild(defaultIfBlank(or.getRelationshipToChild(), null));
         partyBuilder.contactDetailsHidden(defaultIfBlank(or.getContactDetailsHidden(), null));
+        partyBuilder.contactDetailsHiddenReason(defaultIfBlank(or.getContactDetailsHiddenReason(), null));
         partyBuilder.litigationIssues(defaultIfBlank(or.getLitigationIssues(), null));
         partyBuilder.litigationIssuesDetails(defaultIfBlank(or.getLitigationIssuesDetails(), null));
         RespondentParty party = partyBuilder.build();

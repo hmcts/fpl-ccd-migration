@@ -24,6 +24,7 @@ public class RespondentParty {
     private final String placeOfBirth;
     private final String relationshipToChild;
     private final String contactDetailsHidden;
+    private final String contactDetailsHiddenReason;
     private final String litigationIssues;
     private final String litigationIssuesDetails;
 }
