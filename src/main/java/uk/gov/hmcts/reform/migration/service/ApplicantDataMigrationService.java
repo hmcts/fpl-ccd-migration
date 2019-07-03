@@ -19,6 +19,7 @@ import java.util.UUID;
 import java.util.function.Predicate;
 
 import static org.apache.commons.lang3.StringUtils.defaultIfBlank;
+import static org.springframework.util.ObjectUtils.isEmpty;
 
 @Slf4j
 @Service
@@ -27,8 +28,8 @@ public class ApplicantDataMigrationService implements DataMigrationService {
 
     @Override
     public Predicate<CaseDetails> accepts() {
-        log.info("HITTTTTTTT");
-        return caseDetails -> caseDetails != null && caseDetails.getData() != null;
+        return caseDetails -> caseDetails != null && caseDetails.getData() != null &&
+            !isEmpty(caseDetails.getData().get("applicant"));
     }
 
     @Override
