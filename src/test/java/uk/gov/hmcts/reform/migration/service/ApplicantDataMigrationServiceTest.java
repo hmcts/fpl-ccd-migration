@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.migration.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableMap;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.domain.Applicant;
@@ -39,6 +40,25 @@ class ApplicantDataMigrationServiceTest {
 
     private final ApplicantDataMigrationService service = new ApplicantDataMigrationService();
     private ObjectMapper objectMapper = new ObjectMapper();
+
+    @Test
+    void whenOldStructureDoesNotExistAcceptsShouldReturnFalse() {
+        CaseDetails caseDetails = CaseDetails.builder()
+            .id(1111L)
+            .data(ImmutableMap.of("data", "someData"))
+            .build();
+
+        assertThat(service.accepts().test(caseDetails)).isEqualTo(false);
+    }
+    @Test
+    void whenDataIsNullAcceptsShouldReturnFalse() {
+        CaseDetails caseDetails = CaseDetails.builder()
+            .id(1111L)
+            .data(null)
+            .build();
+
+        assertThat(service.accepts().test(caseDetails)).isEqualTo(false);
+    }
 
     @Test
     void mapOldApplicantToNewApplicant() {
