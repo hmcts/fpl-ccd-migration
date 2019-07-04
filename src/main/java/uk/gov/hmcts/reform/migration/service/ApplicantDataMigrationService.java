@@ -50,13 +50,15 @@ public class ApplicantDataMigrationService implements DataMigrationService {
         log.info("Migrating applicant: {}", or);
 
         Address.AddressBuilder addressBuilder = Address.builder();
-        addressBuilder.addressLine1(defaultIfBlank(or.getAddress().getAddressLine1(), null));
-        addressBuilder.addressLine2(defaultIfBlank(or.getAddress().getAddressLine2(), null));
-        addressBuilder.addressLine3(defaultIfBlank(or.getAddress().getAddressLine3(), null));
-        addressBuilder.postTown(defaultIfBlank(or.getAddress().getPostTown(), null));
-        addressBuilder.postcode(defaultIfBlank(or.getAddress().getPostcode(), null));
-        addressBuilder.county(defaultIfBlank(or.getAddress().getCounty(), null));
-        addressBuilder.country(defaultIfBlank(or.getAddress().getCountry(), null));
+        if(!isEmpty(or.getAddress())) {
+            addressBuilder.addressLine1(defaultIfBlank(or.getAddress().getAddressLine1(), null));
+            addressBuilder.addressLine2(defaultIfBlank(or.getAddress().getAddressLine2(), null));
+            addressBuilder.addressLine3(defaultIfBlank(or.getAddress().getAddressLine3(), null));
+            addressBuilder.postTown(defaultIfBlank(or.getAddress().getPostTown(), null));
+            addressBuilder.postcode(defaultIfBlank(or.getAddress().getPostcode(), null));
+            addressBuilder.county(defaultIfBlank(or.getAddress().getCounty(), null));
+            addressBuilder.country(defaultIfBlank(or.getAddress().getCountry(), null));
+        }
         Address address = addressBuilder.build();
 
         EmailAddress.EmailAddressBuilder emailBuilder = EmailAddress.builder();
@@ -75,7 +77,9 @@ public class ApplicantDataMigrationService implements DataMigrationService {
         ApplicantParty.ApplicantPartyBuilder partyBuilder = ApplicantParty.builder();
         partyBuilder.partyId(UUID.randomUUID().toString());
         partyBuilder.partyType("Individual");
-        partyBuilder.name(defaultIfBlank(or.getName().split("\\s+")[0], null));
+        if (!isEmpty(or.getName())) {
+            partyBuilder.name(defaultIfBlank(or.getName().split("\\s+")[0], null));
+        }
         partyBuilder.address(address);
         partyBuilder.emailAddress(email);
         partyBuilder.telephoneNumber(telephoneNumber);

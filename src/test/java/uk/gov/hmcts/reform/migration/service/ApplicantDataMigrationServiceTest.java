@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.migration.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
@@ -39,7 +38,6 @@ class ApplicantDataMigrationServiceTest {
     private final String PBANUMBER= "PBA123456";
 
     private final ApplicantDataMigrationService service = new ApplicantDataMigrationService();
-    private ObjectMapper objectMapper = new ObjectMapper();
 
     @Test
     void whenOldStructureDoesNotExistAcceptsShouldReturnFalse() {
@@ -61,7 +59,7 @@ class ApplicantDataMigrationServiceTest {
     }
 
     @Test
-    void mapOldApplicantToNewApplicant() {
+    void whenOldApplicantStructureIsMigratedShouldReturnNewAplicantStructure() {
         Map<String, Object> data = new HashMap<>();
 
         OldApplicant applicant = getOldApplicant();
@@ -83,44 +81,96 @@ class ApplicantDataMigrationServiceTest {
         assertThat(valueInApplicant.get(0).get("value").equals(newApplicant));
     }
 
-
-//    private Map<String, Object> createPartialOldApplicant() {
-//        Map<String, Object> data = new HashMap<>();
-//        OldApplicant applicant;
-//
-//        applicant = OldApplicant.builder()
-//            .name(APPLICANT)
-//            .build();
-//
-//        data.put("applicant", OldApplicant.builder().build());
-//        return data;
-//    }
-
-    private Map<String, Object> createOldApplicant() {
+    @Test
+    void whenPartiallyFilledInOldApplicantStructureIsMigratedShouldReturnNewListStructureWithNullFields() {
         Map<String, Object> data = new HashMap<>();
-        OldApplicant applicant;
+        OldApplicant applicant = OldApplicant.builder()
+            .name(APPLICANT)
+            .email(EMAIL)
+            .build();
+        
+        data.put("applicant", applicant);
 
-            applicant = OldApplicant.builder()
+        CaseDetails caseDetails = CaseDetails.builder()
+            .id(1111L)
+            .data(data)
+            .build();
+
+        service.migrate(caseDetails);
+
+        List<Map<String, Object>> valueInApplicant = (List<Map<String, Object>>) caseDetails.getData().get("applicants");
+
+        assertThat(valueInApplicant).hasSize(1);
+        assertThat(valueInApplicant.get(0).get("value").equals(Applicant.builder()
+            .party(ApplicantParty.builder()
+                .partyId(null)
+                .partyType(null)
                 .name(APPLICANT)
-                .email(EMAIL)
-                .mobile(MOBILE)
                 .address(Address.builder()
-                    .addressLine1(ADDRESSLINE1)
-                    .addressLine2(ADDRESSLINE2)
-                    .addressLine3(ADDRESSLINE3)
-                    .country(COUNTRY)
-                    .county(COUNTY)
-                    .postcode(POSTCODE)
-                    .postTown(POSTTOWN)
                     .build())
-                .jobTitle(JOBTITLE)
-                .telephone(TELEPHONE)
-                .personToContact(PERSONTOCONTACT)
-                .pbaNumber(PBANUMBER)
-                .build();
+                .emailAddress(EmailAddress.builder()
+                    .email(EMAIL)
+                    .build())
+                .telephoneNumber(TelephoneNumber.builder()
+                    .build())
+                .mobileNumber(MobileNumber.builder()
+                    .build())
+                .jobTitle(null)
+                .pbaNumber(null)
+                .build())
+                .leadApplicantIndicator(null)
+            .build()));
+    }
 
-        data.put("applicant", OldApplicant.builder().build());
-        return data;
+    @Test
+    void whenPartiallyFilledInOldApplicantAddressIsMigratedShouldReturnNewListStructureWithNullFields() {
+        Map<String, Object> data = new HashMap<>();
+        OldApplicant applicant = OldApplicant.builder()
+            .address(Address.builder()
+                .postcode(POSTCODE)
+                .county(COUNTY)
+                .build())
+            .build();
+
+        data.put("applicant", applicant);
+
+        CaseDetails caseDetails = CaseDetails.builder()
+            .id(1111L)
+            .data(data)
+            .build();
+
+        service.migrate(caseDetails);
+
+        List<Map<String, Object>> valueInApplicant = (List<Map<String, Object>>) caseDetails.getData().get("applicants");
+
+        assertThat(valueInApplicant).hasSize(1);
+        assertThat(valueInApplicant.get(0).get("value").equals(Applicant.builder()
+            .party(ApplicantParty.builder()
+                .partyId(null)
+                .partyType(null)
+                .name(null)
+                .address(Address.builder()
+                    .addressLine1(null)
+                    .addressLine2(null)
+                    .addressLine3(null)
+                    .postcode(POSTCODE)
+                    .country(COUNTRY)
+                    .county(null)
+                    .build())
+                .emailAddress(EmailAddress.builder()
+                    .email(null)
+                    .build())
+                .telephoneNumber(TelephoneNumber.builder()
+                    .telephoneNumber(null)
+                    .build())
+                .mobileNumber(MobileNumber.builder()
+                    .telephoneNumber(null)
+                    .build())
+                .jobTitle(null)
+                .pbaNumber(null)
+                .build())
+            .leadApplicantIndicator(null)
+            .build()));
     }
 
     private Applicant newApplicantBuilder() {
