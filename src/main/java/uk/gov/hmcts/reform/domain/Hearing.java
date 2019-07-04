@@ -19,9 +19,5 @@ public class Hearing {
     private final String reasonForReducedNotice;
     private final String respondentsAware;
     private final String reasonsForRespondentsNotBeingAware;
-    private final String createdDate;
-    private final String createdBy;
-    private final String updatedDate;
-    private final String updatedBy;
 
 }

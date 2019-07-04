@@ -10,6 +10,8 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.domain.Hearing;
 import uk.gov.hmcts.reform.domain.OldHearing;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Predicate;
@@ -49,7 +51,7 @@ public class MigrateHearingServiceImpl implements DataMigrationService {
         Hearing.HearingBuilder hearingBuilder = Hearing.builder();
 
         // description (type)
-        hearingBuilder.hearingDescription(defaultIfBlank(oldHearing.getType(), null));
+        hearingBuilder.hearingDescription(oldHearing.getType());
 
         // reason (type_givereason)
         hearingBuilder.reason(defaultIfBlank(oldHearing.getType_GiveReason(), null));
@@ -66,15 +68,6 @@ public class MigrateHearingServiceImpl implements DataMigrationService {
         hearingBuilder.respondentsAware(defaultIfBlank(oldHearing.getRespondentsAware(), null));
         // reason for respondants not being aware (respondents aware reason)
         hearingBuilder.reasonsForRespondentsNotBeingAware(defaultIfBlank(oldHearing.getRespondentsAwareReason(), null));
-
-        // created by and when - can't populate in hindsight / pre migration
-        // can only populate going forward / post migration
-        //hearingBuilder.createdBy("TODO - CREATED BY");
-        //hearingBuilder.createdDate(DateUtils.convertLocalDateTimeToString(caseDetails.getCreatedDate()));
-
-        // updated by and when
-        hearingBuilder.updatedBy(null);
-        hearingBuilder.updatedDate(null);
 
         return hearingBuilder.build();
     }

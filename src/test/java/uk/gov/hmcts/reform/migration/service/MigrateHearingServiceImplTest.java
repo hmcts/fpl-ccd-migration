@@ -81,12 +81,6 @@ public class MigrateHearingServiceImplTest {
 
         assertThat(actualNewHearing.getRespondentsAware()).isEqualTo("old respondents aware");
         assertThat(actualNewHearing.getReasonsForRespondentsNotBeingAware()).isEqualTo("old respondents aware reason");
-
-        assertThat(actualNewHearing.getCreatedBy()).isNull();
-        assertThat(actualNewHearing.getCreatedDate()).isNull();
-
-        assertThat(actualNewHearing.getUpdatedBy()).isNull();
-        assertThat(actualNewHearing.getUpdatedDate()).isNull();
     }
 
 
@@ -129,13 +123,6 @@ public class MigrateHearingServiceImplTest {
 
         assertThat(actualNewHearing.getRespondentsAware()).isNull();
         assertThat(actualNewHearing.getReasonsForRespondentsNotBeingAware()).isNull();
-
-        assertThat(actualNewHearing.getCreatedBy()).isNull();
-        assertThat(actualNewHearing.getCreatedDate()).isNull();
-
-        assertThat(actualNewHearing.getUpdatedBy()).isNull();
-        assertThat(actualNewHearing.getUpdatedDate()).isNull();
-
     }
 
     private Hearing newHearingBuilder() {
