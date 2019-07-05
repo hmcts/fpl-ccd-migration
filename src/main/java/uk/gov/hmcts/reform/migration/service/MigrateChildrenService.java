@@ -50,7 +50,6 @@ public class MigrateChildrenService implements DataMigrationService {
             objectMapper.convertValue(children.get("firstChild"), OldChild.class);
         Child migratedFirstChild = migrateIndividualChild(firstChild);
 
-
         List<Map<String, Object>> additionalChildren =
             (List<Map<String, Object>>) objectMapper.convertValue(defaultIfNull(children.get("additionalChildren"), new ArrayList<>()), List.class);
 
@@ -59,7 +58,7 @@ public class MigrateChildrenService implements DataMigrationService {
                 migrateIndividualChild(objectMapper.convertValue(child.get("value"), OldChild.class)))
             .collect(toList());
 
-        migratedChildrenCollection.add(migratedFirstChild);
+        migratedChildrenCollection.add(0, migratedFirstChild);
 
         List<Map<String, Object>> newStructure = new ArrayList<>();
 
