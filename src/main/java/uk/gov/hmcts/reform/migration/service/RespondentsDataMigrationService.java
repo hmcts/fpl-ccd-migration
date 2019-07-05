@@ -101,9 +101,15 @@ public class RespondentsDataMigrationService implements DataMigrationService {
         }
         Address address = addressBuilder.build();
 
-        TelephoneNumber.TelephoneNumberBuilder telephoneNumberBuilder = TelephoneNumber.builder();
-        telephoneNumberBuilder.telephoneNumber(defaultIfBlank(or.getTelephone(), null));
-        TelephoneNumber telephoneNumber = telephoneNumberBuilder.build();
+        TelephoneNumber telephoneNumber;
+
+        if (isEmpty(or.getTelephone())) {
+            telephoneNumber = null;
+        } else {
+            TelephoneNumber.TelephoneNumberBuilder telephoneNumberBuilder = TelephoneNumber.builder();
+            telephoneNumberBuilder.telephoneNumber(defaultIfBlank(or.getTelephone(), null));
+            telephoneNumber = telephoneNumberBuilder.build();
+        }
 
         RespondentParty.RespondentPartyBuilder partyBuilder = RespondentParty.builder();
         partyBuilder.partyID(UUID.randomUUID().toString());
