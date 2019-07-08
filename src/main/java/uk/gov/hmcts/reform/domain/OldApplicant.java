@@ -19,14 +19,14 @@ public class OldApplicant {
         private final String pbaNumber;
 
         @JsonCreator
-        public OldApplicant( @JsonProperty("name") final String name,
-                             @JsonProperty("Email") final String email,
-                             @JsonProperty("mobile") final String mobile,
-                             @JsonProperty("address") final Address address,
-                             @JsonProperty("jobTitle") final String jobTitle,
-                             @JsonProperty("telephone") final String telephone,
-                             @JsonProperty("personToContact") final String personToContact,
-                             @JsonProperty("pbaNumber") final String pbaNumber) {
+        public OldApplicant( @JsonProperty("name") String name,
+                             @JsonProperty("email") String email,
+                             @JsonProperty("mobile") String mobile,
+                             @JsonProperty("address") Address address,
+                             @JsonProperty("jobTitle") String jobTitle,
+                             @JsonProperty("telephone") String telephone,
+                             @JsonProperty("personToContact") String personToContact,
+                             @JsonProperty("pbaNumber") String pbaNumber) {
 
             this.name = name;
             this.email = email;

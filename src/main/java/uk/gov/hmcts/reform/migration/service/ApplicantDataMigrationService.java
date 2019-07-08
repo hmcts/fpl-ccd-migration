@@ -24,7 +24,7 @@ import static org.springframework.util.ObjectUtils.isEmpty;
 @Slf4j
 @Service
 public class ApplicantDataMigrationService implements DataMigrationService {
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     public Predicate<CaseDetails> accepts() {

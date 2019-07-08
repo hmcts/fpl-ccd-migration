@@ -25,19 +25,20 @@ class ApplicantDataMigrationServiceTest {
     private final String COUNTY = "County";
     private final String COUNTRY = "Country";
     private final String POSTCODE = "BT17NT";
-    private final String POSTTOWN = "Ballymena";
+    private final String POST_TOWN = "Ballymena";
     private final String ADDRESSLINE1 ="ADDRESSLINE1";
     private final String ADDRESSLINE2 = "ADDRESSLINE2";
     private final String ADDRESSLINE3 = "ADDRESSLINE3";
-    private final String JOBTITLE = "JobTitle";
+    private final String JOB_TITLE = "JobTitle";
     private final String TELEPHONE = "02825674837";
-    private final String PERSONTOCONTACT = "Person to contact";
-    private final String PARTYTYPE = "ApplicantParty type";
-    private final String LEADAPPLICANTINDICATOR = "Yes";
-    private final String PARTYID = UUID.randomUUID().toString();
-    private final String PBANUMBER= "PBA123456";
+    private final String PERSON_TO_CONTACT = "Person to contact";
+    private final String PARTY_TYPE = "ApplicantParty type";
+    private final String LEAD_APPLICANT_INDICATOR = "Yes";
+    private final String PARTY_ID = UUID.randomUUID().toString();
+    private final String PBA_NUMBER = "PBA123456";
 
     private final ApplicantDataMigrationService service = new ApplicantDataMigrationService();
+
 
     @Test
     void whenOldStructureDoesNotExistAcceptsShouldReturnFalse() {
@@ -59,12 +60,20 @@ class ApplicantDataMigrationServiceTest {
     }
 
     @Test
-    void whenOldApplicantStructureIsMigratedShouldReturnNewAplicantStructure() {
+    void whenNewStructureDoesNotExistAcceptsShouldReturnFalse() {
+        CaseDetails caseDetails = CaseDetails.builder()
+            .id(1111L)
+            .data(ImmutableMap.of("data", "someData"))
+            .build();
+
+        assertThat(service.accepts().test(caseDetails)).isEqualTo(false);
+    }
+
+    @Test
+    void whenOldApplicantStructureIsMigratedShouldReturnNewApplicantStructure() {
         Map<String, Object> data = new HashMap<>();
 
-        OldApplicant applicant = getOldApplicant();
-
-        Applicant newApplicant = newApplicantBuilder();
+        OldApplicant applicant = oldApplicant();
 
         data.put("applicant", applicant);
 
@@ -77,8 +86,10 @@ class ApplicantDataMigrationServiceTest {
 
 
         List<Map<String, Object>> valueInApplicant = (List<Map<String, Object>>) caseDetails.getData().get("applicants");
+        Applicant newApplicant = newApplicant();
 
         assertThat(valueInApplicant.get(0).get("value").equals(newApplicant));
+        assertThat(valueInApplicant.get(0).get("applicant")).isNull();
     }
 
     @Test
@@ -120,6 +131,7 @@ class ApplicantDataMigrationServiceTest {
                 .build())
                 .leadApplicantIndicator(null)
             .build()));
+        assertThat(valueInApplicant.get(0).get("applicant")).isNull();
     }
 
     @Test
@@ -171,19 +183,20 @@ class ApplicantDataMigrationServiceTest {
                 .build())
             .leadApplicantIndicator(null)
             .build()));
+        assertThat(valueInApplicant.get(0).get("applicant")).isNull();
     }
 
-    private Applicant newApplicantBuilder() {
+    private Applicant newApplicant() {
         Applicant newApplicant = Applicant.builder()
             .party(ApplicantParty.builder()
-                .partyId(PARTYID)
-                .partyType(PARTYTYPE)
+                .partyId(PARTY_ID)
+                .partyType(PARTY_TYPE)
                 .name(APPLICANT)
                 .address(Address.builder()
                     .addressLine1(ADDRESSLINE1)
                     .addressLine2(ADDRESSLINE2)
                     .addressLine3(ADDRESSLINE3)
-                    .postTown(POSTTOWN)
+                    .postTown(POST_TOWN)
                     .postcode(POSTCODE)
                     .county(COUNTY)
                     .country(COUNTRY)
@@ -193,20 +206,20 @@ class ApplicantDataMigrationServiceTest {
                     .build())
                 .telephoneNumber(TelephoneNumber.builder()
                     .telephoneNumber(TELEPHONE)
-                    .contactDirection(PERSONTOCONTACT)
+                    .contactDirection(PERSON_TO_CONTACT)
                     .build())
                 .mobileNumber(MobileNumber.builder()
                     .telephoneNumber(MOBILE)
                     .build())
-                .jobTitle(JOBTITLE)
-                .pbaNumber(PBANUMBER)
+                .jobTitle(JOB_TITLE)
+                .pbaNumber(PBA_NUMBER)
                 .build())
-            .leadApplicantIndicator(LEADAPPLICANTINDICATOR)
+            .leadApplicantIndicator(LEAD_APPLICANT_INDICATOR)
             .build();
         return newApplicant;
     }
 
-    private OldApplicant getOldApplicant() {
+    private OldApplicant oldApplicant() {
         return OldApplicant.builder()
                 .name(APPLICANT)
                 .email(EMAIL)
@@ -215,15 +228,15 @@ class ApplicantDataMigrationServiceTest {
                     .county(COUNTY)
                     .country(COUNTRY)
                     .postcode(POSTCODE)
-                    .postTown(POSTTOWN)
+                    .postTown(POST_TOWN)
                     .addressLine1(ADDRESSLINE1)
                     .addressLine2(ADDRESSLINE2)
                     .addressLine3(ADDRESSLINE3)
                     .build())
-                .jobTitle(JOBTITLE)
+                .jobTitle(JOB_TITLE)
                 .telephone(TELEPHONE)
-                .personToContact(PERSONTOCONTACT)
-                .pbaNumber(PBANUMBER)
+                .personToContact(PERSON_TO_CONTACT)
+                .pbaNumber(PBA_NUMBER)
                 .build();
     }
 }
