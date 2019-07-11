@@ -1,8 +1,7 @@
 package uk.gov.hmcts.reform.migration.service;
 
 import com.google.common.collect.ImmutableMap;
-import org.junit.Test;
-import org.mockito.InjectMocks;
+import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 
 import uk.gov.hmcts.reform.domain.Hearing;
@@ -17,7 +16,6 @@ import static org.assertj.core.api.Java6Assertions.assertThat;
 
 public class MigrateHearingServiceImplTest {
 
-    @InjectMocks
     private final MigrateHearingServiceImpl service = new MigrateHearingServiceImpl();
 
     @Test
