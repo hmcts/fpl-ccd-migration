@@ -12,7 +12,7 @@ public class ApplicantParty {
     private final String partyType;
     private final String name;
     private final Address address;
-    private final EmailAddress emailAddress;
+    private final EmailAddress email;
     private final TelephoneNumber telephoneNumber;
     private final MobileNumber mobileNumber;
     private final String jobTitle;

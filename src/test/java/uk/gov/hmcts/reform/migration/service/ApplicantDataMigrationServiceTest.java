@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.domain.common.Address;
 import uk.gov.hmcts.reform.domain.common.EmailAddress;
 import uk.gov.hmcts.reform.domain.common.MobileNumber;
 import uk.gov.hmcts.reform.domain.common.ApplicantParty;
+import uk.gov.hmcts.reform.domain.common.Party;
 import uk.gov.hmcts.reform.domain.common.TelephoneNumber;
 
 import java.util.HashMap;
@@ -39,7 +40,6 @@ class ApplicantDataMigrationServiceTest {
 
     private final ApplicantDataMigrationService service = new ApplicantDataMigrationService();
 
-
     @Test
     void whenOldStructureDoesNotExistAcceptsShouldReturnFalse() {
         CaseDetails caseDetails = CaseDetails.builder()
@@ -49,6 +49,7 @@ class ApplicantDataMigrationServiceTest {
 
         assertThat(service.accepts().test(caseDetails)).isEqualTo(false);
     }
+
     @Test
     void whenDataIsNullAcceptsShouldReturnFalse() {
         CaseDetails caseDetails = CaseDetails.builder()
@@ -119,7 +120,7 @@ class ApplicantDataMigrationServiceTest {
                 .name(APPLICANT)
                 .address(Address.builder()
                     .build())
-                .emailAddress(EmailAddress.builder()
+                .email(EmailAddress.builder()
                     .email(EMAIL)
                     .build())
                 .telephoneNumber(TelephoneNumber.builder()
@@ -169,7 +170,7 @@ class ApplicantDataMigrationServiceTest {
                     .country(COUNTRY)
                     .county(null)
                     .build())
-                .emailAddress(EmailAddress.builder()
+                .email(EmailAddress.builder()
                     .email(null)
                     .build())
                 .telephoneNumber(TelephoneNumber.builder()
@@ -201,7 +202,7 @@ class ApplicantDataMigrationServiceTest {
                     .county(COUNTY)
                     .country(COUNTRY)
                     .build())
-                .emailAddress(EmailAddress.builder()
+                .email(EmailAddress.builder()
                     .email(EMAIL)
                     .build())
                 .telephoneNumber(TelephoneNumber.builder()
