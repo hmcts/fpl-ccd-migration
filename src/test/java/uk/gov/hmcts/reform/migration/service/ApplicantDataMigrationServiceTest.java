@@ -9,7 +9,6 @@ import uk.gov.hmcts.reform.domain.common.Address;
 import uk.gov.hmcts.reform.domain.common.EmailAddress;
 import uk.gov.hmcts.reform.domain.common.MobileNumber;
 import uk.gov.hmcts.reform.domain.common.ApplicantParty;
-import uk.gov.hmcts.reform.domain.common.Party;
 import uk.gov.hmcts.reform.domain.common.TelephoneNumber;
 
 import java.util.HashMap;
@@ -117,7 +116,7 @@ class ApplicantDataMigrationServiceTest {
             .party(ApplicantParty.builder()
                 .partyId(null)
                 .partyType(null)
-                .name(APPLICANT)
+                .organisationName(APPLICANT)
                 .address(Address.builder()
                     .build())
                 .email(EmailAddress.builder()
@@ -161,7 +160,7 @@ class ApplicantDataMigrationServiceTest {
             .party(ApplicantParty.builder()
                 .partyId(null)
                 .partyType(null)
-                .name(null)
+                .organisationName(null)
                 .address(Address.builder()
                     .addressLine1(null)
                     .addressLine2(null)
@@ -192,7 +191,7 @@ class ApplicantDataMigrationServiceTest {
             .party(ApplicantParty.builder()
                 .partyId(PARTY_ID)
                 .partyType(PARTY_TYPE)
-                .name(APPLICANT)
+                .organisationName(APPLICANT)
                 .address(Address.builder()
                     .addressLine1(ADDRESSLINE1)
                     .addressLine2(ADDRESSLINE2)

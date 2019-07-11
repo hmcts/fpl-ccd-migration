@@ -78,7 +78,7 @@ public class ApplicantDataMigrationService implements DataMigrationService {
         partyBuilder.partyId(UUID.randomUUID().toString());
         partyBuilder.partyType("Individual");
         if (!isEmpty(or.getName())) {
-            partyBuilder.name(defaultIfBlank(or.getName(), null));
+            partyBuilder.organisationName(defaultIfBlank(or.getName(), null));
         }
         partyBuilder.address(address);
         partyBuilder.email(email);

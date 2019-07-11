@@ -10,7 +10,7 @@ import lombok.Data;
 public class ApplicantParty {
     private final String partyId;
     private final String partyType;
-    private final String name;
+    private final String organisationName;
     private final Address address;
     private final EmailAddress email;
     private final TelephoneNumber telephoneNumber;
