@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.domain.common.Address;
 import uk.gov.hmcts.reform.domain.common.EmailAddress;
 import uk.gov.hmcts.reform.domain.common.MobileNumber;
 import uk.gov.hmcts.reform.domain.common.ApplicantParty;
+import uk.gov.hmcts.reform.domain.common.PartyType;
 import uk.gov.hmcts.reform.domain.common.TelephoneNumber;
 
 import java.util.Map;
@@ -76,7 +77,7 @@ public class ApplicantDataMigrationService implements DataMigrationService {
 
         ApplicantParty.ApplicantPartyBuilder partyBuilder = ApplicantParty.builder();
         partyBuilder.partyId(UUID.randomUUID().toString());
-        partyBuilder.partyType("Individual");
+        partyBuilder.partyType(PartyType.INDIVIDUAL.name());
         if (!isEmpty(or.getName())) {
             partyBuilder.organisationName(defaultIfBlank(or.getName(), null));
         }
