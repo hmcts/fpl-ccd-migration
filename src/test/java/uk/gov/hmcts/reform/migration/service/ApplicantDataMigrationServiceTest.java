@@ -93,6 +93,48 @@ class ApplicantDataMigrationServiceTest {
     }
 
     @Test
+    void whenOldApplicantStructureIsEmptyAndMigratedShouldReturnNewEmptyApplicantStructure() {
+        Map<String, Object> data = new HashMap<>();
+
+        OldApplicant applicant = OldApplicant.builder()
+            .name(null)
+            .email(null)
+            .mobile(null)
+            .address(null)
+            .jobTitle(null)
+            .telephone(null)
+            .personToContact(null)
+            .pbaNumber(null)
+            .build();
+
+        data.put("applicant", applicant);
+
+        CaseDetails caseDetails = CaseDetails.builder()
+            .id(1111L)
+            .data(data)
+            .build();
+
+        service.migrate(caseDetails);
+
+        List<Map<String, Object>> valueInApplicant = (List<Map<String, Object>>) caseDetails.getData().get("applicants");
+
+        assertThat(valueInApplicant.get(0).get("value").equals(valueInApplicant.get(0).get("value").equals(Applicant.builder()
+            .party(ApplicantParty.builder()
+                .partyId(null)
+                .partyType(null)
+                .organisationName(null)
+                .address(null)
+                .telephoneNumber(null)
+                .mobileNumber(null)
+                .jobTitle(null)
+                .pbaNumber(null)
+                .build())
+            .leadApplicantIndicator(null)
+            .build())));
+        assertThat(valueInApplicant.get(0).get("applicant")).isNull();
+    }
+
+    @Test
     void whenPartiallyFilledInOldApplicantStructureIsMigratedShouldReturnNewListStructureWithNullFields() {
         Map<String, Object> data = new HashMap<>();
         OldApplicant applicant = OldApplicant.builder()
