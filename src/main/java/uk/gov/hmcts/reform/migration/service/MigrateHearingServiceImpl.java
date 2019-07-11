@@ -5,13 +5,10 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.reform.DateUtils;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.domain.Hearing;
 import uk.gov.hmcts.reform.domain.OldHearing;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Predicate;

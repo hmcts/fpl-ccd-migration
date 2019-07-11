@@ -9,9 +9,7 @@ import uk.gov.hmcts.reform.domain.Hearing;
 
 import uk.gov.hmcts.reform.domain.OldHearing;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +40,7 @@ public class MigrateHearingServiceImplTest {
         assertThat(service.accepts().test(caseDetails)).isEqualTo(false);
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void whenOldHearingStructureIsMigratedShouldReturnNewHearingDataStructure () {
         Map<String, Object> data = new HashMap<>();
@@ -83,7 +82,7 @@ public class MigrateHearingServiceImplTest {
         assertThat(actualNewHearing.getReasonsForRespondentsNotBeingAware()).isEqualTo("old respondents aware reason");
     }
 
-
+    @SuppressWarnings("unchecked")
     @Test
     public void whenPartiallyFilledInOldHearingStructureIsMigratedShouldReturnNewHearingDataStructureWithNullFields () {
         Map<String, Object> data = new HashMap<>();
@@ -126,8 +125,7 @@ public class MigrateHearingServiceImplTest {
     }
 
     private Hearing newHearingBuilder() {
-        Hearing newHearing = Hearing.builder().hearingDescription("hearing description").build();
-        return newHearing;
+        return Hearing.builder().hearingDescription("hearing description").build();
     }
 
     private OldHearing getOldHearing(boolean setFieldsToBeNull) {
