@@ -34,21 +34,21 @@ public class MigrateHearingServiceImpl implements DataMigrationService {
 
         Map<String, Object> map = ImmutableMap.of(
             "id", UUID.randomUUID().toString(),
-            "value", migrateHearing(objectMapper.convertValue(data.get("hearing"), OldHearing.class), caseDetails));
+            "value", migrateHearing(objectMapper.convertValue(data.get("hearing"), OldHearing.class)));
 
-        data.put("hearings", ImmutableList.of(map));
+        data.put("hearing1", ImmutableList.of(map));
         data.put("hearing", null);
 
         log.info("New case details: {}", caseDetails);
     }
 
-    private Hearing migrateHearing(OldHearing oldHearing, CaseDetails caseDetails) {
+    private Hearing migrateHearing(OldHearing oldHearing) {
         log.info("Migrating hearing: {}", oldHearing);
 
         Hearing.HearingBuilder hearingBuilder = Hearing.builder();
 
         // description (type)
-        hearingBuilder.hearingDescription(oldHearing.getType());
+        hearingBuilder.description(defaultIfBlank(oldHearing.getType(), null));
 
         // reason (type_givereason)
         hearingBuilder.reason(defaultIfBlank(oldHearing.getType_GiveReason(), null));

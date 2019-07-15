@@ -9,7 +9,8 @@ import lombok.Data;
 @AllArgsConstructor
 public class Hearing {
 
-    private final String hearingDescription;
+    private final String id;
+    private final String description;
     private final String reason;
     private final String timeFrame;
     private final String sameDayHearingReason;
@@ -19,5 +20,9 @@ public class Hearing {
     private final String reasonForReducedNotice;
     private final String respondentsAware;
     private final String reasonsForRespondentsNotBeingAware;
+    private final String createdBy;
+    private final String createdDate;
+    private final String updatedBy;
+    private final String updatedOn;
 
 }

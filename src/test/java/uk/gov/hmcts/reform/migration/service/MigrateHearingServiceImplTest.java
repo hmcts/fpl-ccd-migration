@@ -58,13 +58,13 @@ public class MigrateHearingServiceImplTest {
 
         service.migrate(caseDetails);
 
-        Map<String, Object> valueInHearing = (Map<String, Object>) ((List) caseDetails.getData().get("hearings")).get(0);
+        Map<String, Object> valueInHearing = (Map<String, Object>) ((List) caseDetails.getData().get("hearing1")).get(0);
 
         Hearing actualNewHearing = (Hearing) valueInHearing.get("value");
         assertThat(actualNewHearing.equals(newHearing));
 
         // check fields are mapped to the new hearing correctly.
-        assertThat(actualNewHearing.getHearingDescription()).isEqualTo("old type");
+        assertThat(actualNewHearing.getDescription()).isEqualTo("old type");
         assertThat(actualNewHearing.getReason()).isEqualTo("old type give reason");
         assertThat(actualNewHearing.getTimeFrame()).isEqualTo("old timeframe");
 
@@ -100,13 +100,13 @@ public class MigrateHearingServiceImplTest {
 
         service.migrate(caseDetails);
 
-        Map<String, Object> valueInHearing = (Map<String, Object>) ((List) caseDetails.getData().get("hearings")).get(0);
+        Map<String, Object> valueInHearing = (Map<String, Object>) ((List) caseDetails.getData().get("hearing1")).get(0);
 
         Hearing actualNewHearing = (Hearing) valueInHearing.get("value");
         assertThat(actualNewHearing.equals(newHearing));
 
         // check fields are mapped to the new hearing correctly.
-        assertThat(actualNewHearing.getHearingDescription()).isNull();
+        assertThat(actualNewHearing.getDescription()).isNull();
         assertThat(actualNewHearing.getReason()).isNull();
         assertThat(actualNewHearing.getTimeFrame()).isNull();
 
@@ -123,7 +123,7 @@ public class MigrateHearingServiceImplTest {
     }
 
     private Hearing newHearingBuilder() {
-        return Hearing.builder().hearingDescription("hearing description").build();
+        return Hearing.builder().description("hearing description").build();
     }
 
     private OldHearing getOldHearing(boolean setFieldsToBeNull) {
