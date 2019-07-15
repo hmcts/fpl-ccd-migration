@@ -32,11 +32,11 @@ public class MigrateHearingServiceImpl implements DataMigrationService {
     public void migrate(CaseDetails caseDetails) {
         Map<String, Object> data = caseDetails.getData();
 
-        Map<String, Object> map = ImmutableMap.of(
-            "id", UUID.randomUUID().toString(),
-            "value", migrateHearing(objectMapper.convertValue(data.get("hearing"), OldHearing.class)));
+        OldHearing oldHearing = objectMapper.convertValue(data.get("hearing"), OldHearing.class);
 
-        data.put("hearing1", ImmutableList.of(map));
+        Hearing migratedHearing = migrateHearing(oldHearing);
+
+        data.put("hearing1", migratedHearing);
         data.put("hearing", null);
 
         log.info("New case details: {}", caseDetails);
@@ -47,6 +47,8 @@ public class MigrateHearingServiceImpl implements DataMigrationService {
 
         Hearing.HearingBuilder hearingBuilder = Hearing.builder();
 
+        hearingBuilder.id(null);
+
         // description (type)
         hearingBuilder.description(defaultIfBlank(oldHearing.getType(), null));
 
@@ -56,6 +58,10 @@ public class MigrateHearingServiceImpl implements DataMigrationService {
         hearingBuilder.timeFrame(defaultIfBlank(oldHearing.getTimeFrame(), null));
         // same day hearing reason (reason)
         hearingBuilder.sameDayHearingReason(defaultIfBlank(oldHearing.getReason(), null));
+        hearingBuilder.twoDayHearingReason(defaultIfBlank(oldHearing.getReason2Days(), null));
+        hearingBuilder.sevenDayHearingReason(defaultIfBlank(oldHearing.getReason7Days(), null));
+        hearingBuilder.twelveDayHearingReason(defaultIfBlank(oldHearing.getReason12Days(), null));
+
         hearingBuilder.withoutNotice(defaultIfBlank(oldHearing.getWithoutNotice(), null));
         // reason for no notice (without notice reason)
         hearingBuilder.reasonForNoNotice(defaultIfBlank(oldHearing.getWithoutNoticeReason(), null));

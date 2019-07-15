@@ -43,11 +43,7 @@ public class MigrateHearingServiceImplTest {
     public void whenOldHearingStructureIsMigratedShouldReturnNewHearingDataStructure () {
         Map<String, Object> data = new HashMap<>();
 
-        OldHearing oldHearing = getOldHearing(false);
-
-        Hearing newHearing = newHearingBuilder();
-
-        data.put("hearing", oldHearing);
+        data.put("hearing", getOldHearing(false));
 
         CaseDetails caseDetails = CaseDetails.builder()
             .id(1111L)
@@ -58,17 +54,17 @@ public class MigrateHearingServiceImplTest {
 
         service.migrate(caseDetails);
 
-        Map<String, Object> valueInHearing = (Map<String, Object>) ((List) caseDetails.getData().get("hearing1")).get(0);
-
-        Hearing actualNewHearing = (Hearing) valueInHearing.get("value");
-        assertThat(actualNewHearing.equals(newHearing));
+        Hearing actualNewHearing = (Hearing) caseDetails.getData().get("hearing1");
 
         // check fields are mapped to the new hearing correctly.
         assertThat(actualNewHearing.getDescription()).isEqualTo("old type");
         assertThat(actualNewHearing.getReason()).isEqualTo("old type give reason");
         assertThat(actualNewHearing.getTimeFrame()).isEqualTo("old timeframe");
 
-        assertThat(actualNewHearing.getSameDayHearingReason()).isEqualTo("old reason");
+        assertThat(actualNewHearing.getSameDayHearingReason()).isEqualTo("old same day reason");
+        assertThat(actualNewHearing.getTwoDayHearingReason()).isEqualTo("old 2 day reason");
+        assertThat(actualNewHearing.getSevenDayHearingReason()).isEqualTo("old 7 day reason");
+        assertThat(actualNewHearing.getTwelveDayHearingReason()).isEqualTo("old 12 day reason");
 
         assertThat(actualNewHearing.getWithoutNotice()).isEqualTo("old without notice");
         assertThat(actualNewHearing.getReasonForNoNotice()).isEqualTo("old without notice reason");
@@ -87,8 +83,6 @@ public class MigrateHearingServiceImplTest {
 
         OldHearing oldHearing = getOldHearing(true);
 
-        Hearing newHearing = newHearingBuilder();
-
         data.put("hearing", oldHearing);
 
         CaseDetails caseDetails = CaseDetails.builder()
@@ -100,10 +94,7 @@ public class MigrateHearingServiceImplTest {
 
         service.migrate(caseDetails);
 
-        Map<String, Object> valueInHearing = (Map<String, Object>) ((List) caseDetails.getData().get("hearing1")).get(0);
-
-        Hearing actualNewHearing = (Hearing) valueInHearing.get("value");
-        assertThat(actualNewHearing.equals(newHearing));
+        Hearing actualNewHearing = (Hearing) caseDetails.getData().get("hearing1");
 
         // check fields are mapped to the new hearing correctly.
         assertThat(actualNewHearing.getDescription()).isNull();
@@ -122,9 +113,6 @@ public class MigrateHearingServiceImplTest {
         assertThat(actualNewHearing.getReasonsForRespondentsNotBeingAware()).isNull();
     }
 
-    private Hearing newHearingBuilder() {
-        return Hearing.builder().description("hearing description").build();
-    }
 
     private OldHearing getOldHearing(boolean setFieldsToBeNull) {
 
@@ -133,14 +121,17 @@ public class MigrateHearingServiceImplTest {
         }
 
         return OldHearing.builder()
-            .timeFrame("old timeframe")
-            .reason("old reason")
             .type("old type")
-            .type_GiveReason("old type give reason")
+            .reason("old same day reason")
+            .reason2Days("old 2 day reason")
+            .reason7Days("old 7 day reason")
+            .reason12Days("old 12 day reason")
+            .timeFrame("old timeframe")
             .withoutNotice("old without notice")
             .withoutNoticeReason("old without notice reason")
             .reducedNotice("old reduced notice")
             .reducedNoticeReason("old reduced notice reason")
+            .type_GiveReason("old type give reason")
             .respondentsAware("old respondents aware")
             .respondentsAwareReason("old respondents aware reason")
             .build();
