@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.domain.common.Address;
+import uk.gov.hmcts.reform.domain.common.TelephoneNumber;
 import uk.gov.hmcts.reform.fpl.domain.Child;
 import uk.gov.hmcts.reform.fpl.domain.OldChild;
 import uk.gov.hmcts.reform.fpl.domain.common.ChildParty;
@@ -92,6 +93,16 @@ public class MigrateChildrenService implements DataMigrationService {
 
         Address address = addressBuilder.build();
 
+        TelephoneNumber telephoneNumber;
+
+        if (isEmpty(oc.getSocialWorkerTel())) {
+            telephoneNumber = null;
+        } else {
+            TelephoneNumber.TelephoneNumberBuilder telephoneNumberBuilder = TelephoneNumber.builder();
+            telephoneNumberBuilder.telephoneNumber(defaultIfBlank(oc.getSocialWorkerTel(), null));
+            telephoneNumber = telephoneNumberBuilder.build();
+        }
+
         ChildParty.ChildPartyBuilder partyBuilder = ChildParty.builder();
         partyBuilder.partyID(UUID.randomUUID().toString());
 
@@ -122,7 +133,7 @@ public class MigrateChildrenService implements DataMigrationService {
         partyBuilder.fathersName(defaultIfBlank(oc.getFathersName(), null));
         partyBuilder.fathersResponsibility(defaultIfBlank(oc.getFathersResponsibility(), null));
         partyBuilder.socialWorkerName(defaultIfBlank(oc.getSocialWorkerName(), null));
-        partyBuilder.socialWorkerTel(defaultIfBlank(oc.getSocialWorkerTel(), null));
+        partyBuilder.socialWorkerTel(telephoneNumber);
         partyBuilder.additionalNeeds(defaultIfBlank(oc.getAdditionalNeeds(), null));
         partyBuilder.additionalNeedsDetails(defaultIfBlank(oc.getAdditionalNeedsDetails(), null));
         partyBuilder.detailsHidden(defaultIfBlank(oc.getDetailsHidden(), null));

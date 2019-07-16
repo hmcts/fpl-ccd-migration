@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableMap;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.domain.common.Address;
+import uk.gov.hmcts.reform.domain.common.TelephoneNumber;
 import uk.gov.hmcts.reform.fpl.domain.Child;
 import uk.gov.hmcts.reform.fpl.domain.OldChild;
 import uk.gov.hmcts.reform.fpl.domain.OldChildren;
@@ -80,7 +81,7 @@ class MigrateChildrenServiceTest {
         assertThat(firstChildParty.get("fathersName")).isEqualTo(expectedChild.getParty().getFathersName());
         assertThat(firstChildParty.get("fathersResponsibility")).isEqualTo(expectedChild.getParty().getFathersResponsibility());
         assertThat(firstChildParty.get("socialWorkerName")).isEqualTo(expectedChild.getParty().getSocialWorkerName());
-        assertThat(firstChildParty.get("socialWorkerTel")).isEqualTo(expectedChild.getParty().getSocialWorkerTel());
+        assertThat(firstChildParty.get("socialWorkerTel")).isEqualTo(objectMapper.convertValue(expectedChild.getParty().getSocialWorkerTel(), Object.class));
         assertThat(firstChildParty.get("additionalNeeds")).isEqualTo(expectedChild.getParty().getAdditionalNeeds());
         assertThat(firstChildParty.get("additionalNeedsDetails")).isEqualTo(expectedChild.getParty().getAdditionalNeedsDetails());
         assertThat(firstChildParty.get("detailsHidden")).isEqualTo(expectedChild.getParty().getDetailsHidden());
@@ -348,7 +349,9 @@ class MigrateChildrenServiceTest {
                 .fathersName("Ted Burns")
                 .fathersResponsibility("Yes")
                 .socialWorkerName("Laura Wilson")
-                .socialWorkerTel("02838882333")
+                .socialWorkerTel(TelephoneNumber.builder()
+                    .telephoneNumber("02838882333")
+                    .build())
                 .additionalNeeds("Yes")
                 .additionalNeedsDetails("additional needs details")
                 .detailsHidden("Yes")

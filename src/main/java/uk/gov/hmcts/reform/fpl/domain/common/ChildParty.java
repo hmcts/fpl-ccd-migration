@@ -34,7 +34,7 @@ public class ChildParty {
     private final String fathersName;
     private final String fathersResponsibility;
     private final String socialWorkerName;
-    private final String socialWorkerTel;
+    private final TelephoneNumber socialWorkerTel;
     private final String additionalNeeds;
     private final String additionalNeedsDetails;
     private final String detailsHidden;
