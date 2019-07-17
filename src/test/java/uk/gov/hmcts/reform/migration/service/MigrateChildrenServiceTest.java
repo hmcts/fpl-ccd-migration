@@ -23,6 +23,24 @@ class MigrateChildrenServiceTest {
     private ObjectMapper objectMapper = new ObjectMapper();
 
     @Test
+    void whenOldStructureExistsAcceptsShouldReturnTrue() {
+        Map<String, Object> data = new HashMap<>();
+
+        OldChild child = OldChild.builder().build();
+
+        data.put("children", ImmutableMap.builder()
+            .put("firstChild", child)
+            .build());
+
+        CaseDetails caseDetails = CaseDetails.builder()
+            .id(1111L)
+            .data(data)
+            .build();
+
+        assertThat(service.accepts().test(caseDetails)).isEqualTo(true);
+    }
+
+    @Test
     void whenOldStructureDoesNotExistAcceptsShouldReturnFalse() {
         CaseDetails caseDetails = CaseDetails.builder()
             .id(1111L)
