@@ -2,13 +2,14 @@ package uk.gov.hmcts.reform.migration.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.domain.Applicant;
+import uk.gov.hmcts.reform.domain.CaseData;
 import uk.gov.hmcts.reform.domain.OldApplicant;
 import uk.gov.hmcts.reform.domain.common.Address;
+import uk.gov.hmcts.reform.domain.common.CollectionEntry;
 import uk.gov.hmcts.reform.domain.common.EmailAddress;
 import uk.gov.hmcts.reform.domain.common.MobileNumber;
 import uk.gov.hmcts.reform.domain.common.ApplicantParty;
@@ -24,7 +25,7 @@ import static org.springframework.util.ObjectUtils.isEmpty;
 
 @Slf4j
 @Service
-public class ApplicantDataMigrationService implements DataMigrationService {
+public class ApplicantDataMigrationService implements DataMigrationService<CaseData> {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
@@ -34,24 +35,26 @@ public class ApplicantDataMigrationService implements DataMigrationService {
     }
 
     @Override
-    public void migrate(CaseDetails caseDetails) {
-        Map<String, Object> data = caseDetails.getData();
+    public CaseData migrate(Map<String, Object> data) {
+        CaseData caseData = objectMapper.convertValue(data, CaseData.class);
 
-        Map<String, Object> map = ImmutableMap.of(
-            "id", UUID.randomUUID().toString(),
-            "value", migrateApplicant(objectMapper.convertValue(data.get("applicant"), OldApplicant.class)));
+        CaseData migratedCaseData = CaseData.builder()
+            .applicants(ImmutableList.of(CollectionEntry.<Applicant>builder()
+                .id(UUID.randomUUID().toString())
+                .value(migrateApplicant(caseData.getApplicant()))
+                .build()))
+            .build();
 
-        data.put("applicants", ImmutableList.of(map));
-        data.put("applicant", null);
+        log.info("New case details: {}", migratedCaseData);
 
-        log.info("New case details: {}", caseDetails);
+        return migratedCaseData;
     }
 
     private Applicant migrateApplicant(OldApplicant or) {
         log.info("Migrating applicant: {}", or);
 
         Address.AddressBuilder addressBuilder = Address.builder();
-        if(!isEmpty(or.getAddress())) {
+        if (!isEmpty(or.getAddress())) {
             addressBuilder.addressLine1(defaultIfBlank(or.getAddress().getAddressLine1(), null));
             addressBuilder.addressLine2(defaultIfBlank(or.getAddress().getAddressLine2(), null));
             addressBuilder.addressLine3(defaultIfBlank(or.getAddress().getAddressLine3(), null));

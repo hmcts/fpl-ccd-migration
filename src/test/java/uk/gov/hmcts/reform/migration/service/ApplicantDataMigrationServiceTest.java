@@ -40,13 +40,19 @@ class ApplicantDataMigrationServiceTest {
     private final ApplicantDataMigrationService service = new ApplicantDataMigrationService();
 
     @Test
-    void whenOldStructureDoesNotExistAcceptsShouldReturnFalse() {
+    void whenOldStructureExistsAcceptsShouldReturnTrue() {
+        Map<String, Object> data = new HashMap<>();
+
+        OldApplicant applicant = oldApplicant();
+
+        data.put("applicant", applicant);
+
         CaseDetails caseDetails = CaseDetails.builder()
             .id(1111L)
-            .data(ImmutableMap.of("data", "someData"))
+            .data(data)
             .build();
 
-        assertThat(service.accepts().test(caseDetails)).isEqualTo(false);
+        assertThat(service.accepts().test(caseDetails)).isEqualTo(true);
     }
 
     @Test
