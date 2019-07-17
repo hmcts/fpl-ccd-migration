@@ -33,7 +33,7 @@ public class RespondentsDataMigrationService implements DataMigrationService<Cas
     @Override
     public Predicate<CaseDetails> accepts() {
         return caseDetails -> caseDetails != null && caseDetails.getData() != null &&
-                !isEmpty(caseDetails.getData().get("respondents"));
+            !isEmpty(caseDetails.getData().get("respondents"));
     }
 
     @Override
@@ -41,8 +41,9 @@ public class RespondentsDataMigrationService implements DataMigrationService<Cas
         CaseData caseData = objectMapper.convertValue(data, CaseData.class);
 
         CaseData migratedCaseData = CaseData.builder()
-                .respondents1(migrateRespondents(caseData.getRespondents()))
-                .build();
+            .respondents1(migrateRespondents(caseData.getRespondents()))
+            .respondents(OldRespondents.builder().build())
+            .build();
 
         log.info("new case details: {}", migratedCaseData);
 
@@ -53,12 +54,12 @@ public class RespondentsDataMigrationService implements DataMigrationService<Cas
         log.info("beginning to migrate respondents {}", respondents);
 
         List<CollectionEntry<Respondent>> migratedRespondents = respondents.getAll().stream()
-                .map(entry -> migrateIndividualRespondent(entry.getValue()))
-                .map(entry -> CollectionEntry.<Respondent>builder()
-                        .id(UUID.randomUUID().toString())
-                        .value(entry)
-                        .build())
-                .collect(toList());
+            .map(entry -> migrateIndividualRespondent(entry.getValue()))
+            .map(entry -> CollectionEntry.<Respondent>builder()
+                .id(UUID.randomUUID().toString())
+                .value(entry)
+                .build())
+            .collect(toList());
 
         log.info("returning new structure {}", migratedRespondents);
 
@@ -115,8 +116,8 @@ public class RespondentsDataMigrationService implements DataMigrationService<Cas
         RespondentParty party = partyBuilder.build();
 
         return Respondent.builder()
-                .party(party)
-                .build();
+            .party(party)
+            .build();
     }
 
     private List<String> splitName(String name) {
