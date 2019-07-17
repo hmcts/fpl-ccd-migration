@@ -1,8 +1,6 @@
 package uk.gov.hmcts.reform.domain;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
 import uk.gov.hmcts.reform.domain.common.CollectionEntry;
@@ -16,9 +14,7 @@ public class CaseData {
     private final OldApplicant applicant;
     private final List<CollectionEntry<Applicant>> applicants;
 
-    @JsonCreator
-    public CaseData(@JsonProperty("applicant") OldApplicant applicant,
-                    @JsonProperty("applicants") List<CollectionEntry<Applicant>> applicants) {
+    public CaseData(OldApplicant applicant, List<CollectionEntry<Applicant>> applicants) {
         this.applicant = applicant;
         this.applicants = applicants;
     }

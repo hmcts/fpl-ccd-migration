@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.migration.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.domain.Applicant;
@@ -26,7 +27,8 @@ import static org.springframework.util.ObjectUtils.isEmpty;
 @Slf4j
 @Service
 public class ApplicantDataMigrationService implements DataMigrationService<CaseData> {
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Override
     public Predicate<CaseDetails> accepts() {
