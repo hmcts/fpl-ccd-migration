@@ -1,10 +1,13 @@
 package uk.gov.hmcts.reform.migration.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
+import uk.gov.hmcts.reform.domain.common.CollectionEntry;
+import uk.gov.hmcts.reform.fpl.domain.CaseData;
 import uk.gov.hmcts.reform.fpl.domain.OldRespondent;
 import uk.gov.hmcts.reform.fpl.domain.OldRespondents;
 import uk.gov.hmcts.reform.fpl.domain.Respondent;
@@ -19,10 +22,11 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@SpringBootTest
 class RespondentsDataMigrationServiceTest {
 
-    private RespondentsDataMigrationService service = new RespondentsDataMigrationService();
-    private ObjectMapper objectMapper = new ObjectMapper();
+    @Autowired
+    private RespondentsDataMigrationService service;
 
     @Test
     void whenOldStructureDoesNotExistAcceptsShouldReturnFalse() {
@@ -47,113 +51,93 @@ class RespondentsDataMigrationServiceTest {
     @SuppressWarnings({"unchecked", "LineLength"})
     @Test
     void whenOldRespondentStructureIsMigratedShouldReturnNewListStructure() {
-        CaseDetails caseDetails = CaseDetails.builder()
-            .id(1111L)
-            .data(createOldRespondent(false, false))
-            .build();
+        CaseData migratedCaseData = service.migrate(createOldRespondent(false, false));
 
-        service.migrate(caseDetails);
+        List<CollectionEntry<Respondent>> respondents = migratedCaseData.getRespondents1();
 
-        List<Map<String, Object>> respondents = (List<Map<String, Object>>) caseDetails.getData().get("respondents1");
-
-        Map<String, Object> firstRespondent = (Map<String, Object>) respondents.get(0).get("value");
-        Map<String, Object> firstRespondentParty = (Map<String, Object>) firstRespondent.get("party");
+        RespondentParty firstRespondentParty = respondents.get(0).getValue().getParty();
         Respondent expectedRespondent = createNewRespondent();
 
         assertThat(respondents).hasSize(1);
-        assertThat(firstRespondentParty.get("partyID")).isInstanceOf(String.class);
-        assertThat(firstRespondentParty.get("partyType")).isNull();
-        assertThat(firstRespondentParty.get("firstName")).isEqualTo(expectedRespondent.getParty().getFirstName());
-        assertThat(firstRespondentParty.get("lastName")).isEqualTo(expectedRespondent.getParty().getLastName());
-        assertThat(firstRespondentParty.get("dateOfBirth")).isEqualTo(expectedRespondent.getParty().getDateOfBirth());
-        assertThat(objectMapper.convertValue(firstRespondentParty.get("address"), Address.class)).isEqualTo(expectedRespondent.getParty().getAddress());
-        assertThat(firstRespondentParty.get("telephoneNumber")).isEqualTo(objectMapper.convertValue(expectedRespondent.getParty().getTelephoneNumber(), Object.class));
-        assertThat(firstRespondentParty.get("gender")).isEqualTo(expectedRespondent.getParty().getGender());
-        assertThat(firstRespondentParty.get("genderIdentification")).isNull();
-        assertThat(firstRespondentParty.get("placeOfBirth")).isEqualTo(expectedRespondent.getParty().getPlaceOfBirth());
-        assertThat(firstRespondentParty.get("relationshipToChild")).isEqualTo(expectedRespondent.getParty().getRelationshipToChild());
-        assertThat(firstRespondentParty.get("contactDetailsHidden")).isEqualTo(expectedRespondent.getParty().getContactDetailsHidden());
-        assertThat(firstRespondentParty.get("litigationIssues")).isEqualTo(expectedRespondent.getParty().getLitigationIssues());
-        assertThat(firstRespondentParty.get("litigationIssuesDetails")).isNull();
+        assertThat(firstRespondentParty.getPartyID()).isInstanceOf(String.class);
+        assertThat(firstRespondentParty.getPartyType()).isNull();
+        assertThat(firstRespondentParty.getFirstName()).isEqualTo(expectedRespondent.getParty().getFirstName());
+        assertThat(firstRespondentParty.getLastName()).isEqualTo(expectedRespondent.getParty().getLastName());
+        assertThat(firstRespondentParty.getDateOfBirth()).isEqualTo(expectedRespondent.getParty().getDateOfBirth());
+        assertThat(firstRespondentParty.getAddress()).isEqualTo(expectedRespondent.getParty().getAddress());
+        assertThat(firstRespondentParty.getTelephoneNumber()).isEqualTo(expectedRespondent.getParty().getTelephoneNumber());
+        assertThat(firstRespondentParty.getGender()).isEqualTo(expectedRespondent.getParty().getGender());
+        assertThat(firstRespondentParty.getGenderIdentification()).isNull();
+        assertThat(firstRespondentParty.getPlaceOfBirth()).isEqualTo(expectedRespondent.getParty().getPlaceOfBirth());
+        assertThat(firstRespondentParty.getRelationshipToChild()).isEqualTo(expectedRespondent.getParty().getRelationshipToChild());
+        assertThat(firstRespondentParty.getContactDetailsHidden()).isEqualTo(expectedRespondent.getParty().getContactDetailsHidden());
+        assertThat(firstRespondentParty.getLitigationIssues()).isEqualTo(expectedRespondent.getParty().getLitigationIssues());
+        assertThat(firstRespondentParty.getLitigationIssuesDetails()).isNull();
     }  
     
     @Test
     void whenOldRespondentsStructureIsMigratedShouldConvertManyRespondents() {
-        CaseDetails caseDetails = CaseDetails.builder()
-            .id(1111L)
-            .data(createOldRespondent(true, false))
-            .build();
+        CaseData migratedCaseData = service.migrate(createOldRespondent(true, false));
 
-        service.migrate(caseDetails);
-
-        List<Map<String, Object>> respondents = (List<Map<String, Object>>) caseDetails.getData().get("respondents1");
-
-        Map<String, Object> firstRespondent = (Map<String, Object>) respondents.get(0).get("value");
-        Map<String, Object> otherRespondent = (Map<String, Object>) respondents.get(1).get("value");
-        Map<String, Object> firstRespondentParty = (Map<String, Object>) firstRespondent.get("party");
-        Map<String, Object> otherRespondentParty = (Map<String, Object>) otherRespondent.get("party");
+        List<CollectionEntry<Respondent>> respondents = migratedCaseData.getRespondents1();
+        RespondentParty firstRespondentParty = respondents.get(0).getValue().getParty();
+        RespondentParty otherRespondentParty = respondents.get(1).getValue().getParty();
         Respondent expectedRespondent = createNewRespondent();
 
         assertThat(respondents).hasSize(2);
-        assertThat(firstRespondentParty.get("partyID")).isInstanceOf(String.class);
-        assertThat(firstRespondentParty.get("partyType")).isNull();
-        assertThat(firstRespondentParty.get("firstName")).isEqualTo(expectedRespondent.getParty().getFirstName());
-        assertThat(firstRespondentParty.get("lastName")).isEqualTo(expectedRespondent.getParty().getLastName());
-        assertThat(firstRespondentParty.get("dateOfBirth")).isEqualTo(expectedRespondent.getParty().getDateOfBirth());
-        assertThat(objectMapper.convertValue(firstRespondentParty.get("address"), Address.class)).isEqualTo(expectedRespondent.getParty().getAddress());
-        assertThat(firstRespondentParty.get("telephoneNumber")).isEqualTo(objectMapper.convertValue(expectedRespondent.getParty().getTelephoneNumber(), Object.class));
-        assertThat(firstRespondentParty.get("gender")).isEqualTo(expectedRespondent.getParty().getGender());
-        assertThat(firstRespondentParty.get("genderIdentification")).isNull();
-        assertThat(firstRespondentParty.get("placeOfBirth")).isEqualTo(expectedRespondent.getParty().getPlaceOfBirth());
-        assertThat(firstRespondentParty.get("relationshipToChild")).isEqualTo(expectedRespondent.getParty().getRelationshipToChild());
-        assertThat(firstRespondentParty.get("contactDetailsHidden")).isEqualTo(expectedRespondent.getParty().getContactDetailsHidden());
-        assertThat(firstRespondentParty.get("litigationIssues")).isEqualTo(expectedRespondent.getParty().getLitigationIssues());
-        assertThat(firstRespondentParty.get("litigationIssuesDetails")).isNull();   assertThat(firstRespondentParty.get("partyID")).isInstanceOf(String.class);
-        assertThat(otherRespondentParty.get("partyType")).isNull();
-        assertThat(otherRespondentParty.get("firstName")).isEqualTo(expectedRespondent.getParty().getFirstName());
-        assertThat(otherRespondentParty.get("lastName")).isEqualTo(expectedRespondent.getParty().getLastName());
-        assertThat(otherRespondentParty.get("dateOfBirth")).isEqualTo(expectedRespondent.getParty().getDateOfBirth());
-        assertThat(objectMapper.convertValue(otherRespondentParty.get("address"), Address.class)).isEqualTo(expectedRespondent.getParty().getAddress());
-        assertThat(otherRespondentParty.get("telephoneNumber")).isEqualTo(objectMapper.convertValue(expectedRespondent.getParty().getTelephoneNumber(), Object.class));
-        assertThat(otherRespondentParty.get("gender")).isEqualTo(expectedRespondent.getParty().getGender());
-        assertThat(otherRespondentParty.get("genderIdentification")).isNull();
-        assertThat(otherRespondentParty.get("placeOfBirth")).isEqualTo(expectedRespondent.getParty().getPlaceOfBirth());
-        assertThat(otherRespondentParty.get("relationshipToChild")).isEqualTo(expectedRespondent.getParty().getRelationshipToChild());
-        assertThat(otherRespondentParty.get("contactDetailsHidden")).isEqualTo(expectedRespondent.getParty().getContactDetailsHidden());
-        assertThat(otherRespondentParty.get("litigationIssues")).isEqualTo(expectedRespondent.getParty().getLitigationIssues());
-        assertThat(otherRespondentParty.get("litigationIssuesDetails")).isNull();
+        assertThat(firstRespondentParty.getPartyID()).isInstanceOf(String.class);
+        assertThat(firstRespondentParty.getPartyType()).isNull();
+        assertThat(firstRespondentParty.getFirstName()).isEqualTo(expectedRespondent.getParty().getFirstName());
+        assertThat(firstRespondentParty.getLastName()).isEqualTo(expectedRespondent.getParty().getLastName());
+        assertThat(firstRespondentParty.getDateOfBirth()).isEqualTo(expectedRespondent.getParty().getDateOfBirth());
+        assertThat(firstRespondentParty.getAddress()).isEqualTo(expectedRespondent.getParty().getAddress());
+        assertThat(firstRespondentParty.getTelephoneNumber()).isEqualTo(expectedRespondent.getParty().getTelephoneNumber());
+        assertThat(firstRespondentParty.getGender()).isEqualTo(expectedRespondent.getParty().getGender());
+        assertThat(firstRespondentParty.getGenderIdentification()).isNull();
+        assertThat(firstRespondentParty.getPlaceOfBirth()).isEqualTo(expectedRespondent.getParty().getPlaceOfBirth());
+        assertThat(firstRespondentParty.getRelationshipToChild()).isEqualTo(expectedRespondent.getParty().getRelationshipToChild());
+        assertThat(firstRespondentParty.getContactDetailsHidden()).isEqualTo(expectedRespondent.getParty().getContactDetailsHidden());
+        assertThat(firstRespondentParty.getLitigationIssues()).isEqualTo(expectedRespondent.getParty().getLitigationIssues());
+        assertThat(firstRespondentParty.getLitigationIssuesDetails()).isNull();   assertThat(firstRespondentParty.getPartyID()).isInstanceOf(String.class);
+        assertThat(otherRespondentParty.getPartyType()).isNull();
+        assertThat(otherRespondentParty.getFirstName()).isEqualTo(expectedRespondent.getParty().getFirstName());
+        assertThat(otherRespondentParty.getLastName()).isEqualTo(expectedRespondent.getParty().getLastName());
+        assertThat(otherRespondentParty.getDateOfBirth()).isEqualTo(expectedRespondent.getParty().getDateOfBirth());
+        assertThat(otherRespondentParty.getAddress()).isEqualTo(expectedRespondent.getParty().getAddress());
+        assertThat(otherRespondentParty.getTelephoneNumber()).isEqualTo(expectedRespondent.getParty().getTelephoneNumber());
+        assertThat(otherRespondentParty.getGender()).isEqualTo(expectedRespondent.getParty().getGender());
+        assertThat(otherRespondentParty.getGenderIdentification()).isNull();
+        assertThat(otherRespondentParty.getPlaceOfBirth()).isEqualTo(expectedRespondent.getParty().getPlaceOfBirth());
+        assertThat(otherRespondentParty.getRelationshipToChild()).isEqualTo(expectedRespondent.getParty().getRelationshipToChild());
+        assertThat(otherRespondentParty.getContactDetailsHidden()).isEqualTo(expectedRespondent.getParty().getContactDetailsHidden());
+        assertThat(otherRespondentParty.getLitigationIssues()).isEqualTo(expectedRespondent.getParty().getLitigationIssues());
+        assertThat(otherRespondentParty.getLitigationIssuesDetails()).isNull();
     }
 
     @Test
     void whenPartiallyFilledInOldRespondentStructureIsMigratedShouldReturnNewListStructureWithNullFields() {
-        CaseDetails caseDetails = CaseDetails.builder()
-            .id(1111L)
-            .data(createOldRespondent(false, true))
-            .build();
+        CaseData migratedCaseData = service.migrate(createOldRespondent(false, true));
 
-        service.migrate(caseDetails);
+        List<CollectionEntry<Respondent>> respondents = migratedCaseData.getRespondents1();
 
-        List<Map<String, Object>> respondents = (List<Map<String, Object>>) caseDetails.getData().get("respondents1");
-
-        Map<String, Object> firstRespondent = (Map<String, Object>) respondents.get(0).get("value");
-        Map<String, Object> firstRespondentParty = (Map<String, Object>) firstRespondent.get("party");
+        RespondentParty firstRespondentParty = respondents.get(0).getValue().getParty();
         Respondent expectedRespondent = createNewRespondent();
 
         assertThat(respondents).hasSize(1);
-        assertThat(firstRespondentParty.get("partyType")).isNull();
-        assertThat(firstRespondentParty.get("firstName")).isEqualTo(expectedRespondent.getParty().getFirstName());
-        assertThat(firstRespondentParty.get("lastName")).isEqualTo(expectedRespondent.getParty().getLastName());
-        assertThat(firstRespondentParty.get("dateOfBirth")).isNull();
-        assertThat(objectMapper.convertValue(firstRespondentParty.get("address"), Address.class)).isEqualTo(Address.builder().build());
-        assertThat(firstRespondentParty.get("telephoneNumber")).isNull();
-        assertThat(firstRespondentParty.get("email")).isNull();
-        assertThat(firstRespondentParty.get("gender")).isNull();
-        assertThat(firstRespondentParty.get("genderIdentification")).isNull();
-        assertThat(firstRespondentParty.get("placeOfBirth")).isNull();
-        assertThat(firstRespondentParty.get("relationshipToChild")).isNull();
-        assertThat(firstRespondentParty.get("contactDetailsHidden")).isNull();
-        assertThat(firstRespondentParty.get("litigationIssues")).isNull();
-        assertThat(firstRespondentParty.get("litigationIssuesDetails")).isNull();
+        assertThat(firstRespondentParty.getPartyType()).isNull();
+        assertThat(firstRespondentParty.getFirstName()).isEqualTo(expectedRespondent.getParty().getFirstName());
+        assertThat(firstRespondentParty.getLastName()).isEqualTo(expectedRespondent.getParty().getLastName());
+        assertThat(firstRespondentParty.getDateOfBirth()).isNull();
+        assertThat(firstRespondentParty.getAddress()).isEqualTo(Address.builder().build());
+        assertThat(firstRespondentParty.getTelephoneNumber()).isNull();
+        assertThat(firstRespondentParty.getEmail()).isNull();
+        assertThat(firstRespondentParty.getGender()).isNull();
+        assertThat(firstRespondentParty.getGenderIdentification()).isNull();
+        assertThat(firstRespondentParty.getPlaceOfBirth()).isNull();
+        assertThat(firstRespondentParty.getRelationshipToChild()).isNull();
+        assertThat(firstRespondentParty.getContactDetailsHidden()).isNull();
+        assertThat(firstRespondentParty.getLitigationIssues()).isNull();
+        assertThat(firstRespondentParty.getLitigationIssuesDetails()).isNull();
     }
 
     @Test
@@ -169,26 +153,21 @@ class RespondentsDataMigrationServiceTest {
 
         data.put("respondents", OldRespondents.builder()
             .firstRespondent(respondent)
+            .additional(ImmutableList.of())
             .build());
 
-        CaseDetails caseDetails = CaseDetails.builder()
-            .id(1111L)
-            .data(data)
-            .build();
+        CaseData migratedCaseData = service.migrate(data);
 
-        service.migrate(caseDetails);
+        List<CollectionEntry<Respondent>> respondents = migratedCaseData.getRespondents1();
 
-        List<Map<String, Object>> respondents = (List<Map<String, Object>>) caseDetails.getData().get("respondents1");
-
-        Map<String, Object> firstRespondent = (Map<String, Object>) respondents.get(0).get("value");
-        Map<String, Object> firstRespondentParty = (Map<String, Object>) firstRespondent.get("party");
+        RespondentParty firstRespondentParty = respondents.get(0).getValue().getParty();
 
         assertThat(respondents).hasSize(1);
-        assertThat(firstRespondentParty.get("partyType")).isNull();
-        assertThat(firstRespondentParty.get("firstName")).isNull();
-        assertThat(firstRespondentParty.get("lastName")).isNull();
-        assertThat(firstRespondentParty.get("dateOfBirth")).isNull();
-        assertThat(objectMapper.convertValue(firstRespondentParty.get("address"), Address.class)).isEqualTo(Address.builder()
+        assertThat(firstRespondentParty.getPartyType()).isNull();
+        assertThat(firstRespondentParty.getFirstName()).isNull();
+        assertThat(firstRespondentParty.getLastName()).isNull();
+        assertThat(firstRespondentParty.getDateOfBirth()).isNull();
+        assertThat(firstRespondentParty.getAddress()).isEqualTo(Address.builder()
             .addressLine1(null)
             .addressLine2(null)
             .addressLine3(null)
@@ -197,15 +176,15 @@ class RespondentsDataMigrationServiceTest {
             .country(null)
             .postTown(null)
             .build());
-        assertThat(firstRespondentParty.get("telephoneNumber")).isNull();
-        assertThat(firstRespondentParty.get("email")).isNull();
-        assertThat(firstRespondentParty.get("gender")).isNull();
-        assertThat(firstRespondentParty.get("genderIdentification")).isNull();
-        assertThat(firstRespondentParty.get("placeOfBirth")).isNull();
-        assertThat(firstRespondentParty.get("relationshipToChild")).isNull();
-        assertThat(firstRespondentParty.get("contactDetailsHidden")).isNull();
-        assertThat(firstRespondentParty.get("litigationIssues")).isNull();
-        assertThat(firstRespondentParty.get("litigationIssuesDetails")).isNull();
+        assertThat(firstRespondentParty.getTelephoneNumber()).isNull();
+        assertThat(firstRespondentParty.getEmail()).isNull();
+        assertThat(firstRespondentParty.getGender()).isNull();
+        assertThat(firstRespondentParty.getGenderIdentification()).isNull();
+        assertThat(firstRespondentParty.getPlaceOfBirth()).isNull();
+        assertThat(firstRespondentParty.getRelationshipToChild()).isNull();
+        assertThat(firstRespondentParty.getContactDetailsHidden()).isNull();
+        assertThat(firstRespondentParty.getLitigationIssues()).isNull();
+        assertThat(firstRespondentParty.getLitigationIssuesDetails()).isNull();
     }
 
     @Test
@@ -218,23 +197,18 @@ class RespondentsDataMigrationServiceTest {
 
         data.put("respondents", OldRespondents.builder()
             .firstRespondent(respondent)
+            .additional(ImmutableList.of())
             .build());
 
-        CaseDetails caseDetails = CaseDetails.builder()
-            .id(1111L)
-            .data(data)
-            .build();
+        CaseData migratedCaseData = service.migrate(data);
 
-        service.migrate(caseDetails);
+        List<CollectionEntry<Respondent>> respondents = migratedCaseData.getRespondents1();
 
-        List<Map<String, Object>> respondents = (List<Map<String, Object>>) caseDetails.getData().get("respondents1");
-
-        Map<String, Object> firstRespondent = (Map<String, Object>) respondents.get(0).get("value");
-        Map<String, Object> firstRespondentParty = (Map<String, Object>) firstRespondent.get("party");
+        RespondentParty firstRespondentParty = respondents.get(0).getValue().getParty();
 
         assertThat(respondents).hasSize(1);
-        assertThat(firstRespondentParty.get("firstName")).isEqualTo("Beyoncé");
-        assertThat(firstRespondentParty.get("lastName")).isNull();
+        assertThat(firstRespondentParty.getFirstName()).isEqualTo("Beyoncé");
+        assertThat(firstRespondentParty.getLastName()).isNull();
     }
 
     @Test
@@ -247,23 +221,18 @@ class RespondentsDataMigrationServiceTest {
 
         data.put("respondents", OldRespondents.builder()
             .firstRespondent(respondent)
+            .additional(ImmutableList.of())
             .build());
 
-        CaseDetails caseDetails = CaseDetails.builder()
-            .id(1111L)
-            .data(data)
-            .build();
+        CaseData migratedCaseData = service.migrate(data);
 
-        service.migrate(caseDetails);
+        List<CollectionEntry<Respondent>> respondents = migratedCaseData.getRespondents1();
 
-        List<Map<String, Object>> respondents = (List<Map<String, Object>>) caseDetails.getData().get("respondents1");
-
-        Map<String, Object> firstRespondent = (Map<String, Object>) respondents.get(0).get("value");
-        Map<String, Object> firstRespondentParty = (Map<String, Object>) firstRespondent.get("party");
+        RespondentParty firstRespondentParty = respondents.get(0).getValue().getParty();
 
         assertThat(respondents).hasSize(1);
-        assertThat(firstRespondentParty.get("firstName")).isEqualTo("Jean Paul");
-        assertThat(firstRespondentParty.get("lastName")).isEqualTo("Gautier");
+        assertThat(firstRespondentParty.getFirstName()).isEqualTo("Jean Paul");
+        assertThat(firstRespondentParty.getLastName()).isEqualTo("Gautier");
     }
 
     private Map<String, Object> createOldRespondent(boolean multiple, boolean partial) {
@@ -319,14 +288,15 @@ class RespondentsDataMigrationServiceTest {
 
             data.put("respondents", OldRespondents.builder()
                 .firstRespondent(respondent)
-                .additional(ImmutableList.of(
-                    ImmutableMap.of(
-                        "id", "",
-                        "value", respondent)))
+                .additional(ImmutableList.of(CollectionEntry.<OldRespondent>builder()
+                        .id("")
+                        .value(respondent)
+                        .build()))
                 .build());
         } else {
             data.put("respondents", OldRespondents.builder()
                 .firstRespondent(respondent)
+                .additional(ImmutableList.of())
                 .build());
         }
 

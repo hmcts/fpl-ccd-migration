@@ -1,26 +1,26 @@
 package uk.gov.hmcts.reform.fpl.domain;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.ImmutableList;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import uk.gov.hmcts.reform.domain.common.CollectionEntry;
 
 import java.util.List;
-import java.util.Map;
 
 @Data
 @Builder
-@JsonIgnoreProperties(ignoreUnknown = true)
+@AllArgsConstructor
 public class OldRespondents {
-
     private final OldRespondent firstRespondent;
-    private final List<Map<String, Object>> additional;
+    private final List<CollectionEntry<OldRespondent>> additional;
 
-    @JsonCreator
-    public OldRespondents(@JsonProperty("firstRespondent") OldRespondent firstRespondent,
-                          @JsonProperty("additional") List<Map<String, Object>> additional) {
-        this.firstRespondent = firstRespondent;
-        this.additional = additional;
+    @JsonIgnore
+    public List<CollectionEntry<OldRespondent>> getAll() {
+        return ImmutableList.<CollectionEntry<OldRespondent>>builder()
+                .add(CollectionEntry.<OldRespondent>builder().value(firstRespondent).build())
+                .addAll(additional)
+                .build();
     }
 }

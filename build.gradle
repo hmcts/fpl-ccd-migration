@@ -35,10 +35,13 @@ dependencies {
   annotationProcessor group: 'org.projectlombok', name: 'lombok', version: versions.lombok
   compileOnly group: 'org.projectlombok', name: 'lombok', version: versions.lombok
 
-  compile group: 'uk.gov.hmcts.reform.ccd-case-migration', name: 'processor', version: '2.0.0'
-  compile group: 'uk.gov.hmcts.reform.ccd-case-migration', name: 'domain', version: '2.0.0'
+  compile group: 'uk.gov.hmcts.reform.ccd-case-migration', name: 'processor', version: '2.1.0'
+  compile group: 'uk.gov.hmcts.reform.ccd-case-migration', name: 'domain', version: '2.1.0'
   compile group: 'com.google.guava', name: 'guava', version: '28.0-jre'
 
+  testCompile (group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: '2.1.6.RELEASE') {
+    exclude group: 'junit', module: 'junit'
+  }
   testCompile group: 'org.junit.jupiter', name: 'junit-jupiter', version: '5.5.0'
   testCompile group: 'org.assertj', name: 'assertj-core', version: '3.11.1'
 }
