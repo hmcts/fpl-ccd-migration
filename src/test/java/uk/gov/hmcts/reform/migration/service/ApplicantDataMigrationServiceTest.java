@@ -1,9 +1,15 @@
 package uk.gov.hmcts.reform.migration.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.domain.Applicant;
+import uk.gov.hmcts.reform.domain.CaseData;
 import uk.gov.hmcts.reform.domain.OldApplicant;
 import uk.gov.hmcts.reform.domain.common.Address;
 import uk.gov.hmcts.reform.domain.common.EmailAddress;
@@ -18,6 +24,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@SpringBootTest
 class ApplicantDataMigrationServiceTest {
     private final String APPLICANT = "Applicant name";
     private final String EMAIL = "email@email.com";
@@ -37,7 +44,8 @@ class ApplicantDataMigrationServiceTest {
     private final String PARTY_ID = UUID.randomUUID().toString();
     private final String PBA_NUMBER = "PBA123456";
 
-    private final ApplicantDataMigrationService service = new ApplicantDataMigrationService();
+    @Autowired
+    private ApplicantDataMigrationService service;
 
     @Test
     void whenOldStructureExistsAcceptsShouldReturnTrue() {
@@ -79,23 +87,13 @@ class ApplicantDataMigrationServiceTest {
     void whenOldApplicantStructureIsMigratedShouldReturnNewApplicantStructure() {
         Map<String, Object> data = new HashMap<>();
 
-        OldApplicant applicant = oldApplicant();
+        data.put("applicant", oldApplicant());
 
-        data.put("applicant", applicant);
-
-        CaseDetails caseDetails = CaseDetails.builder()
-            .id(1111L)
-            .data(data)
-            .build();
-
-        service.migrate(caseDetails);
-
-
-        List<Map<String, Object>> valueInApplicant = (List<Map<String, Object>>) caseDetails.getData().get("applicants");
+        CaseData valueInApplicant = service.migrate(data);
         Applicant newApplicant = newApplicant();
 
-        assertThat(valueInApplicant.get(0).get("value").equals(newApplicant));
-        assertThat(valueInApplicant.get(0).get("applicant")).isNull();
+        assertThat(valueInApplicant.getApplicants().get(0).getValue().equals(newApplicant));
+        assertThat(valueInApplicant.getApplicant()).isNull();
     }
 
     @Test
@@ -115,16 +113,9 @@ class ApplicantDataMigrationServiceTest {
 
         data.put("applicant", applicant);
 
-        CaseDetails caseDetails = CaseDetails.builder()
-            .id(1111L)
-            .data(data)
-            .build();
+        CaseData valueInApplicant = service.migrate(data);
 
-        service.migrate(caseDetails);
-
-        List<Map<String, Object>> valueInApplicant = (List<Map<String, Object>>) caseDetails.getData().get("applicants");
-
-        assertThat(valueInApplicant.get(0).get("value").equals(valueInApplicant.get(0).get("value").equals(Applicant.builder()
+        assertThat(valueInApplicant.getApplicants().get(0).getValue().equals(Applicant.builder()
             .party(ApplicantParty.builder()
                 .partyId(null)
                 .partyType(null)
@@ -136,8 +127,8 @@ class ApplicantDataMigrationServiceTest {
                 .pbaNumber(null)
                 .build())
             .leadApplicantIndicator(null)
-            .build())));
-        assertThat(valueInApplicant.get(0).get("applicant")).isNull();
+            .build()));
+        assertThat(valueInApplicant.getApplicant()).isNull();
     }
 
     @Test
@@ -147,20 +138,12 @@ class ApplicantDataMigrationServiceTest {
             .name(APPLICANT)
             .email(EMAIL)
             .build();
-        
+
         data.put("applicant", applicant);
 
-        CaseDetails caseDetails = CaseDetails.builder()
-            .id(1111L)
-            .data(data)
-            .build();
+        CaseData valueInApplicant = service.migrate(data);
 
-        service.migrate(caseDetails);
-
-        List<Map<String, Object>> valueInApplicant = (List<Map<String, Object>>) caseDetails.getData().get("applicants");
-
-        assertThat(valueInApplicant).hasSize(1);
-        assertThat(valueInApplicant.get(0).get("value").equals(Applicant.builder()
+        assertThat(valueInApplicant.getApplicants().get(0).getValue().equals(Applicant.builder()
             .party(ApplicantParty.builder()
                 .partyId(null)
                 .partyType(null)
@@ -179,7 +162,7 @@ class ApplicantDataMigrationServiceTest {
                 .build())
                 .leadApplicantIndicator(null)
             .build()));
-        assertThat(valueInApplicant.get(0).get("applicant")).isNull();
+        assertThat(valueInApplicant.getApplicant()).isNull();
     }
 
     @Test
@@ -194,17 +177,9 @@ class ApplicantDataMigrationServiceTest {
 
         data.put("applicant", applicant);
 
-        CaseDetails caseDetails = CaseDetails.builder()
-            .id(1111L)
-            .data(data)
-            .build();
+        CaseData valueInApplicant = service.migrate(data);
 
-        service.migrate(caseDetails);
-
-        List<Map<String, Object>> valueInApplicant = (List<Map<String, Object>>) caseDetails.getData().get("applicants");
-
-        assertThat(valueInApplicant).hasSize(1);
-        assertThat(valueInApplicant.get(0).get("value").equals(Applicant.builder()
+        assertThat(valueInApplicant.getApplicants().get(0).getValue().equals(Applicant.builder()
             .party(ApplicantParty.builder()
                 .partyId(null)
                 .partyType(null)
@@ -231,7 +206,7 @@ class ApplicantDataMigrationServiceTest {
                 .build())
             .leadApplicantIndicator(null)
             .build()));
-        assertThat(valueInApplicant.get(0).get("applicant")).isNull();
+        assertThat(valueInApplicant.getApplicant()).isNull();
     }
 
     private Applicant newApplicant() {

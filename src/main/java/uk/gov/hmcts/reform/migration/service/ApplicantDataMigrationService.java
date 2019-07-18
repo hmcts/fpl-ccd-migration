@@ -38,6 +38,8 @@ public class ApplicantDataMigrationService implements DataMigrationService<CaseD
 
     @Override
     public CaseData migrate(Map<String, Object> data) {
+        System.out.println("data in method = " + data);
+
         CaseData caseData = objectMapper.convertValue(data, CaseData.class);
 
         CaseData migratedCaseData = CaseData.builder()
