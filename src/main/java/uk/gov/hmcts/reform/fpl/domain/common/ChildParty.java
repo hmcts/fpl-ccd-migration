@@ -13,7 +13,6 @@ import uk.gov.hmcts.reform.domain.common.TelephoneNumber;
 public class ChildParty {
     private final String partyID;
     private final PartyType partyType;
-    private final String title;
     private final String firstName;
     private final String lastName;
     private final String organisationName;
