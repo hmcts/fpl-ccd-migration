@@ -1,15 +1,17 @@
-package uk.gov.hmcts.reform.domain.common;
+package uk.gov.hmcts.reform.fpl.domain.common;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import uk.gov.hmcts.reform.domain.common.Address;
+import uk.gov.hmcts.reform.domain.common.EmailAddress;
+import uk.gov.hmcts.reform.domain.common.TelephoneNumber;
 
 @Data
 @Builder
 @AllArgsConstructor
-public class Party {
+public class ChildParty {
     private final String partyID;
-    private final String idamID;
     private final String partyType;
     private final String title;
     private final String firstName;
@@ -32,7 +34,7 @@ public class Party {
     private final String fathersName;
     private final String fathersResponsibility;
     private final String socialWorkerName;
-    private final String socialWorkerTel;
+    private final TelephoneNumber socialWorkerTel;
     private final String additionalNeeds;
     private final String additionalNeedsDetails;
     private final String detailsHidden;

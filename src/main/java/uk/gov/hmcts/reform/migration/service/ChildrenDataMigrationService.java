@@ -1,16 +1,20 @@
 package uk.gov.hmcts.reform.migration.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableList;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
-import uk.gov.hmcts.reform.domain.Child;
-import uk.gov.hmcts.reform.domain.OldChild;
-import uk.gov.hmcts.reform.domain.common.Party;
+import uk.gov.hmcts.reform.domain.common.Address;
+import uk.gov.hmcts.reform.domain.common.CollectionEntry;
 import uk.gov.hmcts.reform.domain.common.TelephoneNumber;
+import uk.gov.hmcts.reform.fpl.domain.CaseData;
+import uk.gov.hmcts.reform.fpl.domain.OldChildren;
+import uk.gov.hmcts.reform.fpl.domain.OldChild;
+import uk.gov.hmcts.reform.fpl.domain.Child;
+import uk.gov.hmcts.reform.fpl.domain.common.ChildParty;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -18,87 +22,88 @@ import java.util.function.Predicate;
 
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.defaultIfBlank;
+import static org.springframework.util.ObjectUtils.isEmpty;
 
 @Slf4j
-@Service
-@SuppressWarnings("unchecked")
-public class ChildrenDataMigrationService implements DataMigrationService {
-    private ObjectMapper objectMapper = new ObjectMapper();
+@Component
+public class ChildrenDataMigrationService implements DataMigrationService<CaseData> {
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Override
     public Predicate<CaseDetails> accepts() {
-        return null;
+        return caseDetails -> caseDetails != null && caseDetails.getData() != null &&
+            !isEmpty(caseDetails.getData().get("children"));
     }
 
     @Override
-    public void migrate(CaseDetails caseDetails) {
-        Map<String, Object> data = caseDetails.getData();
+    public CaseData migrate(Map<String, Object> data) {
+        CaseData caseData = objectMapper.convertValue(data, CaseData.class);
 
-        data.put("children1", migrateChildren(objectMapper.convertValue(data.get("children"), Map.class)));
-        data.put("children", null);
+        CaseData migratedCaseData = CaseData.builder()
+            .children1(migrateChildren(caseData.getChildren()))
+            .build();
 
-        log.info("new case details: {}", caseDetails);
+        log.info("new case details: {}", migratedCaseData);
+
+        return migratedCaseData;
     }
 
-    private List<Map<String, Object>> migrateChildren(Map<String, Object> children) {
+    private List<CollectionEntry<Child>> migrateChildren(OldChildren children) {
         log.info("beginning to migrate children {}", children);
 
-        /// FIRST CHILD
-        OldChild firstChild =
-                objectMapper.convertValue(children.get("firstChild"), OldChild.class);
-        Child migratedFirstChild = migrateIndividualChild(firstChild);
+        List<CollectionEntry<Child>> migratedChildren = children.getAll().stream()
+            .map(entry -> migrateIndividualChild(entry.getValue()))
+            .map(entry -> CollectionEntry.<Child>builder()
+                .id(UUID.randomUUID().toString())
+                .value(entry)
+                .build())
+            .collect(toList());
 
-        /// ADDITIONAL RESPONDENT
-        List<Map<String, Object>> additionalChildren =
-                (List<Map<String, Object>>) objectMapper.convertValue(children.get("additionalChildren"), List.class);
+        log.info("returning new structure {}", migratedChildren);
 
-        List<Child> migratedChildrenCollection = additionalChildren.stream()
-                .map(child ->
-                        migrateIndividualChild(objectMapper.convertValue(child.get("value"), OldChild.class)))
-                .collect(toList());
-
-        // ADD FIRST RESPONDENT TO ADDITIONAL RESPONDENT LIST
-        migratedChildrenCollection.add(migratedFirstChild);
-        List<Map<String, Object>> newStructure = new ArrayList<>();
-
-        /// BUILD NEW STRUCTURE
-        migratedChildrenCollection.forEach(item -> {
-            Map map = objectMapper.convertValue(item, Map.class);
-            System.out.println("map = " + map);
-
-            newStructure.add(ImmutableMap.of(
-                    "id", UUID.randomUUID().toString(),
-                    "value", map));
-        });
-
-        log.info("returning new structure {}", newStructure);
-
-        return newStructure;
+        return migratedChildren;
     }
 
     private Child migrateIndividualChild(OldChild oc) {
-        log.info("migrating respondent {}", oc);
+        log.info("migrating child {}", oc);
 
         Address.AddressBuilder addressBuilder = Address.builder();
-        addressBuilder.addressLine1(defaultIfBlank(oc.getAddress().getAddressLine1(), null));
-        addressBuilder.addressLine2(defaultIfBlank(oc.getAddress().getAddressLine2(), null));
-        addressBuilder.addressLine3(defaultIfBlank(oc.getAddress().getAddressLine3(), null));
-        addressBuilder.postTown(defaultIfBlank(oc.getAddress().getPostTown(), null));
-        addressBuilder.postcode(defaultIfBlank(oc.getAddress().getPostcode(), null));
-        addressBuilder.county(defaultIfBlank(oc.getAddress().getCounty(), null));
-        addressBuilder.country(defaultIfBlank(oc.getAddress().getCountry(), null));
+        if (!isEmpty(oc.getAddress())) {
+            addressBuilder.addressLine1(defaultIfBlank(oc.getAddress().getAddressLine1(), null));
+            addressBuilder.addressLine2(defaultIfBlank(oc.getAddress().getAddressLine2(), null));
+            addressBuilder.addressLine3(defaultIfBlank(oc.getAddress().getAddressLine3(), null));
+            addressBuilder.postTown(defaultIfBlank(oc.getAddress().getPostTown(), null));
+            addressBuilder.postcode(defaultIfBlank(oc.getAddress().getPostcode(), null));
+            addressBuilder.county(defaultIfBlank(oc.getAddress().getCounty(), null));
+            addressBuilder.country(defaultIfBlank(oc.getAddress().getCountry(), null));
+        }
+
         Address address = addressBuilder.build();
 
-        TelephoneNumber telephoneNumber = TelephoneNumber.builder().build();
+        TelephoneNumber solicitorTelephone;
 
-        Party.PartyBuilder partyBuilder = Party.builder();
+        if (isEmpty(oc.getSocialWorkerTel())) {
+            solicitorTelephone = null;
+        } else {
+            TelephoneNumber.TelephoneNumberBuilder telephoneNumberBuilder = TelephoneNumber.builder();
+            telephoneNumberBuilder.telephoneNumber(defaultIfBlank(oc.getSocialWorkerTel(), null));
+            solicitorTelephone = telephoneNumberBuilder.build();
+        }
+
+        ChildParty.ChildPartyBuilder partyBuilder = ChildParty.builder();
         partyBuilder.partyID(UUID.randomUUID().toString());
-        partyBuilder.partyType("Individual");
-        partyBuilder.firstName(defaultIfBlank(oc.getChildName().split("\\s+")[0], null));
-        partyBuilder.lastName(defaultIfBlank(oc.getChildName().split("\\s+")[1], null));
-        partyBuilder.dateOfBirth(defaultIfBlank(oc.getChildDOB().toString(), null));
+
+        if (!isEmpty(oc.getChildName())) {
+            partyBuilder.firstName(splitName(oc.getChildName()).get(0));
+
+            if (splitName(oc.getChildName()).size() > 1) {
+                partyBuilder.lastName(splitName(oc.getChildName()).get(1));
+            }
+        }
+
+        partyBuilder.dateOfBirth(defaultIfBlank(oc.getChildDOB(), null));
         partyBuilder.address(address);
-        partyBuilder.telephoneNumber(telephoneNumber);
         partyBuilder.gender(defaultIfBlank(oc.getChildGender(), null));
         partyBuilder.genderIdentification(defaultIfBlank(oc.getChildGenderIdentification(), null));
         partyBuilder.livingSituation(defaultIfBlank(oc.getLivingSituation(), null));
@@ -113,18 +118,31 @@ public class ChildrenDataMigrationService implements DataMigrationService {
         partyBuilder.fathersName(defaultIfBlank(oc.getFathersName(), null));
         partyBuilder.fathersResponsibility(defaultIfBlank(oc.getFathersResponsibility(), null));
         partyBuilder.socialWorkerName(defaultIfBlank(oc.getSocialWorkerName(), null));
-        partyBuilder.socialWorkerTel(defaultIfBlank(oc.getSocialWorkerTel(), null));
+        partyBuilder.socialWorkerTel(solicitorTelephone);
         partyBuilder.additionalNeeds(defaultIfBlank(oc.getAdditionalNeeds(), null));
         partyBuilder.additionalNeedsDetails(defaultIfBlank(oc.getAdditionalNeedsDetails(), null));
         partyBuilder.detailsHidden(defaultIfBlank(oc.getDetailsHidden(), null));
         partyBuilder.detailsHiddenReason(defaultIfBlank(oc.getDetailsHiddenReason(), null));
         partyBuilder.litigationIssues(defaultIfBlank(oc.getLitigationIssues(), null));
         partyBuilder.litigationIssuesDetails(defaultIfBlank(oc.getLitigationIssuesDetails(), null));
-        Party party = partyBuilder.build();
+        ChildParty party = partyBuilder.build();
 
         return Child.builder()
                 .party(party)
                 .build();
+    }
 
+    private List<String> splitName(String name) {
+        ImmutableList.Builder<String> names = ImmutableList.builder();
+        int index = name.lastIndexOf(" ");
+
+        if (index == -1) {
+            names.add(name);
+        } else {
+            names.add(name.substring(0, index));
+            names.add(name.substring(index + 1));
+        }
+
+        return names.build();
     }
 }

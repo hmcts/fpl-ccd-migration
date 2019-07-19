@@ -1,10 +1,11 @@
-package uk.gov.hmcts.reform.domain;
+package uk.gov.hmcts.reform.fpl.domain;
 
+import lombok.Builder;
+import lombok.Data;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Builder;
-import lombok.Data;
+import uk.gov.hmcts.reform.domain.common.Address;
 
 @Data
 @Builder
