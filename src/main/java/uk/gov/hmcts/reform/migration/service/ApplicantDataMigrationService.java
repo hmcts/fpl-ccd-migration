@@ -38,8 +38,6 @@ public class ApplicantDataMigrationService implements DataMigrationService<CaseD
 
     @Override
     public CaseData migrate(Map<String, Object> data) {
-        System.out.println("data in method = " + data);
-
         CaseData caseData = objectMapper.convertValue(data, CaseData.class);
 
         CaseData migratedCaseData = CaseData.builder()
@@ -83,8 +81,6 @@ public class ApplicantDataMigrationService implements DataMigrationService<CaseD
         MobileNumber mobileNumber = mobileNumberBuilder.build();
 
         ApplicantParty.ApplicantPartyBuilder partyBuilder = ApplicantParty.builder();
-        partyBuilder.partyId(UUID.randomUUID().toString());
-        partyBuilder.partyType(PartyType.INDIVIDUAL.name());
         if (!isEmpty(or.getName())) {
             partyBuilder.organisationName(defaultIfBlank(or.getName(), null));
         }

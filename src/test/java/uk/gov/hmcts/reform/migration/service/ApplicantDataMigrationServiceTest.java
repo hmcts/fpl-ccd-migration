@@ -97,7 +97,7 @@ class ApplicantDataMigrationServiceTest {
     }
 
     @Test
-    void whenOldApplicantStructureIsEmptyAndMigratedShouldReturnNewEmptyApplicantStructure() {
+    void whenOldApplicantContainsNullValuesShouldReturnNewApplicantWithNullValues() {
         Map<String, Object> data = new HashMap<>();
 
         OldApplicant applicant = OldApplicant.builder()
