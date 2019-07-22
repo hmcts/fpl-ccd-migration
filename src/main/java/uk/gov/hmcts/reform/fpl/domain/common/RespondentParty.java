@@ -11,7 +11,7 @@ import uk.gov.hmcts.reform.domain.common.TelephoneNumber;
 @Builder
 @AllArgsConstructor
 public class RespondentParty {
-    private final String partyID;
+    private final String partyId;
     private final String partyType;
     private final String firstName;
     private final String lastName;

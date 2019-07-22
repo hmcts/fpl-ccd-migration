@@ -91,7 +91,7 @@ public class RespondentsDataMigrationService implements DataMigrationService<Cas
         }
 
         RespondentParty.RespondentPartyBuilder partyBuilder = RespondentParty.builder();
-        partyBuilder.partyID(UUID.randomUUID().toString());
+        partyBuilder.partyId(UUID.randomUUID().toString());
 
         if (!isEmpty(or.getName())) {
             partyBuilder.firstName(splitName(or.getName()).get(0));

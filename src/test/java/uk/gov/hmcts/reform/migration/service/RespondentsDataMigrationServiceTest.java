@@ -59,7 +59,7 @@ class RespondentsDataMigrationServiceTest {
         Respondent expectedRespondent = createNewRespondent();
 
         assertThat(respondents).hasSize(1);
-        assertThat(firstRespondentParty.getPartyID()).isInstanceOf(String.class);
+        assertThat(firstRespondentParty.getPartyId()).isInstanceOf(String.class);
         assertThat(firstRespondentParty.getPartyType()).isNull();
         assertThat(firstRespondentParty.getFirstName()).isEqualTo(expectedRespondent.getParty().getFirstName());
         assertThat(firstRespondentParty.getLastName()).isEqualTo(expectedRespondent.getParty().getLastName());
@@ -85,7 +85,7 @@ class RespondentsDataMigrationServiceTest {
         Respondent expectedRespondent = createNewRespondent();
 
         assertThat(respondents).hasSize(2);
-        assertThat(firstRespondentParty.getPartyID()).isInstanceOf(String.class);
+        assertThat(firstRespondentParty.getPartyId()).isInstanceOf(String.class);
         assertThat(firstRespondentParty.getPartyType()).isNull();
         assertThat(firstRespondentParty.getFirstName()).isEqualTo(expectedRespondent.getParty().getFirstName());
         assertThat(firstRespondentParty.getLastName()).isEqualTo(expectedRespondent.getParty().getLastName());
@@ -98,7 +98,7 @@ class RespondentsDataMigrationServiceTest {
         assertThat(firstRespondentParty.getRelationshipToChild()).isEqualTo(expectedRespondent.getParty().getRelationshipToChild());
         assertThat(firstRespondentParty.getContactDetailsHidden()).isEqualTo(expectedRespondent.getParty().getContactDetailsHidden());
         assertThat(firstRespondentParty.getLitigationIssues()).isEqualTo(expectedRespondent.getParty().getLitigationIssues());
-        assertThat(firstRespondentParty.getLitigationIssuesDetails()).isNull();   assertThat(firstRespondentParty.getPartyID()).isInstanceOf(String.class);
+        assertThat(firstRespondentParty.getLitigationIssuesDetails()).isNull();   assertThat(firstRespondentParty.getPartyId()).isInstanceOf(String.class);
         assertThat(otherRespondentParty.getPartyType()).isNull();
         assertThat(otherRespondentParty.getFirstName()).isEqualTo(expectedRespondent.getParty().getFirstName());
         assertThat(otherRespondentParty.getLastName()).isEqualTo(expectedRespondent.getParty().getLastName());
@@ -306,7 +306,7 @@ class RespondentsDataMigrationServiceTest {
     private Respondent createNewRespondent() {
         return Respondent.builder()
             .party(RespondentParty.builder()
-                .partyID("")
+                .partyId("")
                 .firstName("An")
                 .lastName("Other")
                 .address(Address.builder()
