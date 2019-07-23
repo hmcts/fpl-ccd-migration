@@ -10,11 +10,10 @@ import uk.gov.hmcts.reform.domain.Applicant;
 import uk.gov.hmcts.reform.domain.CaseData;
 import uk.gov.hmcts.reform.domain.OldApplicant;
 import uk.gov.hmcts.reform.domain.common.Address;
+import uk.gov.hmcts.reform.domain.common.ApplicantParty;
 import uk.gov.hmcts.reform.domain.common.CollectionEntry;
 import uk.gov.hmcts.reform.domain.common.EmailAddress;
 import uk.gov.hmcts.reform.domain.common.MobileNumber;
-import uk.gov.hmcts.reform.domain.common.ApplicantParty;
-import uk.gov.hmcts.reform.domain.common.PartyType;
 import uk.gov.hmcts.reform.domain.common.TelephoneNumber;
 
 import java.util.Map;
