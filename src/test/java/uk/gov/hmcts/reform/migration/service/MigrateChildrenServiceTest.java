@@ -75,7 +75,7 @@ class MigrateChildrenServiceTest {
         Child expectedChild = createNewChild();
 
         assertThat(children).hasSize(1);
-        assertThat(firstChildParty.getPartyID()).isInstanceOf(String.class);
+        assertThat(firstChildParty.getPartyId()).isInstanceOf(String.class);
         assertThat(firstChildParty.getPartyType()).isNull();
         assertThat(firstChildParty.getFirstName()).isEqualTo(expectedChild.getParty().getFirstName());
         assertThat(firstChildParty.getLastName()).isEqualTo(expectedChild.getParty().getLastName());
@@ -89,7 +89,7 @@ class MigrateChildrenServiceTest {
         assertThat(firstChildParty.getSituationDetails()).isEqualTo(expectedChild.getParty().getSituationDetails());
         assertThat(firstChildParty.getSituationDate()).isEqualTo(expectedChild.getParty().getSituationDate());
         assertThat(firstChildParty.getKeyDates()).isEqualTo(expectedChild.getParty().getKeyDates());
-        assertThat(firstChildParty.getCareAndContact()).isEqualTo(expectedChild.getParty().getCareAndContact());
+        assertThat(firstChildParty.getCareAndContactPlan()).isEqualTo(expectedChild.getParty().getCareAndContactPlan());
         assertThat(firstChildParty.getAdoption()).isEqualTo(expectedChild.getParty().getAdoption());
         assertThat(firstChildParty.getPlacementOrderApplication()).isEqualTo(expectedChild.getParty().getPlacementOrderApplication());
         assertThat(firstChildParty.getPlacementCourt()).isEqualTo(expectedChild.getParty().getPlacementCourt());
@@ -114,7 +114,7 @@ class MigrateChildrenServiceTest {
         Child expectedChild = createNewChild();
 
         assertThat(children).hasSize(2);
-        assertThat(firstChildParty.getPartyID()).isInstanceOf(String.class);
+        assertThat(firstChildParty.getPartyId()).isInstanceOf(String.class);
         assertThat(firstChildParty.getPartyType()).isNull();
         assertThat(firstChildParty.getFirstName()).isEqualTo(expectedChild.getParty().getFirstName());
         assertThat(firstChildParty.getLastName()).isEqualTo(expectedChild.getParty().getLastName());
@@ -128,7 +128,7 @@ class MigrateChildrenServiceTest {
         assertThat(firstChildParty.getSituationDetails()).isEqualTo(expectedChild.getParty().getSituationDetails());
         assertThat(firstChildParty.getSituationDate()).isEqualTo(expectedChild.getParty().getSituationDate());
         assertThat(firstChildParty.getKeyDates()).isEqualTo(expectedChild.getParty().getKeyDates());
-        assertThat(firstChildParty.getCareAndContact()).isEqualTo(expectedChild.getParty().getCareAndContact());
+        assertThat(firstChildParty.getCareAndContactPlan()).isEqualTo(expectedChild.getParty().getCareAndContactPlan());
         assertThat(firstChildParty.getAdoption()).isEqualTo(expectedChild.getParty().getAdoption());
         assertThat(firstChildParty.getPlacementOrderApplication()).isEqualTo(expectedChild.getParty().getPlacementOrderApplication());
         assertThat(firstChildParty.getPlacementCourt()).isEqualTo(expectedChild.getParty().getPlacementCourt());
@@ -142,7 +142,7 @@ class MigrateChildrenServiceTest {
         assertThat(firstChildParty.getDetailsHidden()).isEqualTo(expectedChild.getParty().getDetailsHidden());
         assertThat(firstChildParty.getDetailsHiddenReason()).isEqualTo(expectedChild.getParty().getDetailsHiddenReason());
 
-        assertThat(OtherChildParty.getPartyID()).isInstanceOf(String.class);
+        assertThat(OtherChildParty.getPartyId()).isInstanceOf(String.class);
         assertThat(OtherChildParty.getPartyType()).isNull();
         assertThat(OtherChildParty.getFirstName()).isEqualTo(expectedChild.getParty().getFirstName());
         assertThat(OtherChildParty.getLastName()).isEqualTo(expectedChild.getParty().getLastName());
@@ -156,7 +156,7 @@ class MigrateChildrenServiceTest {
         assertThat(OtherChildParty.getSituationDetails()).isEqualTo(expectedChild.getParty().getSituationDetails());
         assertThat(OtherChildParty.getSituationDate()).isEqualTo(expectedChild.getParty().getSituationDate());
         assertThat(OtherChildParty.getKeyDates()).isEqualTo(expectedChild.getParty().getKeyDates());
-        assertThat(OtherChildParty.getCareAndContact()).isEqualTo(expectedChild.getParty().getCareAndContact());
+        assertThat(OtherChildParty.getCareAndContactPlan()).isEqualTo(expectedChild.getParty().getCareAndContactPlan());
         assertThat(OtherChildParty.getAdoption()).isEqualTo(expectedChild.getParty().getAdoption());
         assertThat(OtherChildParty.getPlacementOrderApplication()).isEqualTo(expectedChild.getParty().getPlacementOrderApplication());
         assertThat(OtherChildParty.getPlacementCourt()).isEqualTo(expectedChild.getParty().getPlacementCourt());
@@ -194,7 +194,7 @@ class MigrateChildrenServiceTest {
         assertThat(firstChildParty.getSituationDetails()).isNull();
         assertThat(firstChildParty.getSituationDate()).isNull();
         assertThat(firstChildParty.getKeyDates()).isNull();
-        assertThat(firstChildParty.getCareAndContact()).isNull();
+        assertThat(firstChildParty.getCareAndContactPlan()).isNull();
         assertThat(firstChildParty.getAdoption()).isNull();
         assertThat(firstChildParty.getPlacementOrderApplication()).isNull();
         assertThat(firstChildParty.getPlacementCourt()).isNull();
@@ -252,7 +252,7 @@ class MigrateChildrenServiceTest {
         assertThat(firstChildParty.getSituationDetails()).isNull();
         assertThat(firstChildParty.getSituationDate()).isNull();
         assertThat(firstChildParty.getKeyDates()).isNull();
-        assertThat(firstChildParty.getCareAndContact()).isNull();
+        assertThat(firstChildParty.getCareAndContactPlan()).isNull();
         assertThat(firstChildParty.getAdoption()).isNull();
         assertThat(firstChildParty.getPlacementOrderApplication()).isNull();
         assertThat(firstChildParty.getPlacementCourt()).isNull();
@@ -416,7 +416,7 @@ class MigrateChildrenServiceTest {
     private Child createNewChild() {
         return Child.builder()
             .party(ChildParty.builder()
-                .partyID("")
+                .partyId("")
                 .firstName("An")
                 .lastName("Other")
                 .address(Address.builder()
@@ -437,7 +437,7 @@ class MigrateChildrenServiceTest {
                 .situationDetails("Situation details")
                 .situationDate("1999-12-31")
                 .keyDates("1999-12-31")
-                .careAndContact("Care and contact")
+                .careAndContactPlan("Care and contact")
                 .adoption("Yes")
                 .placementOrderApplication("Yes")
                 .placementCourt("Craigavon")

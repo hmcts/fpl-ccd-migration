@@ -11,7 +11,7 @@ import uk.gov.hmcts.reform.domain.common.TelephoneNumber;
 @Builder
 @AllArgsConstructor
 public class ChildParty {
-    private final String partyID;
+    private final String partyId;
     private final PartyType partyType;
     private final String firstName;
     private final String lastName;
@@ -25,7 +25,7 @@ public class ChildParty {
     private final String situationDetails;
     private final String situationDate;
     private final String keyDates;
-    private final String careAndContact;
+    private final String careAndContactPlan;
     private final String adoption;
     private final String placementOrderApplication;
     private final String placementCourt;

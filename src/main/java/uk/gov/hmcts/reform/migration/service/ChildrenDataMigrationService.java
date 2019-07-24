@@ -92,7 +92,7 @@ public class ChildrenDataMigrationService implements DataMigrationService<CaseDa
         }
 
         ChildParty.ChildPartyBuilder partyBuilder = ChildParty.builder();
-        partyBuilder.partyID(UUID.randomUUID().toString());
+        partyBuilder.partyId(UUID.randomUUID().toString());
 
         if (!isEmpty(oc.getChildName())) {
             partyBuilder.firstName(splitName(oc.getChildName()).get(0));
@@ -110,7 +110,7 @@ public class ChildrenDataMigrationService implements DataMigrationService<CaseDa
         partyBuilder.situationDetails(defaultIfBlank(oc.getSituationDetails(), null));
         partyBuilder.situationDate(defaultIfBlank(oc.getSituationDate(), null ));
         partyBuilder.keyDates(defaultIfBlank(oc.getKeyDates(), null));
-        partyBuilder.careAndContact(defaultIfBlank(oc.getCareAndContact(), null));
+        partyBuilder.careAndContactPlan(defaultIfBlank(oc.getCareAndContact(), null));
         partyBuilder.adoption(defaultIfBlank(oc.getAdoption(), null));
         partyBuilder.placementOrderApplication(defaultIfBlank(oc.getPlacementOrderApplication(), null));
         partyBuilder.placementCourt(defaultIfBlank(oc.getPlacementCourt(), null));
