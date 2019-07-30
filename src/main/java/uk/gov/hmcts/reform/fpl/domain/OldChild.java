@@ -1,14 +1,14 @@
 package uk.gov.hmcts.reform.fpl.domain;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import uk.gov.hmcts.reform.domain.common.Address;
 
 @Data
 @Builder
+@AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class OldChild {
 
@@ -36,55 +36,4 @@ public class OldChild {
     private final String litigationIssues;
     private final String litigationIssuesDetails;
     private final Address address;
-
-    @JsonCreator
-    public OldChild(@JsonProperty("childName") final String childName,
-                    @JsonProperty("childDOB") final String childDOB,
-                    @JsonProperty("childGender") final String childGender,
-                    @JsonProperty("childGenderIdentification") final String childGenderIdentification,
-                    @JsonProperty("livingSituation") final String livingSituation,
-                    @JsonProperty("situationDetails") final String situationDetails,
-                    @JsonProperty("situationDate") final String situationDate,
-                    @JsonProperty("keyDates") final String keyDates,
-                    @JsonProperty("careAndContact") final String careAndContact,
-                    @JsonProperty("adoption") final String adoption,
-                    @JsonProperty("placementOrderApplication") final String placementOrderApplication,
-                    @JsonProperty("placementCourt") final String placementCourt,
-                    @JsonProperty("mothersName") final String mothersName,
-                    @JsonProperty("fathersName") final String fathersName,
-                    @JsonProperty("fathersResponsibility") final String fathersResponsibility,
-                    @JsonProperty("socialWorkerName") final String socialWorkerName,
-                    @JsonProperty("socialWorkerTel") final String socialWorkerTel,
-                    @JsonProperty("additionalNeeds") final String additionalNeeds,
-                    @JsonProperty("additionalNeedsDetails") final String additionalNeedsDetails,
-                    @JsonProperty("detailsHidden") final String detailsHidden,
-                    @JsonProperty("detailsHiddenReason") final String detailsHiddenReason,
-                    @JsonProperty("litigationIssues") final String litigationIssues,
-                    @JsonProperty("litigationIssuesDetails") final String litigationIssuesDetails,
-                    @JsonProperty("address") final Address address) {
-        this.childName = childName;
-        this.childDOB = childDOB;
-        this.childGender = childGender;
-        this.childGenderIdentification = childGenderIdentification;
-        this.livingSituation = livingSituation;
-        this.situationDetails = situationDetails;
-        this.situationDate = situationDate;
-        this.keyDates = keyDates;
-        this.careAndContact = careAndContact;
-        this.adoption = adoption;
-        this.placementOrderApplication = placementOrderApplication;
-        this.placementCourt = placementCourt;
-        this.mothersName = mothersName;
-        this.fathersName = fathersName;
-        this.fathersResponsibility = fathersResponsibility;
-        this.socialWorkerName = socialWorkerName;
-        this.socialWorkerTel = socialWorkerTel;
-        this.additionalNeeds = additionalNeeds;
-        this.additionalNeedsDetails = additionalNeedsDetails;
-        this.detailsHidden = detailsHidden;
-        this.detailsHiddenReason = detailsHiddenReason;
-        this.litigationIssues = litigationIssues;
-        this.litigationIssuesDetails = litigationIssuesDetails;
-        this.address = address;
-    }
 }
