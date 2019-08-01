@@ -22,8 +22,8 @@ public class ChildParty {
     private final String gender;
     private final String genderIdentification;
     private final String livingSituation;
-    private final String situationDetails;
-    private final String situationDate;
+    private final String livingSituationDetails;
+    private final String addressChangeDate;
     private final String keyDates;
     private final String careAndContactPlan;
     private final String adoption;
@@ -33,7 +33,7 @@ public class ChildParty {
     private final String fathersName;
     private final String fathersResponsibility;
     private final String socialWorkerName;
-    private final TelephoneNumber socialWorkerTel;
+    private final TelephoneNumber socialWorkerTelephoneNumber;
     private final String additionalNeeds;
     private final String additionalNeedsDetails;
     private final String detailsHidden;

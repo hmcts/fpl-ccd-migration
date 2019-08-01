@@ -86,8 +86,8 @@ class MigrateChildrenServiceTest {
         assertThat(firstChildParty.getLitigationIssues()).isEqualTo(expectedChild.getParty().getLitigationIssues());
         assertThat(firstChildParty.getLitigationIssuesDetails()).isEqualTo(expectedChild.getParty().getLitigationIssuesDetails());
         assertThat(firstChildParty.getLivingSituation()).isEqualTo(expectedChild.getParty().getLivingSituation());
-        assertThat(firstChildParty.getSituationDetails()).isEqualTo(expectedChild.getParty().getSituationDetails());
-        assertThat(firstChildParty.getSituationDate()).isEqualTo(expectedChild.getParty().getSituationDate());
+        assertThat(firstChildParty.getLivingSituationDetails()).isEqualTo(expectedChild.getParty().getLivingSituationDetails());
+        assertThat(firstChildParty.getAddressChangeDate()).isEqualTo(expectedChild.getParty().getAddressChangeDate());
         assertThat(firstChildParty.getKeyDates()).isEqualTo(expectedChild.getParty().getKeyDates());
         assertThat(firstChildParty.getCareAndContactPlan()).isEqualTo(expectedChild.getParty().getCareAndContactPlan());
         assertThat(firstChildParty.getAdoption()).isEqualTo(expectedChild.getParty().getAdoption());
@@ -97,7 +97,7 @@ class MigrateChildrenServiceTest {
         assertThat(firstChildParty.getFathersName()).isEqualTo(expectedChild.getParty().getFathersName());
         assertThat(firstChildParty.getFathersResponsibility()).isEqualTo(expectedChild.getParty().getFathersResponsibility());
         assertThat(firstChildParty.getSocialWorkerName()).isEqualTo(expectedChild.getParty().getSocialWorkerName());
-        assertThat(firstChildParty.getSocialWorkerTel()).isEqualTo(expectedChild.getParty().getSocialWorkerTel());
+        assertThat(firstChildParty.getSocialWorkerTelephoneNumber()).isEqualTo(expectedChild.getParty().getSocialWorkerTelephoneNumber());
         assertThat(firstChildParty.getAdditionalNeeds()).isEqualTo(expectedChild.getParty().getAdditionalNeeds());
         assertThat(firstChildParty.getAdditionalNeedsDetails()).isEqualTo(expectedChild.getParty().getAdditionalNeedsDetails());
         assertThat(firstChildParty.getDetailsHidden()).isEqualTo(expectedChild.getParty().getDetailsHidden());
@@ -125,8 +125,8 @@ class MigrateChildrenServiceTest {
         assertThat(firstChildParty.getLitigationIssues()).isEqualTo(expectedChild.getParty().getLitigationIssues());
         assertThat(firstChildParty.getLitigationIssuesDetails()).isEqualTo(expectedChild.getParty().getLitigationIssuesDetails());
         assertThat(firstChildParty.getLivingSituation()).isEqualTo(expectedChild.getParty().getLivingSituation());
-        assertThat(firstChildParty.getSituationDetails()).isEqualTo(expectedChild.getParty().getSituationDetails());
-        assertThat(firstChildParty.getSituationDate()).isEqualTo(expectedChild.getParty().getSituationDate());
+        assertThat(firstChildParty.getLivingSituationDetails()).isEqualTo(expectedChild.getParty().getLivingSituationDetails());
+        assertThat(firstChildParty.getAddressChangeDate()).isEqualTo(expectedChild.getParty().getAddressChangeDate());
         assertThat(firstChildParty.getKeyDates()).isEqualTo(expectedChild.getParty().getKeyDates());
         assertThat(firstChildParty.getCareAndContactPlan()).isEqualTo(expectedChild.getParty().getCareAndContactPlan());
         assertThat(firstChildParty.getAdoption()).isEqualTo(expectedChild.getParty().getAdoption());
@@ -136,7 +136,7 @@ class MigrateChildrenServiceTest {
         assertThat(firstChildParty.getFathersName()).isEqualTo(expectedChild.getParty().getFathersName());
         assertThat(firstChildParty.getFathersResponsibility()).isEqualTo(expectedChild.getParty().getFathersResponsibility());
         assertThat(firstChildParty.getSocialWorkerName()).isEqualTo(expectedChild.getParty().getSocialWorkerName());
-        assertThat(firstChildParty.getSocialWorkerTel()).isEqualTo(expectedChild.getParty().getSocialWorkerTel());
+        assertThat(firstChildParty.getSocialWorkerTelephoneNumber()).isEqualTo(expectedChild.getParty().getSocialWorkerTelephoneNumber());
         assertThat(firstChildParty.getAdditionalNeeds()).isEqualTo(expectedChild.getParty().getAdditionalNeeds());
         assertThat(firstChildParty.getAdditionalNeedsDetails()).isEqualTo(expectedChild.getParty().getAdditionalNeedsDetails());
         assertThat(firstChildParty.getDetailsHidden()).isEqualTo(expectedChild.getParty().getDetailsHidden());
@@ -153,8 +153,8 @@ class MigrateChildrenServiceTest {
         assertThat(OtherChildParty.getLitigationIssues()).isEqualTo(expectedChild.getParty().getLitigationIssues());
         assertThat(OtherChildParty.getLitigationIssuesDetails()).isEqualTo(expectedChild.getParty().getLitigationIssuesDetails());
         assertThat(OtherChildParty.getLivingSituation()).isEqualTo(expectedChild.getParty().getLivingSituation());
-        assertThat(OtherChildParty.getSituationDetails()).isEqualTo(expectedChild.getParty().getSituationDetails());
-        assertThat(OtherChildParty.getSituationDate()).isEqualTo(expectedChild.getParty().getSituationDate());
+        assertThat(OtherChildParty.getLivingSituationDetails()).isEqualTo(expectedChild.getParty().getLivingSituationDetails());
+        assertThat(OtherChildParty.getAddressChangeDate()).isEqualTo(expectedChild.getParty().getAddressChangeDate());
         assertThat(OtherChildParty.getKeyDates()).isEqualTo(expectedChild.getParty().getKeyDates());
         assertThat(OtherChildParty.getCareAndContactPlan()).isEqualTo(expectedChild.getParty().getCareAndContactPlan());
         assertThat(OtherChildParty.getAdoption()).isEqualTo(expectedChild.getParty().getAdoption());
@@ -164,7 +164,7 @@ class MigrateChildrenServiceTest {
         assertThat(OtherChildParty.getFathersName()).isEqualTo(expectedChild.getParty().getFathersName());
         assertThat(OtherChildParty.getFathersResponsibility()).isEqualTo(expectedChild.getParty().getFathersResponsibility());
         assertThat(OtherChildParty.getSocialWorkerName()).isEqualTo(expectedChild.getParty().getSocialWorkerName());
-        assertThat(OtherChildParty.getSocialWorkerTel()).isEqualTo(expectedChild.getParty().getSocialWorkerTel());
+        assertThat(OtherChildParty.getSocialWorkerTelephoneNumber()).isEqualTo(expectedChild.getParty().getSocialWorkerTelephoneNumber());
         assertThat(OtherChildParty.getAdditionalNeeds()).isEqualTo(expectedChild.getParty().getAdditionalNeeds());
         assertThat(OtherChildParty.getAdditionalNeedsDetails()).isEqualTo(expectedChild.getParty().getAdditionalNeedsDetails());
         assertThat(OtherChildParty.getDetailsHidden()).isEqualTo(expectedChild.getParty().getDetailsHidden());
@@ -191,8 +191,8 @@ class MigrateChildrenServiceTest {
         assertThat(firstChildParty.getLitigationIssues()).isNull();
         assertThat(firstChildParty.getLitigationIssuesDetails()).isNull();
         assertThat(firstChildParty.getLivingSituation()).isNull();
-        assertThat(firstChildParty.getSituationDetails()).isNull();
-        assertThat(firstChildParty.getSituationDate()).isNull();
+        assertThat(firstChildParty.getLivingSituationDetails()).isNull();
+        assertThat(firstChildParty.getAddressChangeDate()).isNull();
         assertThat(firstChildParty.getKeyDates()).isNull();
         assertThat(firstChildParty.getCareAndContactPlan()).isNull();
         assertThat(firstChildParty.getAdoption()).isNull();
@@ -202,7 +202,7 @@ class MigrateChildrenServiceTest {
         assertThat(firstChildParty.getFathersName()).isNull();
         assertThat(firstChildParty.getFathersResponsibility()).isNull();
         assertThat(firstChildParty.getSocialWorkerName()).isNull();
-        assertThat(firstChildParty.getSocialWorkerTel()).isNull();
+        assertThat(firstChildParty.getSocialWorkerTelephoneNumber()).isNull();
         assertThat(firstChildParty.getAdditionalNeeds()).isNull();
         assertThat(firstChildParty.getAdditionalNeedsDetails()).isNull();
         assertThat(firstChildParty.getDetailsHidden()).isNull();
@@ -249,8 +249,8 @@ class MigrateChildrenServiceTest {
         assertThat(firstChildParty.getLitigationIssues()).isNull();
         assertThat(firstChildParty.getLitigationIssuesDetails()).isNull();
         assertThat(firstChildParty.getLivingSituation()).isNull();
-        assertThat(firstChildParty.getSituationDetails()).isNull();
-        assertThat(firstChildParty.getSituationDate()).isNull();
+        assertThat(firstChildParty.getLivingSituationDetails()).isNull();
+        assertThat(firstChildParty.getAddressChangeDate()).isNull();
         assertThat(firstChildParty.getKeyDates()).isNull();
         assertThat(firstChildParty.getCareAndContactPlan()).isNull();
         assertThat(firstChildParty.getAdoption()).isNull();
@@ -260,7 +260,7 @@ class MigrateChildrenServiceTest {
         assertThat(firstChildParty.getFathersName()).isNull();
         assertThat(firstChildParty.getFathersResponsibility()).isNull();
         assertThat(firstChildParty.getSocialWorkerName()).isNull();
-        assertThat(firstChildParty.getSocialWorkerTel()).isNull();
+        assertThat(firstChildParty.getSocialWorkerTelephoneNumber()).isNull();
         assertThat(firstChildParty.getAdditionalNeeds()).isNull();
         assertThat(firstChildParty.getAdditionalNeedsDetails()).isNull();
         assertThat(firstChildParty.getDetailsHidden()).isNull();
@@ -434,8 +434,8 @@ class MigrateChildrenServiceTest {
                 .litigationIssuesDetails("Litigation issue details")
                 .dateOfBirth("1999-12-31")
                 .livingSituation("Living with parents")
-                .situationDetails("Situation details")
-                .situationDate("1999-12-31")
+                .livingSituationDetails("Situation details")
+                .addressChangeDate("1999-12-31")
                 .keyDates("1999-12-31")
                 .careAndContactPlan("Care and contact")
                 .adoption("Yes")
@@ -445,7 +445,7 @@ class MigrateChildrenServiceTest {
                 .fathersName("Ted Burns")
                 .fathersResponsibility("Yes")
                 .socialWorkerName("Laura Wilson")
-                .socialWorkerTel(TelephoneNumber.builder()
+                .socialWorkerTelephoneNumber(TelephoneNumber.builder()
                     .telephoneNumber("02838882333")
                     .build())
                 .additionalNeeds("Yes")

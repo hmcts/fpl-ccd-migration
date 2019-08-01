@@ -107,8 +107,8 @@ public class ChildrenDataMigrationService implements DataMigrationService<CaseDa
         partyBuilder.gender(defaultIfBlank(oc.getChildGender(), null));
         partyBuilder.genderIdentification(defaultIfBlank(oc.getChildGenderIdentification(), null));
         partyBuilder.livingSituation(defaultIfBlank(oc.getLivingSituation(), null));
-        partyBuilder.situationDetails(defaultIfBlank(oc.getSituationDetails(), null));
-        partyBuilder.situationDate(defaultIfBlank(oc.getSituationDate(), null ));
+        partyBuilder.livingSituationDetails(defaultIfBlank(oc.getSituationDetails(), null));
+        partyBuilder.addressChangeDate(defaultIfBlank(oc.getSituationDate(), null ));
         partyBuilder.keyDates(defaultIfBlank(oc.getKeyDates(), null));
         partyBuilder.careAndContactPlan(defaultIfBlank(oc.getCareAndContact(), null));
         partyBuilder.adoption(defaultIfBlank(oc.getAdoption(), null));
@@ -118,7 +118,7 @@ public class ChildrenDataMigrationService implements DataMigrationService<CaseDa
         partyBuilder.fathersName(defaultIfBlank(oc.getFathersName(), null));
         partyBuilder.fathersResponsibility(defaultIfBlank(oc.getFathersResponsibility(), null));
         partyBuilder.socialWorkerName(defaultIfBlank(oc.getSocialWorkerName(), null));
-        partyBuilder.socialWorkerTel(solicitorTelephone);
+        partyBuilder.socialWorkerTelephoneNumber(solicitorTelephone);
         partyBuilder.additionalNeeds(defaultIfBlank(oc.getAdditionalNeeds(), null));
         partyBuilder.additionalNeedsDetails(defaultIfBlank(oc.getAdditionalNeedsDetails(), null));
         partyBuilder.detailsHidden(defaultIfBlank(oc.getDetailsHidden(), null));
