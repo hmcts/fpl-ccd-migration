@@ -1,19 +1,21 @@
 package uk.gov.hmcts.reform.migration.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.domain.Applicant;
+import uk.gov.hmcts.reform.domain.CaseData;
 import uk.gov.hmcts.reform.domain.OldApplicant;
 import uk.gov.hmcts.reform.domain.common.Address;
-import uk.gov.hmcts.reform.domain.common.EmailAddress;
-import uk.gov.hmcts.reform.domain.common.MobileNumber;
 import uk.gov.hmcts.reform.domain.common.ApplicantParty;
+import uk.gov.hmcts.reform.domain.common.CollectionEntry;
+import uk.gov.hmcts.reform.domain.common.EmailAddress;
 import uk.gov.hmcts.reform.domain.common.TelephoneNumber;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Predicate;
@@ -22,9 +24,11 @@ import static org.apache.commons.lang3.StringUtils.defaultIfBlank;
 import static org.springframework.util.ObjectUtils.isEmpty;
 
 @Slf4j
-@Service
-public class ApplicantDataMigrationService implements DataMigrationService {
-    private ObjectMapper objectMapper = new ObjectMapper();
+@Component
+public class ApplicantDataMigrationService implements DataMigrationService<CaseData> {
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Override
     public Predicate<CaseDetails> accepts() {
@@ -33,59 +37,86 @@ public class ApplicantDataMigrationService implements DataMigrationService {
     }
 
     @Override
-    public void migrate(CaseDetails caseDetails) {
-        Map<String, Object> data = caseDetails.getData();
+    public CaseData migrate(Map<String, Object> data) {
+        CaseData caseData = objectMapper.convertValue(data, CaseData.class);
 
-        Map<String, Object> map = ImmutableMap.of(
-            "id", UUID.randomUUID().toString(),
-            "value", migrateApplicant(objectMapper.convertValue(data.get("applicant"), OldApplicant.class)));
+        CaseData migratedCaseData = CaseData.builder()
+            .applicants(migrateApplicant(caseData.getApplicant()))
+            .build();
 
-        data.put("applicants", ImmutableList.of(map));
-        data.put("applicant", null);
+        log.info("New case details: {}", migratedCaseData);
 
-        log.info("New case details: {}", caseDetails);
+        return migratedCaseData;
     }
 
-    private Applicant migrateApplicant(OldApplicant or) {
-        log.info("Migrating applicant: {}", or);
+    private List<CollectionEntry<Applicant>> migrateApplicant(OldApplicant oa) {
+        log.info("Migrating applicant: {}", oa);
 
         Address.AddressBuilder addressBuilder = Address.builder();
-        addressBuilder.addressLine1(defaultIfBlank(or.getAddress().getAddressLine1(), null));
-        addressBuilder.addressLine2(defaultIfBlank(or.getAddress().getAddressLine2(), null));
-        addressBuilder.addressLine3(defaultIfBlank(or.getAddress().getAddressLine3(), null));
-        addressBuilder.postTown(defaultIfBlank(or.getAddress().getPostTown(), null));
-        addressBuilder.postcode(defaultIfBlank(or.getAddress().getPostcode(), null));
-        addressBuilder.county(defaultIfBlank(or.getAddress().getCounty(), null));
-        addressBuilder.country(defaultIfBlank(or.getAddress().getCountry(), null));
+
+        if (!isEmpty(oa.getAddress())) {
+            addressBuilder.addressLine1(defaultIfBlank(oa.getAddress().getAddressLine1(), null));
+            addressBuilder.addressLine2(defaultIfBlank(oa.getAddress().getAddressLine2(), null));
+            addressBuilder.addressLine3(defaultIfBlank(oa.getAddress().getAddressLine3(), null));
+            addressBuilder.postTown(defaultIfBlank(oa.getAddress().getPostTown(), null));
+            addressBuilder.postcode(defaultIfBlank(oa.getAddress().getPostcode(), null));
+            addressBuilder.county(defaultIfBlank(oa.getAddress().getCounty(), null));
+            addressBuilder.country(defaultIfBlank(oa.getAddress().getCountry(), null));
+        }
         Address address = addressBuilder.build();
 
-        EmailAddress.EmailAddressBuilder emailBuilder = EmailAddress.builder();
-        emailBuilder.email(defaultIfBlank(or.getEmail(), null));
-        EmailAddress email = emailBuilder.build();
+        EmailAddress email;
 
-        TelephoneNumber.TelephoneNumberBuilder telephoneNumberBuilder = TelephoneNumber.builder();
-        telephoneNumberBuilder.telephoneNumber(defaultIfBlank(or.getTelephone(), null));
-        telephoneNumberBuilder.contactDirection(defaultIfBlank(or.getPersonToContact(), null));
-        TelephoneNumber telephoneNumber = telephoneNumberBuilder.build();
+        if (isEmpty(oa.getEmail())) {
+            email = null;
+        } else {
+            EmailAddress.EmailAddressBuilder emailBuilder = EmailAddress.builder();
+            emailBuilder.email(defaultIfBlank(oa.getEmail(), null));
+            email = emailBuilder.build();
+        }
 
-        MobileNumber.MobileNumberBuilder mobileNumberBuilder = MobileNumber.builder();
-        mobileNumberBuilder.telephoneNumber(defaultIfBlank(or.getMobile(), null));
-        MobileNumber mobileNumber = mobileNumberBuilder.build();
+        TelephoneNumber telephoneNumber;
+
+        if (isEmpty(oa.getTelephone())) {
+            telephoneNumber = null;
+        } else {
+            TelephoneNumber.TelephoneNumberBuilder telephoneNumberBuilder = TelephoneNumber.builder();
+            telephoneNumberBuilder.telephoneNumber(defaultIfBlank(oa.getTelephone(), null));
+            telephoneNumberBuilder.contactDirection(defaultIfBlank(oa.getPersonToContact(), null));
+            telephoneNumber = telephoneNumberBuilder.build();
+        }
+
+        TelephoneNumber mobileNumber;
+
+        if (isEmpty(oa.getMobile())) {
+            mobileNumber = null;
+        } else {
+            TelephoneNumber.TelephoneNumberBuilder mobileNumberBuilder = TelephoneNumber.builder();
+            mobileNumberBuilder.telephoneNumber(defaultIfBlank(oa.getMobile(), null));
+            mobileNumber = mobileNumberBuilder.build();
+        }
 
         ApplicantParty.ApplicantPartyBuilder partyBuilder = ApplicantParty.builder();
         partyBuilder.partyId(UUID.randomUUID().toString());
-        partyBuilder.partyType("Individual");
-        partyBuilder.name(defaultIfBlank(or.getName().split("\\s+")[0], null));
+        partyBuilder.organisationName(defaultIfBlank(oa.getName(), null));
         partyBuilder.address(address);
         partyBuilder.emailAddress(email);
         partyBuilder.telephoneNumber(telephoneNumber);
         partyBuilder.mobileNumber(mobileNumber);
-        partyBuilder.jobTitle(defaultIfBlank(or.getJobTitle(), null));
-        partyBuilder.pbaNumber(defaultIfBlank(or.getPbaNumber(), null));
+        partyBuilder.jobTitle(defaultIfBlank(oa.getJobTitle(), null));
+        partyBuilder.pbaNumber(defaultIfBlank(oa.getPbaNumber(), null));
         ApplicantParty party = partyBuilder.build();
 
-        return Applicant.builder()
-            .party(party)
+        CollectionEntry<Applicant> applicantEntry = CollectionEntry.<Applicant>builder()
+            .id(UUID.randomUUID().toString())
+            .value(Applicant.builder()
+                .party(party)
+                .build())
             .build();
+
+        List<CollectionEntry<Applicant>> applicants = new ArrayList<>();
+        applicants.add(applicantEntry);
+
+        return applicants;
     }
 }
