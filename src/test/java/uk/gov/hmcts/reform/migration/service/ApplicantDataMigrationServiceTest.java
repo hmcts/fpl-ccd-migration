@@ -15,7 +15,6 @@ import uk.gov.hmcts.reform.domain.common.TelephoneNumber;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -28,9 +27,9 @@ class ApplicantDataMigrationServiceTest {
     private final String COUNTRY = "Country";
     private final String POSTCODE = "BT17NT";
     private final String POST_TOWN = "Ballymena";
-    private final String ADDRESSLINE1 = "ADDRESSLINE1";
-    private final String ADDRESSLINE2 = "ADDRESSLINE2";
-    private final String ADDRESSLINE3 = "ADDRESSLINE3";
+    private final String ADDRESS_LINE_1 = "ADDRESS_LINE_1";
+    private final String ADDRESS_LINE_2 = "ADDRESS_LINE_2";
+    private final String ADDRESS_LINE_3 = "ADDRESS_LINE_3";
     private final String JOB_TITLE = "JobTitle";
     private final String TELEPHONE = "02825674837";
     private final String PERSON_TO_CONTACT = "Person to contact";
@@ -96,7 +95,7 @@ class ApplicantDataMigrationServiceTest {
         assertThat(actualValue.getTelephoneNumber()).isEqualTo(expectedValue.getTelephoneNumber());
         assertThat(actualValue.getJobTitle()).isEqualTo(expectedValue.getJobTitle());
         assertThat(actualValue.getMobileNumber()).isEqualTo(expectedValue.getMobileNumber());
-        assertThat(actualValue.getEmailAddress()).isEqualTo(expectedValue.getEmailAddress());
+        assertThat(actualValue.getEmail()).isEqualTo(expectedValue.getEmail());
     }
 
     @Test
@@ -129,7 +128,7 @@ class ApplicantDataMigrationServiceTest {
         assertThat(actualValue.getTelephoneNumber()).isNull();
         assertThat(actualValue.getJobTitle()).isNull();
         assertThat(actualValue.getMobileNumber()).isNull();
-        assertThat(actualValue.getEmailAddress()).isNull();
+        assertThat(actualValue.getEmail()).isNull();
     }
 
     @Test
@@ -155,7 +154,7 @@ class ApplicantDataMigrationServiceTest {
         assertThat(actualValue.getTelephoneNumber()).isNull();
         assertThat(actualValue.getJobTitle()).isNull();
         assertThat(actualValue.getMobileNumber()).isNull();
-        assertThat(actualValue.getEmailAddress()).isEqualTo(EmailAddress.builder().email(EMAIL).build());
+        assertThat(actualValue.getEmail()).isEqualTo(EmailAddress.builder().email(EMAIL).build());
     }
 
     private Applicant createNewApplicant() {
@@ -163,15 +162,15 @@ class ApplicantDataMigrationServiceTest {
             .party(ApplicantParty.builder()
                 .organisationName(APPLICANT)
                 .address(Address.builder()
-                    .addressLine1(ADDRESSLINE1)
-                    .addressLine2(ADDRESSLINE2)
-                    .addressLine3(ADDRESSLINE3)
+                    .addressLine1(ADDRESS_LINE_1)
+                    .addressLine2(ADDRESS_LINE_2)
+                    .addressLine3(ADDRESS_LINE_3)
                     .postTown(POST_TOWN)
                     .postcode(POSTCODE)
                     .county(COUNTY)
                     .country(COUNTRY)
                     .build())
-                .emailAddress(EmailAddress.builder()
+                .email(EmailAddress.builder()
                     .email(EMAIL)
                     .build())
                 .telephoneNumber(TelephoneNumber.builder()
@@ -198,9 +197,9 @@ class ApplicantDataMigrationServiceTest {
                 .country(COUNTRY)
                 .postcode(POSTCODE)
                 .postTown(POST_TOWN)
-                .addressLine1(ADDRESSLINE1)
-                .addressLine2(ADDRESSLINE2)
-                .addressLine3(ADDRESSLINE3)
+                .addressLine1(ADDRESS_LINE_1)
+                .addressLine2(ADDRESS_LINE_2)
+                .addressLine3(ADDRESS_LINE_3)
                 .build())
             .jobTitle(JOB_TITLE)
             .telephone(TELEPHONE)

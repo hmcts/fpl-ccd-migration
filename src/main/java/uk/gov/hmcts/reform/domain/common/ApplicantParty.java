@@ -16,5 +16,5 @@ public class ApplicantParty {
     private final TelephoneNumber telephoneNumber;
     private final String jobTitle;
     private final TelephoneNumber mobileNumber;
-    private final EmailAddress emailAddress;
+    private final EmailAddress email;
 }

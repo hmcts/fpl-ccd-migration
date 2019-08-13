@@ -100,7 +100,7 @@ public class ApplicantDataMigrationService implements DataMigrationService<CaseD
         partyBuilder.partyId(UUID.randomUUID().toString());
         partyBuilder.organisationName(defaultIfBlank(oa.getName(), null));
         partyBuilder.address(address);
-        partyBuilder.emailAddress(email);
+        partyBuilder.email(email);
         partyBuilder.telephoneNumber(telephoneNumber);
         partyBuilder.mobileNumber(mobileNumber);
         partyBuilder.jobTitle(defaultIfBlank(oa.getJobTitle(), null));
