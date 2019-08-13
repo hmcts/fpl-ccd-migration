@@ -34,9 +34,6 @@ class ApplicantDataMigrationServiceTest {
     private final String JOB_TITLE = "JobTitle";
     private final String TELEPHONE = "02825674837";
     private final String PERSON_TO_CONTACT = "Person to contact";
-    private final String PARTY_TYPE = "ApplicantParty type";
-    private final String LEAD_APPLICANT_INDICATOR = "Yes";
-    private final String PARTY_ID = UUID.randomUUID().toString();
     private final String PBA_NUMBER = "PBA123456";
 
     @Autowired
@@ -46,7 +43,7 @@ class ApplicantDataMigrationServiceTest {
     void whenOldStructureExistsAcceptsShouldReturnTrue() {
         Map<String, Object> data = new HashMap<>();
 
-        OldApplicant applicant = oldApplicant();
+        OldApplicant applicant = createOldApplicant();
 
         data.put("applicant", applicant);
 
@@ -82,17 +79,28 @@ class ApplicantDataMigrationServiceTest {
     void whenOldApplicantStructureIsMigratedShouldReturnNewApplicantStructure() {
         Map<String, Object> data = new HashMap<>();
 
-        data.put("applicant", oldApplicant());
+        data.put("applicant", createOldApplicant());
 
-        CaseData valueInApplicant = service.migrate(data);
-        Applicant newApplicant = newApplicant();
+        CaseData migratedData = service.migrate(data);
 
-        assertThat(valueInApplicant.getApplicants().get(0).getValue().equals(newApplicant));
-        assertThat(valueInApplicant.getApplicant()).isNull();
+        ApplicantParty actualValue = migratedData.getApplicants().get(0).getValue().getParty();
+        ApplicantParty expectedValue = createNewApplicant().getParty();
+
+        assertThat(migratedData.getApplicant()).isNull();
+
+        assertThat(actualValue.getPartyId()).isNotNull();
+        assertThat(actualValue.getPartyType()).isNull();
+        assertThat(actualValue.getOrganisationName()).isEqualTo(expectedValue.getOrganisationName());
+        assertThat(actualValue.getPbaNumber()).isEqualTo(expectedValue.getPbaNumber());
+        assertThat(actualValue.getAddress()).isEqualTo(expectedValue.getAddress());
+        assertThat(actualValue.getTelephoneNumber()).isEqualTo(expectedValue.getTelephoneNumber());
+        assertThat(actualValue.getJobTitle()).isEqualTo(expectedValue.getJobTitle());
+        assertThat(actualValue.getMobileNumber()).isEqualTo(expectedValue.getMobileNumber());
+        assertThat(actualValue.getEmailAddress()).isEqualTo(expectedValue.getEmailAddress());
     }
 
     @Test
-    void whenOldApplicantContainsNullValuesShouldReturnNewApplicantWithNullValues() {
+    void whenOldApplicantContainsNullValuesShouldReturnNewApplicantWithPartyIdAndNullValues() {
         Map<String, Object> data = new HashMap<>();
 
         OldApplicant applicant = OldApplicant.builder()
@@ -108,22 +116,20 @@ class ApplicantDataMigrationServiceTest {
 
         data.put("applicant", applicant);
 
-        CaseData valueInApplicant = service.migrate(data);
+        CaseData migratedData = service.migrate(data);
 
-        assertThat(valueInApplicant.getApplicants().get(0).getValue().equals(Applicant.builder()
-            .party(ApplicantParty.builder()
-                .partyId(null)
-                .partyType(null)
-                .organisationName(null)
-                .address(null)
-                .telephoneNumber(null)
-                .mobileNumber(null)
-                .jobTitle(null)
-                .pbaNumber(null)
-                .build())
-            .leadApplicantIndicator(null)
-            .build()));
-        assertThat(valueInApplicant.getApplicant()).isNull();
+        ApplicantParty actualValue = migratedData.getApplicants().get(0).getValue().getParty();
+
+        assertThat(migratedData.getApplicant()).isNull();
+        assertThat(actualValue.getPartyId()).isNotNull();
+        assertThat(actualValue.getPartyType()).isNull();
+        assertThat(actualValue.getOrganisationName()).isNull();
+        assertThat(actualValue.getPbaNumber()).isNull();
+        assertThat(actualValue.getAddress()).isEqualTo(Address.builder().build());
+        assertThat(actualValue.getTelephoneNumber()).isNull();
+        assertThat(actualValue.getJobTitle()).isNull();
+        assertThat(actualValue.getMobileNumber()).isNull();
+        assertThat(actualValue.getEmailAddress()).isNull();
     }
 
     @Test
@@ -136,79 +142,25 @@ class ApplicantDataMigrationServiceTest {
 
         data.put("applicant", applicant);
 
-        CaseData valueInApplicant = service.migrate(data);
+        CaseData migratedData = service.migrate(data);
 
-        assertThat(valueInApplicant.getApplicants().get(0).getValue().equals(Applicant.builder()
-            .party(ApplicantParty.builder()
-                .partyId(null)
-                .partyType(null)
-                .organisationName(APPLICANT)
-                .address(Address.builder()
-                    .build())
-                .emailAddress(EmailAddress.builder()
-                    .email(EMAIL)
-                    .build())
-                .telephoneNumber(TelephoneNumber.builder()
-                    .build())
-                .mobileNumber(TelephoneNumber.builder()
-                    .build())
-                .jobTitle(null)
-                .pbaNumber(null)
-                .build())
-            .leadApplicantIndicator(null)
-            .build()));
-        assertThat(valueInApplicant.getApplicant()).isNull();
+        ApplicantParty actualValue = migratedData.getApplicants().get(0).getValue().getParty();
+
+        assertThat(migratedData.getApplicant()).isNull();
+        assertThat(actualValue.getPartyId()).isNotNull();
+        assertThat(actualValue.getPartyType()).isNull();
+        assertThat(actualValue.getOrganisationName()).isEqualTo(APPLICANT);
+        assertThat(actualValue.getPbaNumber()).isNull();
+        assertThat(actualValue.getAddress()).isEqualTo(Address.builder().build());
+        assertThat(actualValue.getTelephoneNumber()).isNull();
+        assertThat(actualValue.getJobTitle()).isNull();
+        assertThat(actualValue.getMobileNumber()).isNull();
+        assertThat(actualValue.getEmailAddress()).isEqualTo(EmailAddress.builder().email(EMAIL).build());
     }
 
-    @Test
-    void whenPartiallyFilledInOldApplicantAddressIsMigratedShouldReturnNewListStructureWithNullFields() {
-        Map<String, Object> data = new HashMap<>();
-        OldApplicant applicant = OldApplicant.builder()
-            .address(Address.builder()
-                .postcode(POSTCODE)
-                .county(COUNTY)
-                .build())
-            .build();
-
-        data.put("applicant", applicant);
-
-        CaseData valueInApplicant = service.migrate(data);
-
-        assertThat(valueInApplicant.getApplicants().get(0).getValue().equals(Applicant.builder()
+    private Applicant createNewApplicant() {
+        return Applicant.builder()
             .party(ApplicantParty.builder()
-                .partyId(null)
-                .partyType(null)
-                .organisationName(null)
-                .address(Address.builder()
-                    .addressLine1(null)
-                    .addressLine2(null)
-                    .addressLine3(null)
-                    .postcode(POSTCODE)
-                    .country(COUNTRY)
-                    .county(null)
-                    .build())
-                .emailAddress(EmailAddress.builder()
-                    .email(null)
-                    .build())
-                .telephoneNumber(TelephoneNumber.builder()
-                    .telephoneNumber(null)
-                    .build())
-                .mobileNumber(TelephoneNumber.builder()
-                    .telephoneNumber(null)
-                    .build())
-                .jobTitle(null)
-                .pbaNumber(null)
-                .build())
-            .leadApplicantIndicator(null)
-            .build()));
-        assertThat(valueInApplicant.getApplicant()).isNull();
-    }
-
-    private Applicant newApplicant() {
-        Applicant newApplicant = Applicant.builder()
-            .party(ApplicantParty.builder()
-                .partyId(PARTY_ID)
-                .partyType(PARTY_TYPE)
                 .organisationName(APPLICANT)
                 .address(Address.builder()
                     .addressLine1(ADDRESSLINE1)
@@ -232,12 +184,11 @@ class ApplicantDataMigrationServiceTest {
                 .jobTitle(JOB_TITLE)
                 .pbaNumber(PBA_NUMBER)
                 .build())
-            .leadApplicantIndicator(LEAD_APPLICANT_INDICATOR)
+            .leadApplicantIndicator("Yes")
             .build();
-        return newApplicant;
     }
 
-    private OldApplicant oldApplicant() {
+    private OldApplicant createOldApplicant() {
         return OldApplicant.builder()
             .name(APPLICANT)
             .email(EMAIL)
