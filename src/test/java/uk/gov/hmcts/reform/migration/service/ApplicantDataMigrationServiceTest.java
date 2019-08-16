@@ -88,7 +88,7 @@ class ApplicantDataMigrationServiceTest {
         assertThat(migratedData.getApplicant()).isNull();
 
         assertThat(actualValue.getPartyId()).isNotNull();
-        assertThat(actualValue.getPartyType()).isNull();
+        assertThat(actualValue.getPartyType()).isEqualTo("ORGANISATION");
         assertThat(actualValue.getOrganisationName()).isEqualTo(expectedValue.getOrganisationName());
         assertThat(actualValue.getPbaNumber()).isEqualTo(expectedValue.getPbaNumber());
         assertThat(actualValue.getAddress()).isEqualTo(expectedValue.getAddress());
@@ -121,7 +121,7 @@ class ApplicantDataMigrationServiceTest {
 
         assertThat(migratedData.getApplicant()).isNull();
         assertThat(actualValue.getPartyId()).isNotNull();
-        assertThat(actualValue.getPartyType()).isNull();
+        assertThat(actualValue.getPartyType()).isEqualTo("ORGANISATION");
         assertThat(actualValue.getOrganisationName()).isNull();
         assertThat(actualValue.getPbaNumber()).isNull();
         assertThat(actualValue.getAddress()).isEqualTo(Address.builder().build());
@@ -147,7 +147,7 @@ class ApplicantDataMigrationServiceTest {
 
         assertThat(migratedData.getApplicant()).isNull();
         assertThat(actualValue.getPartyId()).isNotNull();
-        assertThat(actualValue.getPartyType()).isNull();
+        assertThat(actualValue.getPartyType()).isEqualTo("ORGANISATION");
         assertThat(actualValue.getOrganisationName()).isEqualTo(APPLICANT);
         assertThat(actualValue.getPbaNumber()).isNull();
         assertThat(actualValue.getAddress()).isEqualTo(Address.builder().build());

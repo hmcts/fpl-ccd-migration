@@ -34,7 +34,6 @@ def versions = [
 dependencies {
   annotationProcessor group: 'org.projectlombok', name: 'lombok', version: versions.lombok
   compileOnly group: 'org.projectlombok', name: 'lombok', version: versions.lombok
-  
   compile group: 'uk.gov.hmcts.reform.ccd-case-migration', name: 'processor', version: '2.1.0'
   compile group: 'uk.gov.hmcts.reform.ccd-case-migration', name: 'domain', version: '2.1.0'
   compile group: 'com.google.guava', name: 'guava', version: '28.0-jre'

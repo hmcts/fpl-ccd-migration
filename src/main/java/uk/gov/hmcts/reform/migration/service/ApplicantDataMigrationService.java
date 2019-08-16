@@ -98,6 +98,7 @@ public class ApplicantDataMigrationService implements DataMigrationService<CaseD
 
         ApplicantParty.ApplicantPartyBuilder partyBuilder = ApplicantParty.builder();
         partyBuilder.partyId(UUID.randomUUID().toString());
+        partyBuilder.partyType("ORGANISATION");
         partyBuilder.organisationName(defaultIfBlank(oa.getName(), null));
         partyBuilder.address(address);
         partyBuilder.email(email);
@@ -111,6 +112,7 @@ public class ApplicantDataMigrationService implements DataMigrationService<CaseD
             .id(UUID.randomUUID().toString())
             .value(Applicant.builder()
                 .party(party)
+                .leadApplicantIndicator("Yes")
                 .build())
             .build();
 
