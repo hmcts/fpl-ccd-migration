@@ -10,9 +10,9 @@ import uk.gov.hmcts.reform.domain.common.Address;
 import uk.gov.hmcts.reform.domain.common.CollectionEntry;
 import uk.gov.hmcts.reform.domain.common.TelephoneNumber;
 import uk.gov.hmcts.reform.fpl.domain.CaseData;
-import uk.gov.hmcts.reform.fpl.domain.OldChildren;
-import uk.gov.hmcts.reform.fpl.domain.OldChild;
 import uk.gov.hmcts.reform.fpl.domain.Child;
+import uk.gov.hmcts.reform.fpl.domain.OldChild;
+import uk.gov.hmcts.reform.fpl.domain.OldChildren;
 import uk.gov.hmcts.reform.fpl.domain.common.ChildParty;
 
 import java.util.List;
@@ -53,10 +53,9 @@ public class ChildrenDataMigrationService implements DataMigrationService<CaseDa
         log.info("beginning to migrate children {}", children);
 
         List<CollectionEntry<Child>> migratedChildren = children.getAll().stream()
-            .map(entry -> migrateIndividualChild(entry.getValue()))
             .map(entry -> CollectionEntry.<Child>builder()
-                .id(UUID.randomUUID().toString())
-                .value(entry)
+                .id(entry.getId())
+                .value(migrateIndividualChild(entry.getValue()))
                 .build())
             .collect(toList());
 
@@ -78,8 +77,6 @@ public class ChildrenDataMigrationService implements DataMigrationService<CaseDa
             addressBuilder.county(defaultIfBlank(oc.getAddress().getCounty(), null));
             addressBuilder.country(defaultIfBlank(oc.getAddress().getCountry(), null));
         }
-
-        Address address = addressBuilder.build();
 
         TelephoneNumber solicitorTelephone;
 
@@ -103,12 +100,12 @@ public class ChildrenDataMigrationService implements DataMigrationService<CaseDa
         }
 
         partyBuilder.dateOfBirth(defaultIfBlank(oc.getChildDOB(), null));
-        partyBuilder.address(address);
+        partyBuilder.address(addressBuilder.build());
         partyBuilder.gender(defaultIfBlank(oc.getChildGender(), null));
         partyBuilder.genderIdentification(defaultIfBlank(oc.getChildGenderIdentification(), null));
         partyBuilder.livingSituation(defaultIfBlank(oc.getLivingSituation(), null));
         partyBuilder.livingSituationDetails(defaultIfBlank(oc.getSituationDetails(), null));
-        partyBuilder.addressChangeDate(defaultIfBlank(oc.getSituationDate(), null ));
+        partyBuilder.addressChangeDate(defaultIfBlank(oc.getSituationDate(), null));
         partyBuilder.keyDates(defaultIfBlank(oc.getKeyDates(), null));
         partyBuilder.careAndContactPlan(defaultIfBlank(oc.getCareAndContact(), null));
         partyBuilder.adoption(defaultIfBlank(oc.getAdoption(), null));
@@ -128,8 +125,8 @@ public class ChildrenDataMigrationService implements DataMigrationService<CaseDa
         ChildParty party = partyBuilder.build();
 
         return Child.builder()
-                .party(party)
-                .build();
+            .party(party)
+            .build();
     }
 
     private List<String> splitName(String name) {

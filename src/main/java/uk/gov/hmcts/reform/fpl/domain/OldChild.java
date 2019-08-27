@@ -9,7 +9,6 @@ import uk.gov.hmcts.reform.domain.common.Address;
 @Data
 @Builder
 @AllArgsConstructor
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class OldChild {
 
     private final String childName;

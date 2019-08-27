@@ -23,7 +23,7 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
-class MigrateChildrenServiceTest {
+class ChildDataMigrationServiceTest {
 
     @Autowired
     private ChildrenDataMigrationService service;
@@ -64,7 +64,7 @@ class MigrateChildrenServiceTest {
         assertThat(service.accepts().test(caseDetails)).isEqualTo(false);
     }
 
-    @SuppressWarnings({"unchecked", "LineLength"})
+    @SuppressWarnings("LineLength")
     @Test
     void whenOldChildrenStructureIsMigratedShouldReturnNewListStructure() {
         CaseData migratedCaseData = service.migrate(createOldChild(false, false));
