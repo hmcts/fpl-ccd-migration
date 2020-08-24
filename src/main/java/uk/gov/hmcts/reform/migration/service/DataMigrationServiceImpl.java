@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -15,17 +16,19 @@ public class DataMigrationServiceImpl implements DataMigrationService<Object> {
     @Override
     public Predicate<CaseDetails> accepts() {
         return caseDetails -> Optional.ofNullable(caseDetails)
-            .stream()
-            .filter(e -> e.getData().containsKey("familyManCaseNumber"))
-            .anyMatch(e -> e.getData().containsValue("mockcaseID"));
+            .map(CaseDetails::getData)
+            .filter(data -> data.getOrDefault("familyManCaseNumber", "").equals("SA20C50004"))
+            .isPresent();
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public Object migrate(Map<String, Object> data) {
-        Object orderCollection = data.get("orderCollection");
-        List<Object> list = ((ArrayList) orderCollection);
-        list.remove(4);
-        return data;
+        List<Object> orderCollection = (ArrayList) data.get("orderCollection");
+        orderCollection.remove(4);
+
+        Map<String, Object> migration = new HashMap<String, Object>();
+        migration.put("orderCollection", orderCollection);
+        return migration;
     }
 }
