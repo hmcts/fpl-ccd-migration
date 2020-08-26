@@ -17,7 +17,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Object> {
     public Predicate<CaseDetails> accepts() {
         return caseDetails -> Optional.ofNullable(caseDetails)
             .map(CaseDetails::getData)
-            .filter(data -> data.getOrDefault("familyManCaseNumber", "").equals("SA20C50004"))
+            .filter(data -> data.getOrDefault("familyManCaseNumber", "").equals("CF20C50047"))
             .isPresent();
     }
 
@@ -25,7 +25,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Object> {
     @Override
     public Object migrate(Map<String, Object> data) {
         List<Object> orderCollection = (ArrayList) data.get("orderCollection");
-        orderCollection.remove(4);
+        orderCollection.remove(0);
 
         Map<String, Object> migration = new HashMap<String, Object>();
         migration.put("orderCollection", orderCollection);
