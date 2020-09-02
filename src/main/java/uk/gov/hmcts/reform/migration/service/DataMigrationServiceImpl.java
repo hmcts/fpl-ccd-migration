@@ -25,10 +25,22 @@ public class DataMigrationServiceImpl implements DataMigrationService<Object> {
     @Override
     public Object migrate(Map<String, Object> data) {
         List<Object> orderCollection = (ArrayList) data.get("orderCollection");
-        orderCollection.remove(0);
+        orderCollection.remove(1);
+
+        List<Map<String, Map<String, Object>>> children1 = (ArrayList) data.get("children1");
+
+        for (Map<String, Map<String, Object>> child : children1) {
+            Map<String, Object> value = child.get("value");
+            value.remove("finalOrderIssued");
+            value.remove("finalOrderIssuedType");
+        }
 
         Map<String, Object> migration = new HashMap<String, Object>();
         migration.put("orderCollection", orderCollection);
+        migration.put("children1", children1);
+        migration.put("state", "PREPARE_FOR_HEARING");
+        migration.put("closeCaseTabField", null);
+
         return migration;
     }
 }
