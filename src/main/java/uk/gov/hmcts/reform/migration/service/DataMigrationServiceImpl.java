@@ -13,7 +13,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Object> {
     public Predicate<CaseDetails> accepts() {
         return caseDetails -> Optional.ofNullable(caseDetails)
             .map(CaseDetails::getData)
-            .filter(data -> data.getOrDefault("familyManCaseNumber", "").equals("CF20C50052"))
+            .filter(data -> data.getOrDefault("familyManCaseNumber", "").equals("LE20C50002"))
             .isPresent();
     }
 
