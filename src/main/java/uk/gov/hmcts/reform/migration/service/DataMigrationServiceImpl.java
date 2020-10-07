@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.migration.service;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -20,6 +21,6 @@ public class DataMigrationServiceImpl implements DataMigrationService<Object> {
     @SuppressWarnings("unchecked")
     @Override
     public Object migrate(Map<String, Object> data) {
-        return data;
+        return new HashMap<>();
     }
 }
