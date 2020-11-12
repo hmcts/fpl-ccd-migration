@@ -12,15 +12,26 @@ import java.util.function.Predicate;
 public class DataMigrationServiceImpl implements DataMigrationService<Object> {
     @Override
     public Predicate<CaseDetails> accepts() {
-        return caseDetails -> Optional.ofNullable(caseDetails)
-            .map(CaseDetails::getData)
-            .filter(data -> data.getOrDefault("familyManCaseNumber", "").equals("PO20C50014"))
-            .isPresent();
+        return caseDetails ->
+            Optional.ofNullable(caseDetails)
+                .map(CaseDetails::getData)
+                .filter(data -> data.containsKey("localAuthorityPolicy"))
+                .isPresent();
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public Object migrate(Map<String, Object> data) {
-        return new HashMap<>();
+        Map<String, Object> organisationPolicy = (Map) data.get("localAuthorityPolicy");
+        Map<String, Object> organisation = (Map) organisationPolicy.getOrDefault("Organisation", null);
+
+        if (organisation != null) {
+            organisation.remove("OrganisationName");
+        }
+
+        Map<String, Object> caseUpdate = new HashMap<>();
+        caseUpdate.put("localAuthorityPolicy", organisationPolicy);
+
+        return caseUpdate;
     }
 }
