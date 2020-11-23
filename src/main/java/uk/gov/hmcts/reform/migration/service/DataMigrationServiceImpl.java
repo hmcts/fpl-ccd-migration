@@ -4,16 +4,18 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
+import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 
-public class DataMigrationServiceImpl implements DataMigrationService<Object>{
+@Service
+public class DataMigrationServiceImpl implements DataMigrationService<Object> {
 
     @Override
     public Predicate<CaseDetails> accepts() {
         return caseDetails -> Optional.ofNullable(caseDetails)
-            .map(CaseDetails::getData)
-            .filter(data -> "CF20C50014".equals(data.get("familyManCaseNumber")))
-            .isPresent();
+                                      .map(CaseDetails::getData)
+                                      .filter(data -> "CF20C50014".equals(data.get("familyManCaseNumber")))
+                                      .isPresent();
     }
 
     @Override
