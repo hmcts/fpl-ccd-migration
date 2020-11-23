@@ -1,10 +1,13 @@
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+
 plugins {
   id 'application'
   id 'org.springframework.boot' version '2.1.6.RELEASE'
 }
 
 group = 'uk.gov.hmcts.reform'
-version = '1.0.0'
+version = "1.0.0-" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("YYYYMMdd-HHMM"))
 
 sourceCompatibility = '11'
 targetCompatibility = '11'
