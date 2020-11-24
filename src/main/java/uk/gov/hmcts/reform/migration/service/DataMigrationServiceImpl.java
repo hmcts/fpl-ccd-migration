@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.migration.service;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -20,6 +21,6 @@ public class DataMigrationServiceImpl implements DataMigrationService<Object> {
 
     @Override
     public Object migrate(Map<String, Object> data) {
-        return new HashMap<>();
+        return Map.<String, Object>of("migrationId", "FPLA-2429");
     }
 }
