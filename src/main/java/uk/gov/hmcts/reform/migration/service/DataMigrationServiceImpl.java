@@ -20,6 +20,6 @@ public class DataMigrationServiceImpl implements DataMigrationService<Object> {
 
     @Override
     public Object migrate(Map<String, Object> data) {
-        return new HashMap<>();
+        return Map.<String, Object>of("migrationId", "FPLA-2450");
     }
 }
