@@ -7,7 +7,7 @@ plugins {
 }
 
 group = 'uk.gov.hmcts.reform'
-version = "1.0.0-" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("YYYYMMdd-HHMM"))
+version = "1.0.0-" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("YYYYMMdd-HHmm"))
 
 sourceCompatibility = '11'
 targetCompatibility = '11'
