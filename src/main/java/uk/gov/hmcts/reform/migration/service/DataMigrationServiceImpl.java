@@ -1,12 +1,9 @@
 package uk.gov.hmcts.reform.migration.service;
 
-import net.logstash.logback.marker.MapEntriesAppendingMarker;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
