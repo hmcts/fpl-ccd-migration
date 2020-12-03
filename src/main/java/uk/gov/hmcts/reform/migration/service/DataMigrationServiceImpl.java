@@ -27,26 +27,24 @@ public class DataMigrationServiceImpl implements DataMigrationService<Object> {
     }
 
     private boolean isMigrationRequiredForCase(Map<String, Object> data) {
-        boolean flag = false;
-        Set<String> allkeys = data.keySet();
-        for (String key : allkeys) {
+        Set<String> allCaseDataKeys = data.keySet();
+        for (String key : allCaseDataKeys) {
+            // If there is any one document found, then the case will be sent for data migration
             if (key.startsWith("documents_")) {
-                System.out.println("data get keys " + key + " value is " + data.get(key).toString());
+                // This document type is ArrayList and remaining are Maps, hence different casting has been applied
                 if (key.equals("documents_socialWorkOther")) {
                     ArrayList value = (ArrayList) data.get(key);
                     if (value.size() > 0) {
-                        System.out.println("About to return flag ==> " + flag);
-                        flag = true;
+                        return true;
                     }
                 } else {
                     Map<String, Object> value = (Map<String, Object>) data.get(key);
                     if (value.size() > 0) {
-                        System.out.println("About to return flag for Map ==> " + flag);
-                        flag = true;
+                        return true;
                     }
                 }
             }
         }
-        return flag;
+        return false;
     }
 }
