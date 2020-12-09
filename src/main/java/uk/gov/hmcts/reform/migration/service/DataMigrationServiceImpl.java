@@ -67,13 +67,13 @@ public class DataMigrationServiceImpl implements DataMigrationService<Object> {
 //        CODE_MAPPINGS.put("BCP", null);         //bcpcouncil.gov.uk
     }
 
-
     @Override
     public Predicate<CaseDetails> accepts() {
         return caseDetails ->
             !"Deleted".equals(caseDetails.getState()) &&
                 Optional.ofNullable(caseDetails)
                     .map(CaseDetails::getData)
+                    .filter(data -> "KBC".equals(data.get("caseLocalAuthority")) )
                     .filter(data -> !data.containsKey("localAuthorityPolicy"))
                     .isPresent();
     }
