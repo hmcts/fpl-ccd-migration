@@ -13,12 +13,12 @@ public class DataMigrationServiceImpl implements DataMigrationService<Object> {
     public Predicate<CaseDetails> accepts() {
         return caseDetails -> Optional.ofNullable(caseDetails)
             .map(CaseDetails::getData)
-            .filter(data -> data.getOrDefault("familyManCaseNumber", "").equals("CF20C50049"))
+            .filter(data -> data.getOrDefault("familyManCaseNumber", "").equals("WR20C50007"))
             .isPresent();
     }
 
     @Override
     public Object migrate(Map<String, Object> data) {
-        return Map.<String, Object>of("migrationId", "FPLA-2706");
+        return Map.<String, Object>of("migrationId", "FPLA-2724");
     }
 }
