@@ -8,17 +8,17 @@ import java.util.Optional;
 import java.util.function.Predicate;
 
 @Service
-public class DataMigrationServiceImpl implements DataMigrationService<Object> {
+public class DataMigrationServiceImpl implements DataMigrationService<Map<String, Object>> {
     @Override
     public Predicate<CaseDetails> accepts() {
         return caseDetails -> Optional.ofNullable(caseDetails)
             .map(CaseDetails::getData)
-            .filter(data -> data.getOrDefault("familyManCaseNumber", "").equals("ZW21C50002"))
+            .filter(data -> "ZW21C50002".equals(data.get("familyManCaseNumber")))
             .isPresent();
     }
 
     @Override
-    public Object migrate(Map<String, Object> data) {
-        return Map.<String, Object>of("migrationId", "FPLA-2740");
+    public Map<String, Object> migrate(Map<String, Object> data) {
+        return Map.of("migrationId", "FPLA-2740");
     }
 }
