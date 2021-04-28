@@ -11,12 +11,14 @@ import java.util.function.Predicate;
 @Service
 public class DataMigrationServiceImpl implements DataMigrationService<Object> {
 
-    public static final List<String> INVALID_CASE_STATES = List.of("CLOSED", "OPEN", "DELETED");
+    public static final List<String> INVALID_CASE_STATES = List.of("CLOSED", "Open", "Deleted");
 
     @Override
     public Predicate<CaseDetails> accepts() {
         return caseDetails -> Optional.ofNullable(caseDetails)
             .filter(caseDetailsMap -> !INVALID_CASE_STATES.contains(caseDetailsMap.getState()))
+            .filter(caseDetailsMap -> !caseDetailsMap.getData().containsKey("noticeOfChangeAnswers0"))
+            .filter(caseDetailsMap -> !caseDetailsMap.getData().containsKey("respondentPolicy0"))
             .isPresent();
     }
 
