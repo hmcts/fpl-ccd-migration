@@ -38,7 +38,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
             respondents = mapper.convertValue(o, new TypeReference<List<Object>>(){});
         }
 
-        return !respondents.isEmpty() && respondents.size() > 10;
+        return !respondents.isEmpty() && respondents.size() <= 10;
     }
 
     @Override
