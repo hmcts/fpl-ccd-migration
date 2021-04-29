@@ -1,29 +1,48 @@
 package uk.gov.hmcts.reform.migration.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
 
 @Service
-public class DataMigrationServiceImpl implements DataMigrationService<Object> {
+@RequiredArgsConstructor(onConstructor_ = {@Autowired})
+public class DataMigrationServiceImpl implements DataMigrationService<Map<String, Object>> {
 
     public static final List<String> INVALID_CASE_STATES = List.of("CLOSED", "Open", "Deleted");
+    private final ObjectMapper mapper;
 
     @Override
     public Predicate<CaseDetails> accepts() {
         return caseDetails -> Optional.ofNullable(caseDetails)
-            .filter(caseDetailsMap -> !INVALID_CASE_STATES.contains(caseDetailsMap.getState()))
-            .filter(caseDetailsMap -> !caseDetailsMap.getData().containsKey("noticeOfChangeAnswers0"))
-            .filter(caseDetailsMap -> !caseDetailsMap.getData().containsKey("respondentPolicy0"))
+            .filter(details -> !INVALID_CASE_STATES.contains(details.getState()))
+            .map(CaseDetails::getData)
+            .filter(data -> !data.containsKey("noticeOfChangeAnswers0"))
+            .filter(data -> !data.containsKey("respondentPolicy0"))
+            .filter(this::filterRespondents)
             .isPresent();
     }
 
+    private boolean filterRespondents(Map<String, Object> data) {
+        Object o = data.get("respondents1");
+        List<Object> respondents = new ArrayList<>();
+        if (o != null) {
+            respondents = mapper.convertValue(o, new TypeReference<List<Object>>(){});
+        }
+
+        return !respondents.isEmpty() && respondents.size() > 10;
+    }
+
     @Override
-    public Object migrate(Map<String, Object> data) {
-        return Map.<String, Object>of("migrationId", "FPLA-2961");
+    public Map<String, Object> migrate(Map<String, Object> data) {
+        return Map.of("migrationId", "FPLA-2961");
     }
 }
