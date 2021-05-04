@@ -28,7 +28,18 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
             .filter(data -> !data.containsKey("noticeOfChangeAnswers0"))
             .filter(data -> !data.containsKey("respondentPolicy0"))
             .filter(this::filterRespondents)
+            .filter(this::filterApplicants)
             .isPresent();
+    }
+
+    private boolean filterApplicants(Map<String, Object> data) {
+        Object o = data.get("applicants");
+        List<Object> applicants = new ArrayList<>();
+        if (o != null) {
+            applicants = mapper.convertValue(o, new TypeReference<List<Object>>(){});
+        }
+
+        return !applicants.isEmpty();
     }
 
     private boolean filterRespondents(Map<String, Object> data) {
