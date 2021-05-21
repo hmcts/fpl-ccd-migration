@@ -3,17 +3,16 @@ package uk.gov.hmcts.reform.migration.service;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 
-import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 
 @Service
 public class DataMigrationServiceImpl implements DataMigrationService<Map<String, Object>> {
-    List<Long> caseIds = List.of(1616408548410918L);
+    Long caseId = 1616408548410918L;
 
     @Override
     public Predicate<CaseDetails> accepts() {
-        return caseDetails -> caseIds.contains(caseDetails.getId());
+        return caseDetails -> caseId.equals(caseDetails.getId());
     }
 
     @Override
