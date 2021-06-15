@@ -15,6 +15,6 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
     }
 
     public Map<String, Object> migrate(Map<String, Object> data) {
-        return Map.of("migrationId", "FPLA-3126");
+        return Map.of("migrationId", "FPLA-3125");
     }
 }
