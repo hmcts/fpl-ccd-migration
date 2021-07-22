@@ -13,11 +13,11 @@ public class DataMigrationServiceImpl implements DataMigrationService<Object> {
     public Predicate<CaseDetails> accepts() {
         return caseDetails -> caseDetails.getData()
             .getOrDefault("familyManCaseNumber", "")
-            .equals("DE21C50042");
+            .equals("PE21C50004");
     }
 
     @Override
     public Object migrate(Map<String, Object> data) {
-        return Map.<String, Object>of("migrationId", "FPLA-3239");
+        return Map.<String, Object>of("migrationId", "FPLA-3262");
     }
 }
