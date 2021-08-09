@@ -13,7 +13,7 @@ import java.util.function.Predicate;
 
 @Component
 public class DataMigrationServiceImpl implements DataMigrationService<Map<String, Object>> {
-    private static final List<String> IGNORED_STATES = List.of("Open", "RETURNED", "CLOSED");
+    private static final List<String> IGNORED_STATES = List.of("Open", "RETURNED", "CLOSED", "Deleted");
     private static final int MAX_CHILDREN = 15;
 
     private final ObjectMapper mapper;
