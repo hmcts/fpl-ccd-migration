@@ -1,4 +1,4 @@
-# fpl-ccd-data-migration-tool
+# FPL CCD Data Migration Tool
 
 For more info on the tool and how to use it check out https://github.com/hmcts/ccd-case-migration-starter
 
