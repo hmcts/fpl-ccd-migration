@@ -1,12 +1,12 @@
 package uk.gov.hmcts.reform.migration.service;
 
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 
 import java.util.Map;
 import java.util.function.Predicate;
 
-@Service
+@Component
 public class DataMigrationServiceImpl implements DataMigrationService<Map<String, Object>> {
     @Override
     public Predicate<CaseDetails> accepts() {
