@@ -5,7 +5,7 @@
 The basic premise of this tool is to be an implementaion of [hmcts/ccd-case-migration-starter](https://github.com/hmcts/ccd-case-migration-starter).
 
 It works by accessing the ccd-data-store-api as the system user, grabbing and filtering all cases, and then migrating the filtered cases.
-To perform the migration there needs to be an event that is defined with the ID `migrateCase`,this is defined 
+To perform the migration there needs to be an event defined in the consuming case type that is defined with the ID `migrateCase`, this is defined 
 [here](https://github.com/hmcts/fpl-ccd-configuration/blob/bc67b4f1590e0d5999abad30819c8f5a7fc0e391/ccd-definition/CaseEvent/CareSupervision/MultiState.json#L5)
 in the FPL repo.
 This event is then triggered by the `CaseMigrationProcessor` defined in the [hmcts/ccd-case-migration-starter](https://github.com/hmcts/ccd-case-migration-starter), 
