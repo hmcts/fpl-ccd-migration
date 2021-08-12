@@ -1,6 +1,19 @@
 # FPL CCD Data Migration Tool
 
-For more info on the tool and how to use it check out https://github.com/hmcts/ccd-case-migration-starter
+## Basic overview
+
+The basic premise of this tool is to be an implementaion of [hmcts/ccd-case-migration-starter](https://github.com/hmcts/ccd-case-migration-starter).
+
+It works by accessing the ccd-data-store-api as the system user, grabbing and filtering all cases, and then migrating the filtered cases.
+To perform the migration there needs to be an event defined in the consuming case type that is defined with the ID `migrateCase`, this is defined 
+[here](https://github.com/hmcts/fpl-ccd-configuration/blob/bc67b4f1590e0d5999abad30819c8f5a7fc0e391/ccd-definition/CaseEvent/CareSupervision/MultiState.json#L5)
+in the FPL repo.
+This event is then triggered by the `CaseMigrationProcessor` defined in the [hmcts/ccd-case-migration-starter](https://github.com/hmcts/ccd-case-migration-starter), 
+and as it is a CCD event it can have the standard CCD hooks, i.e. `about-to-start`, `about-to-submit`, `submitted`. FPL makes use of the `about-to-submit` hook to then perform the [main part of the migration](https://github.com/hmcts/fpl-ccd-configuration/blob/master/service/src/main/java/uk/gov/hmcts/reform/fpl/controllers/support/MigrateCaseController.java).
+
+### More info
+
+For more info on the tool and how to use it check out [hmcts/ccd-case-migration-starter](https://github.com/hmcts/ccd-case-migration-starter)
 
 ## Build
 
