@@ -4,19 +4,20 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Predicate;
 
 @Component
 public class DataMigrationServiceImpl implements DataMigrationService<Map<String, Object>> {
 
-    private static final String MIGRATION_ID = "YOUR_MIGRATION_ID_HERE";
+    private static final String MIGRATION_ID = "DFPL-666";
+    private static final long CASE_ID = 1642779142991513L;
 
     @Override
     public Predicate<CaseDetails> accepts() {
-        /*
-         Implement filter here that selects the cases to be migrated.
-        */
-        throw new UnsupportedOperationException("not yet implemented");
+        return caseDetails -> Optional.ofNullable(caseDetails)
+            .filter(details -> CASE_ID == details.getId())
+            .isPresent();
     }
 
     @Override
