@@ -48,7 +48,7 @@ java -jar \
 -Dlogging.level.uk.gov.hmcts.reform="INFO" \
 -Dfeign.client.config.default.connectTimeout="60000" \
 -Dfeign.client.config.default.readTimeout="60000" \
-PATH/TO/MIGRATION.jar
+-Dmigration.caseIdFile="caseIds.txt" -jar ./build/libs/fpl-ccd-data-migration-tool-[VERSION].jar
 ```
 
 where
