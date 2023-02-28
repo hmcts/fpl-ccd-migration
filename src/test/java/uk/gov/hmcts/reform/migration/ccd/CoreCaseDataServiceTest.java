@@ -22,7 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.migration.service.DataMigrationServiceImpl.MIGRATION_ID_KEY;
+import static uk.gov.hmcts.reform.migration.service.DataMigrationService.MIGRATION_ID_KEY;
 
 @ExtendWith(MockitoExtension.class)
 public class CoreCaseDataServiceTest {
@@ -71,7 +71,7 @@ public class CoreCaseDataServiceTest {
             .surname("Surname")
             .build();
 
-        CaseDetails caseDetails3 = createCaseDetails(CASE_ID);
+        CaseDetails caseDetails3 = createCaseDetails();
 
         setupMocks(userDetails, caseDetails3.getData());
 
@@ -100,7 +100,7 @@ public class CoreCaseDataServiceTest {
             .surname("Surname")
             .build();
 
-        CaseDetails caseDetails3 = createCaseDetails(CASE_ID);
+        CaseDetails caseDetails3 = createCaseDetails();
 
         when(idamClient.getUserDetails(AUTH_TOKEN)).thenReturn(userDetails);
 
@@ -131,12 +131,12 @@ public class CoreCaseDataServiceTest {
             CASE_TYPE, String.valueOf(CASE_ID), true, caseDataContent);
     }
 
-    private CaseDetails createCaseDetails(long id) {
+    private CaseDetails createCaseDetails() {
         LinkedHashMap<String, Object> data = new LinkedHashMap<>();
         data.put(MIGRATION_ID_KEY, DFPL_1124);
 
         return CaseDetails.builder()
-            .id(id)
+            .id(CoreCaseDataServiceTest.CASE_ID)
             .data(data)
             .build();
     }
