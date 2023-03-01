@@ -17,7 +17,8 @@ import uk.gov.hmcts.reform.migration.service.DataMigrationService;
 
 import java.util.Map;
 
-import static uk.gov.hmcts.reform.migration.service.DataMigrationServiceImpl.MIGRATION_ID_KEY;
+import static uk.gov.hmcts.reform.migration.service.DataMigrationService.CASE_ID;
+import static uk.gov.hmcts.reform.migration.service.DataMigrationService.MIGRATION_ID_KEY;
 
 @Slf4j
 @Service
@@ -49,8 +50,11 @@ public class CoreCaseDataService {
         CaseDetails updatedCaseDetails = startEventResponse.getCaseDetails();
 
         if (dataMigrationService.accepts().test(updatedCaseDetails)) {
+            log.info("Initiating updating case {}", updatedCaseDetails.getId());
             updatedCaseDetails.getData().put(MIGRATION_ID_KEY,
                 caseDetails.getData().get(MIGRATION_ID_KEY));
+            updatedCaseDetails.getData().put(CASE_ID,
+                caseDetails.getId());
 
             CaseDataContent caseDataContent = CaseDataContent.builder()
                 .eventToken(startEventResponse.getToken())
@@ -69,7 +73,7 @@ public class CoreCaseDataService {
                 updatedCaseDetails.getJurisdiction(),
                 caseType,
                 caseId,
-                true,
+                false,
                 caseDataContent);
         } else {
             return null;

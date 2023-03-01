@@ -6,16 +6,21 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.PropertySource;
+import uk.gov.hmcts.reform.migration.service.DataMigrationService;
 
 @Slf4j
 @SpringBootApplication
-@PropertySource("classpath:application.properties")
+//@PropertySource("classpath:application.properties")
 public class CaseMigrationRunner implements CommandLineRunner {
 
     @Autowired
     private CaseMigrationProcessor caseMigrationProcessor;
+    @Autowired
+    private DataMigrationService dataMigrationService;
 
+    @Value("${case-migration.processing.id}") String migrationId;
+
+    @Value("${case-migration.enabled}") boolean enabled;
     @Value("${migration.caseType}")
     private String caseType;
 
@@ -29,6 +34,11 @@ public class CaseMigrationRunner implements CommandLineRunner {
     @Override
     public void run(String... args) {
         try {
+            log.info("Job is triggered: {}", enabled);
+            if (!enabled) {
+                return;
+            }
+            dataMigrationService.validateMigrationId(migrationId);
             if (defaultThreadLimit <= 1) {
                 log.info("CaseMigrationRunner.defaultThreadLimit= {} ", defaultThreadLimit);
                 caseMigrationProcessor.migrateCases(caseType);

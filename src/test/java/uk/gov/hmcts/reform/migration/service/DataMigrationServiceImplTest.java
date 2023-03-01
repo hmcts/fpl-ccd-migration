@@ -12,13 +12,12 @@ import uk.gov.hmcts.reform.domain.model.DfjAreaCourtMapping;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.migration.service.DataMigrationService.MIGRATION_ID_KEY;
 import static uk.gov.hmcts.reform.migration.service.DataMigrationServiceImpl.DFJ_AREA;
-import static uk.gov.hmcts.reform.migration.service.DataMigrationServiceImpl.MIGRATION_ID_KEY;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -96,27 +95,7 @@ class DataMigrationServiceImplTest {
             .isEqualTo(dfjAreaCourtMapping.getDfjArea());
         assertThat(updatedData.get(dfjAreaCourtMapping.getCourtField()))
             .isEqualTo(dfjAreaCourtMapping.getCourtCode());
-        assertThat(data.get(MIGRATION_ID_KEY)).isNull();
-    }
-
-    @Test
-    void shouldRemoveDFJAreaAndCourtFieldWhenMigrationIdIsForRollback() {
-        when(dfjAreaLookUpService.getAllCourtFields())
-            .thenReturn(Set.of(dfjAreaCourtMapping.getCourtField()));
-
-        Map<String, Object> data = new HashMap<>();
-        data.put("id", 1649150882331141L);
-        data.put(MIGRATION_ID_KEY, "DFPL-1124Rollback");
-        data.put("court", caseDetails.getData().get("court"));
-        data.put(DFJ_AREA, dfjAreaCourtMapping.getDfjArea());
-        data.put(dfjAreaCourtMapping.getCourtField(), "344");
-
-        Map<String, Object> updatedData = dataMigrationService.migrate(data);
-        assertThat(updatedData.get(DFJ_AREA))
-            .isNull();
-        assertThat(updatedData.get(dfjAreaCourtMapping.getCourtField()))
-            .isNull();
-        assertThat(data.get(MIGRATION_ID_KEY)).isNull();
+        assertThat(data.get(MIGRATION_ID_KEY)).isEqualTo("DFPL-1124");
     }
 
     @Test
@@ -131,7 +110,7 @@ class DataMigrationServiceImplTest {
             .isNull();
         assertThat(updatedData.get(dfjAreaCourtMapping.getCourtField()))
             .isNull();
-        assertThat(data.get(MIGRATION_ID_KEY)).isNull();
+        assertThat(data.get(MIGRATION_ID_KEY)).isEqualTo("DFPL-1124Rollback");
     }
 
     @Test
@@ -145,7 +124,7 @@ class DataMigrationServiceImplTest {
             .isNull();
         assertThat(updatedData.get(dfjAreaCourtMapping.getCourtField()))
             .isNull();
-        assertThat(data.get(MIGRATION_ID_KEY)).isNull();
+        assertThat(data.get(MIGRATION_ID_KEY)).isEqualTo("DFPL-1124");
     }
 
 

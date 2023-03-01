@@ -2,13 +2,15 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 plugins {
+  id "java"
+  id "java-library"
   id 'application'
   id 'checkstyle'
   id 'org.springframework.boot' version '2.5.6'
 }
 
 apply plugin: 'org.springframework.boot'
-apply plugin: 'io.spring.dependency-management'
+
 
 group = 'uk.gov.hmcts.reform'
 version = "1.0.0-" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("YYYYMMdd-HHmm"))
@@ -25,6 +27,7 @@ compileJava {
 compileTestJava {
   options.compilerArgs << '-Xlint:deprecation'
 }
+
 
 repositories {
   mavenLocal()
@@ -48,21 +51,22 @@ dependencies {
   annotationProcessor group: 'org.projectlombok', name: 'lombok', version: versions.lombok
   compileOnly group: 'org.projectlombok', name: 'lombok', version: versions.lombok
 
-  compile group: 'uk.gov.hmcts.reform.ccd-case-migration', name: 'processor', version: '3.0.0'
-  compile group: 'uk.gov.hmcts.reform.ccd-case-migration', name: 'domain', version: '3.0.0'
-  compile group: 'com.google.guava', name: 'guava', version: '28.0-jre'
+  implementation group: 'uk.gov.hmcts.reform.ccd-case-migration', name: 'processor', version: '3.0.0'
+  implementation group: 'uk.gov.hmcts.reform.ccd-case-migration', name: 'domain', version: '3.0.0'
+  implementation group: 'com.google.guava', name: 'guava', version: '28.0-jre'
 
-  testCompile group: 'org.junit.jupiter', name: 'junit-jupiter', version: versions.junit_jupiter
-  testCompile group: 'org.assertj', name: 'assertj-core', version: '3.11.1'
 
-  testCompile(group: 'org.springframework.boot', name: 'spring-boot-starter-test') {
+  testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter', version: versions.junit_jupiter
+  testImplementation group: 'org.assertj', name: 'assertj-core', version: '3.11.1'
+
+  testImplementation(group: 'org.springframework.boot', name: 'spring-boot-starter-test', version:'2.5.6') {
     exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
     exclude group: "com.vaadin.external.google", module: "android-json"
   }
 
-  testCompile group: 'org.mockito', name: 'mockito-core', version: versions.mockito
-  testCompile group: 'org.mockito', name: 'mockito-junit-jupiter', version: versions.mockito
-  testCompile group: 'org.mockito', name: 'mockito-inline', version: versions.mockito
+  testImplementation group: 'org.mockito', name: 'mockito-core', version: versions.mockito
+  testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: versions.mockito
+  testImplementation group: 'org.mockito', name: 'mockito-inline', version: versions.mockito
 }
 
 checkstyle {

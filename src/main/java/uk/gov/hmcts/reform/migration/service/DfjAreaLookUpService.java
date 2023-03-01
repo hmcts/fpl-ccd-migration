@@ -19,27 +19,19 @@ public class DfjAreaLookUpService {
 
     private final ObjectMapper objectMapper;
     private List<DfjAreaCourtMapping> dfjCourtMapping;
-    private Set<String> courtFields;
 
     public DfjAreaLookUpService(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
         loadDfjMappings();
-        loadCourtFields();
     }
 
     private void loadDfjMappings() {
         try {
             final String jsonContent = ResourceReader.readString("static_data/dfjAreaCourtMapping.json");
-            dfjCourtMapping = objectMapper.readValue(jsonContent, new TypeReference<>() {});
+            dfjCourtMapping = objectMapper.readValue(jsonContent, new TypeReference<List<DfjAreaCourtMapping>>() {});
         } catch (IOException e) {
             log.error("Unable to parse dfjAreaCourtMapping.json file.", e);
         }
-    }
-
-    private void loadCourtFields() {
-        courtFields = dfjCourtMapping.stream()
-            .map(DfjAreaCourtMapping::getCourtField)
-            .collect(toSet());
     }
 
     public DfjAreaCourtMapping getDfjArea(String courtCode) {
@@ -47,9 +39,5 @@ public class DfjAreaLookUpService {
             .filter(dfjCourtMap -> dfjCourtMap.getCourtCode().equals(courtCode))
             .findAny()
             .orElseThrow(() -> new IllegalArgumentException("No dfjArea found for court code: " + courtCode));
-    }
-
-    public Set<String> getAllCourtFields() {
-        return courtFields;
     }
 }

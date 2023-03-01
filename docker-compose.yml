@@ -1,7 +1,7 @@
 version: '2.1'
 
 services:
-  probate-cron-ccd-data-migration-tool:
+  fpl-cron-ccd-data-migration-tool:
     build:
       context: .
       args:

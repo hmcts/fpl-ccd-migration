@@ -20,8 +20,7 @@ import java.util.function.Predicate;
 @Component
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class DataMigrationServiceImpl implements DataMigrationService<Map<String, Object>> {
-    public static final String MIGRATION_ID_KEY = "migrationId";
-    public static final String ID = "id";
+
     public static final String DFJ_AREA = "dfjArea";
     private final DfjAreaLookUpService dfjAreaLookUpService;
     private final ObjectMapper objectMapper;
@@ -29,6 +28,13 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         "DFPL-1124", this::run1124,
         "DFPL-1124Rollback", this::run1124Rollback
     );
+
+    @Override
+    public void validateMigrationId(String migrationId) {
+        if (!migrations.containsKey(migrationId)) {
+            throw new NoSuchElementException("No migration mapped to " + migrationId);
+        }
+    }
 
     @Override
     public Predicate<CaseDetails> accepts() {
@@ -48,15 +54,18 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
                 throw new NoSuchElementException("No migration mapped to " + migrationId);
             }
 
-            Long caseId = (Long)data.get(ID);
+            Long caseId = (Long)data.get(CASE_ID);
 
-            log.info("Migration {id = {}, case reference = {}} started", migrationId, caseId);
+            log.info("Migration {id = {}, case reference = {}} started updating", migrationId, caseId);
             migrations.get(migrationId).accept(data);
-            log.info("Migration {id = {}, case reference = {}} finished", migrationId, caseId);
-
-        } finally {
+        } catch (NoSuchElementException noSuchElementException) {
             if (Objects.nonNull(migrationId)) {
                 data.remove(MIGRATION_ID_KEY);
+            }
+            throw  noSuchElementException;
+        } finally {
+            if (Objects.nonNull(migrationId)) {
+                data.remove(CASE_ID);
             }
         }
 
@@ -65,7 +74,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
 
     private void run1124(Map<String, Object> data)  {
 
-        Long caseId = (Long)data.get(ID);
+        Long caseId = (Long)data.get(CASE_ID);
         Object court = data.get("court");
         if (Objects.nonNull(court)) {
             Map<String, String> courtMap = objectMapper.convertValue(court, new TypeReference<>() {});
@@ -83,14 +92,12 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
 
 
     private void run1124Rollback(Map<String, Object> data) {
-        Long caseId = (Long)data.get(ID);
+        Long caseId = (Long)data.get(CASE_ID);
         if (data.get(DFJ_AREA) != null) {
-            data.remove(DFJ_AREA);
-            data.keySet().removeAll(dfjAreaLookUpService.getAllCourtFields());
-            log.info("Rollback {id = DFPL-1124, case reference = {}} removed dfj area and relevant court field",
+            log.info("Rollback initiated {id = DFPL-1124, case reference = {}}",
                 caseId);
         } else {
-            log.warn("Rollback {id = DFPL-1124, case reference = {}} doesn't have dfj area and relevant court field",
+            log.warn("Rollback ignored {id = DFPL-1124, case reference = {}}",
                 caseId);
         }
     }

@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.migration;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
@@ -22,7 +21,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-import static uk.gov.hmcts.reform.migration.service.DataMigrationServiceImpl.MIGRATION_ID_KEY;
+import static uk.gov.hmcts.reform.migration.service.DataMigrationService.MIGRATION_ID_KEY;
 
 @Slf4j
 @Component
@@ -47,7 +46,7 @@ public class CaseMigrationProcessor {
     @Getter
     private final List<Long> ignoredCases = new ArrayList<>();
 
-    @Autowired
+    //@Autowired
     public CaseMigrationProcessor(CoreCaseDataService coreCaseDataService,
                                   ElasticSearchRepository elasticSearchRepository,
                                   IdamRepository idamRepository,
@@ -75,6 +74,9 @@ public class CaseMigrationProcessor {
             String userToken =  idamRepository.generateUserToken();
 
             SearchResult searchResult = elasticSearchRepository.fetchFirstPage(userToken, caseType, defaultQuerySize);
+
+            log.info("Data migration required for cases {}", searchResult.getTotal());
+
             if (Objects.nonNull(searchResult) && searchResult.getTotal() > 0) {
                 ExecutorService executorService = Executors.newFixedThreadPool(defaultThreadLimit);
 
@@ -82,8 +84,6 @@ public class CaseMigrationProcessor {
                 searchResultCases
                     .forEach(submitMigration(userToken, caseType, executorService));
                 String searchAfterValue = searchResultCases.get(searchResultCases.size() - 1).getId().toString();
-
-                log.info("Data migration of cases started for searchAfterValue : {}",searchAfterValue);
 
                 boolean keepSearching;
                 do {
@@ -95,10 +95,11 @@ public class CaseMigrationProcessor {
                     log.info("Data migration of cases started for searchAfterValue : {}",searchAfterValue);
 
                     keepSearching = false;
-                    if (subsequentSearchResult != null) {
+                    if (Objects.nonNull(subsequentSearchResult)) {
                         List<CaseDetails> subsequentSearchResultCases = subsequentSearchResult.getCases();
                         subsequentSearchResultCases
                             .forEach(submitMigration(userToken, caseType, executorService));
+
                         keepSearching = subsequentSearchResultCases.size() > 0;
                         if (keepSearching) {
                             searchAfterValue = subsequentSearchResultCases
@@ -115,6 +116,8 @@ public class CaseMigrationProcessor {
             }
         } catch (MigrationLimitReachedException ex) {
             throw ex;
+        } finally {
+            publishStats();
         }
     }
 
@@ -135,12 +138,14 @@ public class CaseMigrationProcessor {
         listOfCaseDetails.stream()
             .limit(caseProcessLimit)
             .forEach(caseDetails -> updateCase(userToken, caseType, caseDetails));
+        publishStats();
+    }
+
+    private void publishStats() {
         log.info(LOG_STRING);
         log.info(
-            " FPLA Data migration completed: Total number of processed cases: {},  "
-            + "Total number of migrations performed: {} ",
-            getMigratedCases().size() + getFailedCases().size() + getIgnoredCases().size(),
-            getMigratedCases().size()
+            " FPLA Data migration completed: Total number of processed cases: {}",
+            getMigratedCases().size() + getFailedCases().size() + getIgnoredCases().size()
         );
         log.info(
             " Total number of migrations performed: {} ",
@@ -206,7 +211,7 @@ public class CaseMigrationProcessor {
                     ignoredCases.add(id);
                 }
             } catch (Exception e) {
-                log.error("Case {} update failed due to : {}", id, e.getMessage());
+                log.error("Case {} update failed due to : {}", id, e);
                 failedCases.add(id);
             }
         } else {
