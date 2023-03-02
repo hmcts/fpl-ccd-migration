@@ -81,7 +81,7 @@ class DataMigrationServiceImplTest {
     }
 
     @Test
-    void shouldSetDFJAreaAndCourtFieldWhenMigrationIdIsValid() {
+    void shouldSetDfjAreaAndCourtFieldWhenMigrationIdIsValid() {
         when(dfjAreaLookUpService.getDfjArea("344"))
             .thenReturn(dfjAreaCourtMapping);
 
@@ -99,7 +99,7 @@ class DataMigrationServiceImplTest {
     }
 
     @Test
-    void shouldIgnoreRollbackWhenDFJAreaNotPresent() {
+    void shouldIgnoreRollbackWhenDfjAreaNotPresent() {
 
         Map<String, Object> data = new HashMap<>();
         data.put("id", 1649150882331141L);
@@ -114,7 +114,7 @@ class DataMigrationServiceImplTest {
     }
 
     @Test
-    void shouldNotSetDFJAreaAndCourtFieldWhenMigrationIdIsValidButCourtNotPresent() {
+    void shouldNotSetDfjAreaAndCourtFieldWhenMigrationIdIsValidButCourtNotPresent() {
         Map<String, Object> data = new HashMap<>();
         data.put("id", 1649150882331141L);
         data.put(MIGRATION_ID_KEY, "DFPL-1124");
