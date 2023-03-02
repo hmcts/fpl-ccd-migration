@@ -73,7 +73,7 @@ public class CoreCaseDataService {
                 updatedCaseDetails.getJurisdiction(),
                 caseType,
                 caseId,
-                true,
+                false,
                 caseDataContent);
         } else {
             return null;
