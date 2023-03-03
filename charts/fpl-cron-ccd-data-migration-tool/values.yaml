@@ -1,7 +1,7 @@
 job:
   image: 'hmctspublic.azurecr.io/fpl/cron-ccd-data-migration-tool:latest'
   kind: CronJob
-  schedule: "20 22 * * *"
+  schedule: "20 * * * *"
   ingressHost: fpl-cron-ccd-data-migration-tool-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal
   aadIdentityName: family-public-law
 #  Uncomment once the vault containing the app insights key has been set up
