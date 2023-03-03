@@ -21,7 +21,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class ElasticSearchRepositoryTest {
+class ElasticSearchRepositoryTest {
 
     private static final String USER_TOKEN = "TEST_USER_TOKEN";
 
@@ -89,7 +89,7 @@ public class ElasticSearchRepositoryTest {
     private AuthTokenGenerator authTokenGenerator;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         elasticSearchRepository = new ElasticSearchRepository(coreCaseDataApi,
                                                               authTokenGenerator,
                                                               QUERY_SIZE,
@@ -125,7 +125,7 @@ public class ElasticSearchRepositoryTest {
     }
 
     @Test
-    public void shouldReturnSearchResultsAndCaseDetailsForCaseTypeElasticSearch() {
+    void shouldReturnSearchResultsAndCaseDetailsForCaseTypeElasticSearch() {
         SearchResult searchResult = mock(SearchResult.class);
         List<CaseDetails> caseDetails = new ArrayList<>();
         CaseDetails details = mock(CaseDetails.class);
@@ -169,7 +169,7 @@ public class ElasticSearchRepositoryTest {
     }
 
     @Test
-    public void shouldReturnOnlyInitialCaseDetailsWhenSearchAfterReturnsNullSearchResults() {
+    void shouldReturnOnlyInitialCaseDetailsWhenSearchAfterReturnsNullSearchResults() {
         SearchResult searchResult = mock(SearchResult.class);
         List<CaseDetails> caseDetails = new ArrayList<>();
         CaseDetails details = mock(CaseDetails.class);

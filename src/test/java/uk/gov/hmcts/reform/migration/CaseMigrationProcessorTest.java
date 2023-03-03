@@ -35,7 +35,7 @@ import static uk.gov.hmcts.reform.migration.CaseMigrationProcessor.EVENT_SUMMARY
 
 
 @ExtendWith(MockitoExtension.class)
-public class CaseMigrationProcessorTest {
+class CaseMigrationProcessorTest {
 
     private static final String USER_TOKEN = "Bearer eeeejjjttt";
 
@@ -57,7 +57,7 @@ public class CaseMigrationProcessorTest {
     ArgumentCaptor<CaseDetails> caseDetailsArgumentCaptor;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         caseMigrationProcessor = new CaseMigrationProcessor(coreCaseDataService,
             elasticSearchRepository,
             idamRepository,
@@ -69,7 +69,7 @@ public class CaseMigrationProcessorTest {
 
 
     @Test
-    public void shouldMigrateCasesOfACaseTypeByParallelProcessing() throws InterruptedException {
+    void shouldMigrateCasesOfACaseTypeByParallelProcessing() throws InterruptedException {
         when(idamRepository.generateUserToken()).thenReturn(USER_TOKEN);
         List<CaseDetails> cases = createCaseDetails(1,2);
         when(elasticSearchRepository.fetchFirstPage(USER_TOKEN, CASE_TYPE, 2))
@@ -92,7 +92,7 @@ public class CaseMigrationProcessorTest {
     }
 
     @Test
-    public void shouldMigrateCasesOfACaseTypeByParallelProcessingElasticSearchWithNextPageCall()
+    void shouldMigrateCasesOfACaseTypeByParallelProcessingElasticSearchWithNextPageCall()
         throws InterruptedException {
         when(idamRepository.generateUserToken()).thenReturn(USER_TOKEN);
         List<CaseDetails> cases = createCaseDetails(1, 2);
@@ -145,7 +145,7 @@ public class CaseMigrationProcessorTest {
     }
 
     @Test
-    public void shouldMigrateCasesOfACaseType() {
+    void shouldMigrateCasesOfACaseType() {
         when(idamRepository.generateUserToken()).thenReturn(USER_TOKEN);
         CaseDetails details = mock(CaseDetails.class);
         when(details.getId()).thenReturn(1677777777L);
@@ -168,7 +168,7 @@ public class CaseMigrationProcessorTest {
     }
 
     @Test
-    public void shouldMigrateOnlyLimitedNumberOfCases() {
+    void shouldMigrateOnlyLimitedNumberOfCases() {
         when(idamRepository.generateUserToken()).thenReturn(USER_TOKEN);
         CaseDetails details = mock(CaseDetails.class);
         when(details.getId()).thenReturn(1677777777L);
@@ -193,7 +193,7 @@ public class CaseMigrationProcessorTest {
     }
 
     @Test
-    public void shouldThrowExceptionWhenMigrationIdNotSetForSingleThreadProcessing() {
+    void shouldThrowExceptionWhenMigrationIdNotSetForSingleThreadProcessing() {
         caseMigrationProcessor = new CaseMigrationProcessor(coreCaseDataService,
             elasticSearchRepository,
             idamRepository,
@@ -207,7 +207,7 @@ public class CaseMigrationProcessorTest {
     }
 
     @Test
-    public void shouldThrowExceptionWhenMigrationIdNotSetForParallelProcessing() {
+    void shouldThrowExceptionWhenMigrationIdNotSetForParallelProcessing() {
         caseMigrationProcessor = new CaseMigrationProcessor(coreCaseDataService,
             elasticSearchRepository,
             idamRepository,
@@ -221,25 +221,25 @@ public class CaseMigrationProcessorTest {
     }
 
     @Test
-    public void shouldThrowExceptionWhenCaseTypeNullForSingleThreadProcessing() {
+    void shouldThrowExceptionWhenCaseTypeNullForSingleThreadProcessing() {
         assertThatThrownBy(() -> caseMigrationProcessor.migrateCases(null))
             .isInstanceOf(CaseMigrationException.class);
     }
 
     @Test
-    public void shouldThrowExceptionWhenCaseTypeNullForParallelProcessing() {
+    void shouldThrowExceptionWhenCaseTypeNullForParallelProcessing() {
         assertThatThrownBy(() -> caseMigrationProcessor.process(null))
             .isInstanceOf(CaseMigrationException.class);
     }
 
     @Test
-    public void shouldThrowExceptionWhenMultipleCaseTypesPassedForSingleThreadProcessing() {
+    void shouldThrowExceptionWhenMultipleCaseTypesPassedForSingleThreadProcessing() {
         assertThatThrownBy(() -> caseMigrationProcessor.migrateCases("Cast_Type1,Cast_Type2"))
             .isInstanceOf(CaseMigrationException.class);
     }
 
     @Test
-    public void shouldThrowExceptionWhenMultipleCaseTypesPassedForParallelProcessing() {
+    void shouldThrowExceptionWhenMultipleCaseTypesPassedForParallelProcessing() {
         assertThatThrownBy(() -> caseMigrationProcessor.process("Cast_Type1,Cast_Type2"))
             .isInstanceOf(CaseMigrationException.class);
     }
