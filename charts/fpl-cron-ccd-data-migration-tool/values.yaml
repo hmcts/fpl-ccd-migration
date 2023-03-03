@@ -1,7 +1,7 @@
 job:
   image: 'hmctspublic.azurecr.io/fpl/cron-ccd-data-migration-tool:latest'
   kind: CronJob
-  schedule: "0 22 * * *"
+  schedule: "20 22 * * *"
   ingressHost: fpl-cron-ccd-data-migration-tool-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal
   aadIdentityName: family-public-law
 #  Uncomment once the vault containing the app insights key has been set up
@@ -25,9 +25,9 @@ job:
     IDAM_API_URL: https://idam-api.{{ .Values.global.environment }}.platform.hmcts.net
     CCD_DATA_STORE_API_BASE_URL: http://ccd-data-store-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal
     MIGRATION_CASETYPE: CARE_SUPERVISION_EPO
-    MIGRATION_QUERY_SIZE: 10000
+    MIGRATION_QUERY_SIZE: 1000
     IDAM_CLIENT_ID: fpl_case_service
     DEFAULT_THREAD_LIMIT: 25
     DEFAULT_QUERY_SIZE: 100
     MIGRATION_ID: DFPL-1124
-    ENABLED: false
+    ENABLED: true
