@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.migration.ccd.CoreCaseDataService;
 import uk.gov.hmcts.reform.migration.repository.ElasticSearchRepository;
 import uk.gov.hmcts.reform.migration.repository.IdamRepository;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -65,6 +66,7 @@ public class CaseMigrationProcessor {
 
 
     public void process(String caseType) throws InterruptedException {
+        LocalDateTime startTime = LocalDateTime.now();
         try {
             validateMigrationId();
             validateCaseType(caseType);
@@ -117,7 +119,7 @@ public class CaseMigrationProcessor {
         } catch (MigrationLimitReachedException ex) {
             throw ex;
         } finally {
-            publishStats();
+            publishStats(startTime);
         }
     }
 
@@ -130,6 +132,7 @@ public class CaseMigrationProcessor {
 
 
     public void migrateCases(String caseType) {
+        LocalDateTime startTime = LocalDateTime.now();
         validateMigrationId();
         validateCaseType(caseType);
         log.info("Data migration of cases started for case type: {}", caseType);
@@ -138,10 +141,10 @@ public class CaseMigrationProcessor {
         listOfCaseDetails.stream()
             .limit(caseProcessLimit)
             .forEach(caseDetails -> updateCase(userToken, caseType, caseDetails));
-        publishStats();
+        publishStats(startTime);
     }
 
-    private void publishStats() {
+    private void publishStats(LocalDateTime startTime) {
         log.info(LOG_STRING);
         log.info(
             " FPLA Data migration completed: Total number of processed cases: {}",
@@ -170,7 +173,8 @@ public class CaseMigrationProcessor {
         } else {
             log.info("Failed cases: {} ", getFailedCases());
         }
-        log.info("Data migration of cases completed");
+
+        log.info("Data migration start at {} and completed at {}", startTime, LocalDateTime.now());
     }
 
     private void validateMigrationId() {

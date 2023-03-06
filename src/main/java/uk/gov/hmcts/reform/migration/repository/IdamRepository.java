@@ -6,7 +6,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 import uk.gov.hmcts.reform.domain.exception.AuthenticationException;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
-import uk.gov.hmcts.reform.idam.client.OAuth2Configuration;
+
+import java.util.Objects;
 
 @Repository
 @Slf4j
@@ -18,32 +19,23 @@ public class IdamRepository {
 
     private final String idamPassword;
 
-    private final OAuth2Configuration oauth2Configuration;
-
     @Autowired
     public IdamRepository(@Value("${migration.idam.username}") String idamUsername,
                           @Value("${migration.idam.password}") String idamPassword,
-                          IdamClient idamClient,
-                          OAuth2Configuration oauth2Configuration
-    ) {
+                          IdamClient idamClient) {
         this.idamUsername = idamUsername;
         this.idamPassword = idamPassword;
         this.idamClient = idamClient;
-        this.oauth2Configuration = oauth2Configuration;
     }
 
     public String generateUserToken() {
-        if (idamUsername == null || idamUsername.isBlank()) {
+        if (Objects.isNull(idamUsername) || idamUsername.isBlank()) {
             throw new AuthenticationException("idam.username property can't be empty");
         }
-        if (idamPassword == null || idamPassword.isBlank()) {
+        if (Objects.isNull(idamPassword) || idamPassword.isBlank()) {
             throw new AuthenticationException("idam.password property can't be empty");
         }
-        log.info("Authenticating user name {}", idamUsername);
-        log.info("Authenticating password {}", idamPassword);
-        log.info("IdamClient clientid {}", oauth2Configuration.getClientId());
-        log.info("IdamClient RedirectUri {}", oauth2Configuration.getRedirectUri());
-        log.info("IdamClient clientSecret {}", oauth2Configuration.getClientSecret());
+        log.info("Authenticating user name {}", this.idamUsername);
         return idamClient.authenticateUser(idamUsername, idamPassword);
     }
 }
