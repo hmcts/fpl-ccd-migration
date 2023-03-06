@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.migration.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.Ignore;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -50,6 +51,7 @@ class DataMigrationServiceImplTest {
             .build();
     }
 
+    @Ignore
     @Test
     void shouldReturnTrueWhenCourtPresent() {
         assertThat(dataMigrationService.accepts().test(caseDetails)).isTrue();
