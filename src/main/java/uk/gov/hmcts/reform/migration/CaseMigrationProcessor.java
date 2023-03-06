@@ -149,15 +149,15 @@ public class CaseMigrationProcessor {
             " FPLA Data migration completed: Total number of processed cases: {}",
             getMigratedCases().size() + getFailedCases().size() + getIgnoredCases().size()
         );
-        log.info(
-            " Total number of migrations performed: {} ",
-            getMigratedCases().size()
-        );
+
 
         if (getMigratedCases().isEmpty()) {
             log.info("Migrated cases: NONE ");
         } else {
-            log.info("Migrated cases: {} ", getMigratedCases());
+            log.info(
+                " Total number of migrations performed: {} ",
+                getMigratedCases().size()
+            );
         }
 
         if (getIgnoredCases().isEmpty()) {
