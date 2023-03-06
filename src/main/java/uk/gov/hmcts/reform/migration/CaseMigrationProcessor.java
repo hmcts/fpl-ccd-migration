@@ -46,6 +46,7 @@ public class CaseMigrationProcessor {
     private final List<Long> failedCases = new ArrayList<>();
     @Getter
     private final List<Long> ignoredCases = new ArrayList<>();
+    private final LocalDateTime startTime = LocalDateTime.now();
 
     //@Autowired
     public CaseMigrationProcessor(CoreCaseDataService coreCaseDataService,
@@ -66,7 +67,6 @@ public class CaseMigrationProcessor {
 
 
     public void process(String caseType) throws InterruptedException {
-        LocalDateTime startTime = LocalDateTime.now();
         try {
             validateMigrationId();
             validateCaseType(caseType);
@@ -132,7 +132,6 @@ public class CaseMigrationProcessor {
 
 
     public void migrateCases(String caseType) {
-        LocalDateTime startTime = LocalDateTime.now();
         validateMigrationId();
         validateCaseType(caseType);
         log.info("Data migration of cases started for case type: {}", caseType);
