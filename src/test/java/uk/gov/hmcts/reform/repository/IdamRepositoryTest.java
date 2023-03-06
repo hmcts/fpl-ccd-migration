@@ -6,6 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
+import uk.gov.hmcts.reform.idam.client.OAuth2Configuration;
 import uk.gov.hmcts.reform.migration.repository.IdamRepository;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -25,9 +26,12 @@ class IdamRepositoryTest {
     @Mock
     private IdamClient idamClient;
 
+    @Mock
+    private OAuth2Configuration oauth2Configuration;
+
     @BeforeEach
     void setUp() {
-        idamRepository = new IdamRepository(IDAM_USER_NAME, IDAM_PASS, idamClient);
+        idamRepository = new IdamRepository(IDAM_USER_NAME, IDAM_PASS, idamClient, oauth2Configuration);
     }
 
     @Test
