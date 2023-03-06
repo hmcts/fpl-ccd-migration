@@ -38,8 +38,9 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
 
     @Override
     public Predicate<CaseDetails> accepts() {
-        return caseDetails -> Optional.ofNullable(caseDetails.getData().get("court"))
-            .isPresent();
+        /*return caseDetails -> Optional.ofNullable(caseDetails.getData().get("court"))
+            .isPresent();*/
+        return caseDetails -> false;
     }
 
     @Override
