@@ -92,13 +92,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
 
     private void run1124Rollback(Map<String, Object> data) {
         Long caseId = (Long)data.get(CASE_ID);
-        if (data.get(DFJ_AREA) != null) {
-            log.info("Rollback initiated {id = DFPL-1124, case reference = {}}",
-                caseId);
-        } else {
-            log.warn("Rollback ignored {id = DFPL-1124, case reference = {}}",
-                caseId);
-        }
+        log.info("Rollback initiated {id = DFPL-1124, case reference = {}}",
+            caseId);
     }
-
 }
