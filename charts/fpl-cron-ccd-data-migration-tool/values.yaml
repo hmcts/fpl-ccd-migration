@@ -25,7 +25,7 @@ job:
     CCD_DATA_STORE_API_BASE_URL: http://ccd-data-store-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal
     MIGRATION_QUERY_SIZE: 1000
     IDAM_CLIENT_ID: fpl_case_service
-    DEFAULT_THREAD_LIMIT: 4
-    DEFAULT_QUERY_SIZE: 1000
+    DEFAULT_THREAD_LIMIT: 25
+    DEFAULT_QUERY_SIZE: 100
     MIGRATION_ID: DFPL-1124
     ENABLED: false
