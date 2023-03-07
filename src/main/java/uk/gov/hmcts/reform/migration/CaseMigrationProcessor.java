@@ -150,12 +150,17 @@ public class CaseMigrationProcessor {
             getMigratedCases().size() + getFailedCases().size() + getIgnoredCases().size()
         );
 
+        String[] task = {"Migrated", "migrations"};
+        if ("DFPL-1124Rollback".equals(migrationId)) {
+            task = new String[]{"Rolled back", "rollbacks"};
+        }
 
         if (getMigratedCases().isEmpty()) {
-            log.info("Migrated cases: NONE ");
+            log.info("{} cases: NONE ", task[0]);
         } else {
             log.info(
-                " Total number of migrations performed: {} ",
+                " Total number of {} performed: {} ",
+                task[1],
                 getMigratedCases().size()
             );
         }
