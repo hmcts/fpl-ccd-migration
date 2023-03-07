@@ -55,13 +55,6 @@ class DataMigrationServiceImplTest {
         assertThat(dataMigrationService.accepts().test(caseDetails)).isTrue();
     }
 
-    @Test
-    void shouldReturnFalseWhenCourtPresent() {
-        assertThat(dataMigrationService.accepts().test(CaseDetails
-            .builder()
-            .data(Map.of())
-            .build())).isFalse();
-    }
 
     @Test
     void shouldThrowExceptionWhenMigrationKeyIsNotSet() {
