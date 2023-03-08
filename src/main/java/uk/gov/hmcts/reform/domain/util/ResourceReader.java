@@ -4,6 +4,7 @@ import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Objects;
 
 
 public class ResourceReader {
@@ -18,7 +19,7 @@ public class ResourceReader {
 
     public static byte[] readBytes(String resourcePath) {
         try (InputStream inputStream = ResourceReader.class.getClassLoader().getResourceAsStream(resourcePath)) {
-            if (inputStream == null) {
+            if (Objects.isNull(inputStream)) {
                 throw new IllegalArgumentException("Resource does not exist");
             }
             return IOUtils.toByteArray(inputStream);

@@ -211,7 +211,7 @@ public class CaseMigrationProcessor {
                     caseDetails
                 );
 
-                if (updateCaseDetails != null) {
+                if (Objects.nonNull(updateCaseDetails)) {
                     log.info("Case {} successfully updated", id);
                     migratedCases.add(id);
                 } else {
