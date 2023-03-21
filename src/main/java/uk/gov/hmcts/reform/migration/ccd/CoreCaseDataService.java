@@ -76,6 +76,11 @@ public class CoreCaseDataService {
                 true,
                 caseDataContent);
         } else {
+            log.info("For case id {}, court is {} and dfjArea is {}",
+                caseDetails.getId(),
+                caseDetails.getData().get("court"),
+                caseDetails.getData().get("dfjArea")
+            );
             return null;
         }
     }

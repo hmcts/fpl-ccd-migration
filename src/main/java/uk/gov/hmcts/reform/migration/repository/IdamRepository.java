@@ -7,6 +7,8 @@ import org.springframework.stereotype.Repository;
 import uk.gov.hmcts.reform.domain.exception.AuthenticationException;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 
+import java.util.Objects;
+
 @Repository
 @Slf4j
 public class IdamRepository {
@@ -27,10 +29,10 @@ public class IdamRepository {
     }
 
     public String generateUserToken() {
-        if (this.idamUsername == null || this.idamUsername.isBlank()) {
+        if (Objects.isNull(idamUsername) || idamUsername.isBlank()) {
             throw new AuthenticationException("idam.username property can't be empty");
         }
-        if (this.idamPassword == null || this.idamPassword.isBlank()) {
+        if (Objects.isNull(idamPassword) || idamPassword.isBlank()) {
             throw new AuthenticationException("idam.password property can't be empty");
         }
         log.info("Authenticating user name {}", this.idamUsername);

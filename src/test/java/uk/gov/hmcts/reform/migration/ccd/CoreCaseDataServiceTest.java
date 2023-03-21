@@ -25,7 +25,7 @@ import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.migration.service.DataMigrationService.MIGRATION_ID_KEY;
 
 @ExtendWith(MockitoExtension.class)
-public class CoreCaseDataServiceTest {
+class CoreCaseDataServiceTest {
 
     private static final String EVENT_ID = "migrateCase";
     private static final String CASE_TYPE = "CARE_SUPERVISION_EPO";
@@ -35,7 +35,7 @@ public class CoreCaseDataServiceTest {
     private static final String EVENT_TOKEN = "Bearer aaaadsadsasawewewewew";
     private static final String EVENT_SUMMARY = "Migrate Case";
     private static final String EVENT_DESC = "Migrate Case";
-    public static final String DFPL_1124 = "DFPL-1124";
+    static final String DFPL_1124 = "DFPL-1124";
 
     private CoreCaseDataService underTest;
 
@@ -54,7 +54,7 @@ public class CoreCaseDataServiceTest {
     CaseDataContent caseDataContent;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         underTest = new CoreCaseDataService(idamClient,
             authTokenGenerator,
             coreCaseDataApi,
@@ -62,7 +62,7 @@ public class CoreCaseDataServiceTest {
     }
 
     @Test
-    public void shouldUpdateTheCase() {
+    void shouldUpdateTheCase() {
         // given
         UserDetails userDetails = UserDetails.builder()
             .id("30")
@@ -90,7 +90,7 @@ public class CoreCaseDataServiceTest {
     }
 
     @Test
-    public void shouldNotUpdateTheCaseWhenMigrationConditionIsNotMet() {
+    void shouldNotUpdateTheCaseWhenMigrationConditionIsNotMet() {
 
         // given
         UserDetails userDetails = UserDetails.builder()

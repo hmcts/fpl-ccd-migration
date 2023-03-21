@@ -38,8 +38,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
 
     @Override
     public Predicate<CaseDetails> accepts() {
-        return caseDetails -> Optional.ofNullable(caseDetails.getData().get("court"))
-            .isPresent();
+        return caseDetails -> true;
     }
 
     @Override
@@ -54,7 +53,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
                 throw new NoSuchElementException("No migration mapped to " + migrationId);
             }
 
-            Long caseId = (Long)data.get(CASE_ID);
+            Long caseId = (Long) data.get(CASE_ID);
 
             log.info("Migration {id = {}, case reference = {}} started updating", migrationId, caseId);
             migrations.get(migrationId).accept(data);
@@ -62,7 +61,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
             if (Objects.nonNull(migrationId)) {
                 data.remove(MIGRATION_ID_KEY);
             }
-            throw  noSuchElementException;
+            throw noSuchElementException;
         } finally {
             if (Objects.nonNull(migrationId)) {
                 data.remove(CASE_ID);
@@ -72,12 +71,13 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         return data;
     }
 
-    private void run1124(Map<String, Object> data)  {
+    private void run1124(Map<String, Object> data) {
 
-        Long caseId = (Long)data.get(CASE_ID);
+        Long caseId = (Long) data.get(CASE_ID);
         Object court = data.get("court");
         if (Objects.nonNull(court)) {
-            Map<String, String> courtMap = objectMapper.convertValue(court, new TypeReference<>() {});
+            Map<String, String> courtMap = objectMapper.convertValue(court, new TypeReference<>() {
+            });
             String courtCode = courtMap.get("code");
             DfjAreaCourtMapping dfjArea = dfjAreaLookUpService.getDfjArea(courtCode);
             data.put(DFJ_AREA, dfjArea.getDfjArea());
@@ -92,8 +92,8 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
 
 
     private void run1124Rollback(Map<String, Object> data) {
-        Long caseId = (Long)data.get(CASE_ID);
-        if (data.get(DFJ_AREA) != null) {
+        Long caseId = (Long) data.get(CASE_ID);
+        if (Objects.nonNull(data.get(DFJ_AREA))) {
             log.info("Rollback initiated {id = DFPL-1124, case reference = {}}",
                 caseId);
         } else {
@@ -101,5 +101,4 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
                 caseId);
         }
     }
-
 }

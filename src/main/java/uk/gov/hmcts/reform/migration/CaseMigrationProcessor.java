@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.migration.ccd.CoreCaseDataService;
 import uk.gov.hmcts.reform.migration.repository.ElasticSearchRepository;
 import uk.gov.hmcts.reform.migration.repository.IdamRepository;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -45,6 +46,7 @@ public class CaseMigrationProcessor {
     private final List<Long> failedCases = new ArrayList<>();
     @Getter
     private final List<Long> ignoredCases = new ArrayList<>();
+    private final LocalDateTime startTime = LocalDateTime.now();
 
     //@Autowired
     public CaseMigrationProcessor(CoreCaseDataService coreCaseDataService,
@@ -117,7 +119,7 @@ public class CaseMigrationProcessor {
         } catch (MigrationLimitReachedException ex) {
             throw ex;
         } finally {
-            publishStats();
+            publishStats(startTime);
         }
     }
 
@@ -138,24 +140,29 @@ public class CaseMigrationProcessor {
         listOfCaseDetails.stream()
             .limit(caseProcessLimit)
             .forEach(caseDetails -> updateCase(userToken, caseType, caseDetails));
-        publishStats();
+        publishStats(startTime);
     }
 
-    private void publishStats() {
+    private void publishStats(LocalDateTime startTime) {
         log.info(LOG_STRING);
         log.info(
             " FPLA Data migration completed: Total number of processed cases: {}",
             getMigratedCases().size() + getFailedCases().size() + getIgnoredCases().size()
         );
-        log.info(
-            " Total number of migrations performed: {} ",
-            getMigratedCases().size()
-        );
+
+        String[] task = {"Migrated", "migrations"};
+        if ("DFPL-1124Rollback".equals(migrationId)) {
+            task = new String[]{"Rolled back", "rollbacks"};
+        }
 
         if (getMigratedCases().isEmpty()) {
-            log.info("Migrated cases: NONE ");
+            log.info("{} cases: NONE ", task[0]);
         } else {
-            log.info("Migrated cases: {} ", getMigratedCases());
+            log.info(
+                " Total number of {} performed: {} ",
+                task[1],
+                getMigratedCases().size()
+            );
         }
 
         if (getIgnoredCases().isEmpty()) {
@@ -170,7 +177,8 @@ public class CaseMigrationProcessor {
         } else {
             log.info("Failed cases: {} ", getFailedCases());
         }
-        log.info("Data migration of cases completed");
+
+        log.info("Data migration start at {} and completed at {}", startTime, LocalDateTime.now());
     }
 
     private void validateMigrationId() {
@@ -203,7 +211,7 @@ public class CaseMigrationProcessor {
                     caseDetails
                 );
 
-                if (updateCaseDetails != null) {
+                if (Objects.nonNull(updateCaseDetails)) {
                     log.info("Case {} successfully updated", id);
                     migratedCases.add(id);
                 } else {
