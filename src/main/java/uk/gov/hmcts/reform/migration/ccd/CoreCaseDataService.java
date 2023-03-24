@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.migration.auth.AuthUtil;
 import uk.gov.hmcts.reform.migration.service.DataMigrationService;
 
 import java.util.Map;
+import java.util.Optional;
 
 import static uk.gov.hmcts.reform.migration.service.DataMigrationService.CASE_ID;
 import static uk.gov.hmcts.reform.migration.service.DataMigrationService.MIGRATION_ID_KEY;
@@ -30,11 +31,11 @@ public class CoreCaseDataService {
     private final CoreCaseDataApi coreCaseDataApi;
     private final DataMigrationService<Map<String, Object>> dataMigrationService;
 
-    public CaseDetails update(String authorisation, String eventId,
-                              String eventSummary,
-                              String eventDescription,
-                              String caseType,
-                              CaseDetails caseDetails) {
+    public Optional<CaseDetails> update(String authorisation, String eventId,
+                                        String eventSummary,
+                                        String eventDescription,
+                                        String caseType,
+                                        CaseDetails caseDetails) {
         String caseId = String.valueOf(caseDetails.getId());
         UserDetails userDetails = idamClient.getUserDetails(AuthUtil.getBearerToken(authorisation));
 
@@ -48,11 +49,11 @@ public class CoreCaseDataService {
             eventId);
 
         CaseDetails updatedCaseDetails = startEventResponse.getCaseDetails();
+        updatedCaseDetails.getData().put(MIGRATION_ID_KEY,
+            caseDetails.getData().get(MIGRATION_ID_KEY));
 
         if (dataMigrationService.accepts().test(updatedCaseDetails)) {
             log.info("Initiating updating case {}", updatedCaseDetails.getId());
-            updatedCaseDetails.getData().put(MIGRATION_ID_KEY,
-                caseDetails.getData().get(MIGRATION_ID_KEY));
             updatedCaseDetails.getData().put(CASE_ID,
                 caseDetails.getId());
 
@@ -66,7 +67,7 @@ public class CoreCaseDataService {
                         .build()
                 ).data(dataMigrationService.migrate(updatedCaseDetails.getData()))
                 .build();
-            return coreCaseDataApi.submitEventForCaseWorker(
+            return Optional.of(coreCaseDataApi.submitEventForCaseWorker(
                 AuthUtil.getBearerToken(authorisation),
                 authTokenGenerator.generate(),
                 userDetails.getId(),
@@ -74,14 +75,8 @@ public class CoreCaseDataService {
                 caseType,
                 caseId,
                 true,
-                caseDataContent);
-        } else {
-            log.info("For case id {}, court is {} and dfjArea is {}",
-                caseDetails.getId(),
-                caseDetails.getData().get("court"),
-                caseDetails.getData().get("dfjArea")
-            );
-            return null;
+                caseDataContent));
         }
+        return Optional.empty();
     }
 }

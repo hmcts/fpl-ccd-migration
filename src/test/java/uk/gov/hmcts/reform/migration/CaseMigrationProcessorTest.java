@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.migration.repository.IdamRepository;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.LongStream;
 
 import static java.util.stream.Collectors.toList;
@@ -118,7 +119,7 @@ class CaseMigrationProcessorTest {
 
         when(coreCaseDataService.update(eq(USER_TOKEN), eq(EVENT_ID), eq(EVENT_SUMMARY),
             eq(EVENT_DESCRIPTION), eq(CASE_TYPE), any()))
-            .thenReturn(cases.get(0));
+            .thenReturn(Optional.of(cases.get(0)));
 
         caseMigrationProcessor.process(CASE_TYPE);
 
@@ -156,7 +157,7 @@ class CaseMigrationProcessorTest {
         assertNotNull(listOfCaseDetails);
         when(coreCaseDataService.update(USER_TOKEN, EVENT_ID, EVENT_SUMMARY,
             EVENT_DESCRIPTION, CASE_TYPE, details))
-            .thenReturn(details);
+            .thenReturn(Optional.of(details));
         caseMigrationProcessor.migrateCases(CASE_TYPE);
         verify(coreCaseDataService, times(1))
             .update(USER_TOKEN,
@@ -181,7 +182,7 @@ class CaseMigrationProcessorTest {
         assertNotNull(listOfCaseDetails);
         when(coreCaseDataService.update(USER_TOKEN, EVENT_ID, EVENT_SUMMARY,
             EVENT_DESCRIPTION, CASE_TYPE, details))
-            .thenReturn(details);
+            .thenReturn(Optional.of(details));
         caseMigrationProcessor.migrateCases(CASE_TYPE);
         verify(coreCaseDataService, times(1))
             .update(USER_TOKEN,

@@ -21,29 +21,31 @@ class ElasticSearchQueryTest {
         String query = elasticSearchQuery.getQuery();
 
         assertThat(query)
-            .isEqualTo("{\n"
-                + "  \"query\": {\n"
-                + "    \"bool\": {\n"
-                + "      \"filter\": {\n"
-                + "        \"exists\": {\n"
-                + "          \"field\": \"data.court\"\n"
-                + "        }\n"
-                + "      }\n"
-                + "    }\n"
-                + "  },\n"
-                + "  \"size\": 100,\n"
-                + "  \"_source\": [\n"
-                + "    \"reference\",\n"
-                + "    \"jurisdiction\"\n"
-                + "  ],\n"
-                + "  \"sort\": [\n"
-                + "    {\n"
-                + "      \"reference.keyword\": {\n"
-                + "        \"order\": \"asc\"\n"
-                + "      }\n"
-                + "    }\n"
-                + "  ]\n"
-                + "}");
+            .isEqualToIgnoringWhitespace("""
+                {
+                   "query": {
+                     "bool": {
+                       "filter": [{
+                         "exists": {
+                           "field": "data.hearingDetails"
+                         }
+                       }]
+                     }
+                   },
+                   "size": 100,
+                   "_source": [
+                     "reference",
+                     "jurisdiction"
+                   ],
+                   "sort": [
+                     {
+                       "reference.keyword": {
+                         "order": "asc"
+                       }
+                     }
+                   ]
+                 \s
+                  }""");
     }
 
     @Test
@@ -56,28 +58,32 @@ class ElasticSearchQueryTest {
         String query = elasticSearchQuery.getQuery();
 
         assertThat(query)
-            .isEqualTo("{\n"
-                + "  \"query\": {\n"
-                + "    \"bool\": {\n"
-                + "      \"filter\": {\n"
-                + "        \"exists\": {\n"
-                + "          \"field\": \"data.court\"\n"
-                + "        }\n"
-                + "      }\n"
-                + "    }\n"
-                + "  },\n"
-                + "  \"size\": 100,\n"
-                + "  \"_source\": [\n"
-                + "    \"reference\",\n"
-                + "    \"jurisdiction\"\n"
-                + "  ],\n"
-                + "  \"sort\": [\n"
-                + "    {\n"
-                + "      \"reference.keyword\": {\n"
-                + "        \"order\": \"asc\"\n"
-                + "      }\n"
-                + "    }\n"
-                + "  ],\"search_after\": [1677777777]\n"
-                + "}");
+            .isEqualToIgnoringWhitespace("""
+                {
+                   "query": {
+                     "bool": {
+                       "filter": [{
+                         "exists": {
+                           "field": "data.hearingDetails"
+                         }
+                       }]
+                     }
+                   },
+                   "size": 100,
+                   "_source": [
+                     "reference",
+                     "jurisdiction"
+                   ],
+                   "sort": [
+                     {
+                       "reference.keyword": {
+                         "order": "asc"
+                       }
+                     }
+                   ]
+                  ,"search_after": [1677777777]
+                 \s
+                  }
+                """);
     }
 }

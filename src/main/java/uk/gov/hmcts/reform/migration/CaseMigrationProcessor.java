@@ -202,7 +202,7 @@ public class CaseMigrationProcessor {
             log.info("Updating case {}", id);
             try {
                 caseDetails.getData().put(MIGRATION_ID_KEY, migrationId);
-                CaseDetails updateCaseDetails = coreCaseDataService.update(
+                Optional<CaseDetails> updateCaseDetails = coreCaseDataService.update(
                     authorisation,
                     EVENT_ID,
                     EVENT_SUMMARY,
@@ -211,7 +211,7 @@ public class CaseMigrationProcessor {
                     caseDetails
                 );
 
-                if (Objects.nonNull(updateCaseDetails)) {
+                if (updateCaseDetails.isPresent()) {
                     log.info("Case {} successfully updated", id);
                     migratedCases.add(id);
                 } else {
