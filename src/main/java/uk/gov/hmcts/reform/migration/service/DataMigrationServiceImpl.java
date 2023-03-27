@@ -124,7 +124,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
                 log.info("caseId {} : value : {}", caseId,value);
                 if (isTypePresent.test((String)value.get("type")) && Objects.nonNull(value.get("typeDetails"))) {
                     isMigrationRequired = true;
-                    log.info("Migration required for {id = {}}, case reference = {}} updating order type",
+                    log.info("Migration required for {id = {}}, case reference = {}} updating hearing type",
                         data.get(MIGRATION_ID_KEY),
                         caseId);
                 }
