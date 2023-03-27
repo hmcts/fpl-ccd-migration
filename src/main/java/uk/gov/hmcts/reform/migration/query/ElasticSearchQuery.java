@@ -5,30 +5,33 @@ import lombok.Builder;
 @Builder
 public class ElasticSearchQuery {
     private static final String START_QUERY = """
-         {
-          "query": {
-            "bool": {
-             "filter":{
-                "term":{
-                   "reference.keyword":"1679579698423705"
-                }
-             }
-            }
-          },
-          "size": %s,
-          "_source": [
-            "reference",
-            "jurisdiction"
-          ],
-          "sort": [
-            {
-              "reference.keyword": {
-                "order": "asc"
-              }
-            }
-          ]
-         """;
+        {
+         "query": {
+           "bool": {
+            "filter":   {
+                     "terms": {
+                       "reference.keyword": [
+                         "1651071080797567",
+                         "1679579727556301"
+                       ]
+                     }
+                   }
 
+           }
+         },
+         "size": %s,
+         "_source": [
+           "reference",
+           "jurisdiction"
+         ],
+         "sort": [
+           {
+             "reference.keyword": {
+               "order": "asc"
+             }
+           }
+         ]
+        """;
 
     private static final String END_QUERY = "\n}";
 
