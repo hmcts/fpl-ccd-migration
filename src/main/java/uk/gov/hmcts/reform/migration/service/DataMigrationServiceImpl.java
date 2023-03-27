@@ -113,7 +113,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         boolean isMigrationRequired = false;
         Long caseId = (Long) data.get(CASE_ID);
         Object hearings = data.get("hearingDetails");
-
+        log.info("caseId {} : hearings : {}", caseId, hearings);
         if (Objects.nonNull(hearings)) {
             ArrayList<Map<String, Object>> hearingDetails = objectMapper.convertValue(hearings, new TypeReference<>() {
             });
@@ -121,6 +121,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
             for (Map<String, Object> hearingDetail: hearingDetails) {
                 @SuppressWarnings("unchecked")
                 Map<String, Object> value = (Map<String, Object>)hearingDetail.get("value");
+                log.info("caseId {} : value : {}", caseId,value);
                 if (isTypePresent.test((String)value.get("type")) && Objects.nonNull(value.get("typeDetails"))) {
                     isMigrationRequired = true;
                     log.info("Migration required for {id = {}}, case reference = {}} updating order type",

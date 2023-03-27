@@ -51,11 +51,11 @@ public class CoreCaseDataService {
         CaseDetails updatedCaseDetails = startEventResponse.getCaseDetails();
         updatedCaseDetails.getData().put(MIGRATION_ID_KEY,
             caseDetails.getData().get(MIGRATION_ID_KEY));
+        updatedCaseDetails.getData().put(CASE_ID,
+            caseDetails.getId());
 
         if (dataMigrationService.accepts().test(updatedCaseDetails)) {
             log.info("Initiating updating case {}", updatedCaseDetails.getId());
-            updatedCaseDetails.getData().put(CASE_ID,
-                caseDetails.getId());
 
             CaseDataContent caseDataContent = CaseDataContent.builder()
                 .eventToken(startEventResponse.getToken())
