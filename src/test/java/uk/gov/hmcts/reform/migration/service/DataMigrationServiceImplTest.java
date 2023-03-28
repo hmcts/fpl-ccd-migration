@@ -128,4 +128,27 @@ class DataMigrationServiceImplTest {
                 .build());
         assertThat(isMigrationRequired).isFalse();
     }
+
+    @Test
+    void shouldReturnMigrationIsRequiredWhenMigrationTypeIsNullAndTypeDetailsPresent() {
+
+        Map<String, String> value = new HashMap<>();
+        value.put("type", null);
+        value.put("typeDetails", "EPO");
+
+        Map<String, Object> hearingDetail = Map.of(
+            "value", value
+        );
+
+        List<Map<String, Object>> hearingDetails = List.of(hearingDetail);
+        Map<String, Object> data = Map.of(
+            MIGRATION_ID_KEY, "DFPL-1233Rollback",
+            "hearingDetails", hearingDetails
+        );
+        boolean isMigrationRequired = dataMigrationService.accepts()
+            .test(CaseDetails.builder()
+                .data(data)
+                .build());
+        assertThat(isMigrationRequired).isTrue();
+    }
 }

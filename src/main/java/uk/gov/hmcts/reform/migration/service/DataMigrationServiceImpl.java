@@ -125,8 +125,9 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
             for (Map<String, Object> hearingDetail: hearingDetails) {
                 @SuppressWarnings("unchecked")
                 Map<String, Object> value = (Map<String, Object>)hearingDetail.get("value");
-                log.info("caseId {} : value : {}", caseId,value);
-                if (isTypePresent.test((String)value.get("type")) && Objects.nonNull(value.get("typeDetails"))) {
+
+                if ((Objects.isNull(value.get("type"))
+                    || isTypePresent.test((String)value.get("type"))) && Objects.nonNull(value.get("typeDetails"))) {
                     isMigrationRequired = true;
                     log.info("Migration required for {id = {}}, case reference = {}} updating hearing type",
                         data.get(MIGRATION_ID_KEY),
