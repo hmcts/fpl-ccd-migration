@@ -55,6 +55,8 @@ public class CoreCaseDataService {
             caseDetails.getId());
 
         if (dataMigrationService.accepts().test(updatedCaseDetails)) {
+            updatedCaseDetails.getData().put(CASE_ID,
+                caseDetails.getId());
             log.info("Initiating updating case {}", updatedCaseDetails.getId());
 
             CaseDataContent caseDataContent = CaseDataContent.builder()

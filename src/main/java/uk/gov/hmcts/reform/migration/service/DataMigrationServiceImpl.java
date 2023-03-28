@@ -59,7 +59,11 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         return caseDetails -> {
             Map<String, Object> data = caseDetails.getData();
             String migrationId = getMigrationId(data);
-            return isMigrationRequired(caseDetails.getData(), predicate.get(migrationId).get());
+            boolean migrationRequired = isMigrationRequired(caseDetails.getData(), predicate.get(migrationId).get());
+            if (Objects.nonNull(data.get(CASE_ID))) {
+                data.remove(CASE_ID);
+            }
+            return migrationRequired;
         };
     }
 
@@ -97,14 +101,14 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
 
     private void run1233Rollback(Map<String, Object> data) {
         Long caseId = (Long) data.get(CASE_ID);
-        log.info("Rollback {id = {}}, case reference = {}} updating order type",
+        log.info("Rollback {id = {}}, case reference = {}} updating hearing type",
             data.get(MIGRATION_ID_KEY),
             caseId);
     }
 
     private void run1233(Map<String, Object> data) {
         Long caseId = (Long) data.get(CASE_ID);
-        log.info("Migration {id = {}}, case reference = {}} updating order type",
+        log.info("Migration {id = {}}, case reference = {}} updating hearing type",
             data.get(MIGRATION_ID_KEY),
             caseId);
     }
