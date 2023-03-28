@@ -8,15 +8,11 @@ public class ElasticSearchQuery {
         {
          "query": {
            "bool": {
-            "filter":   {
-                     "terms": {
-                       "reference.keyword": [
-                         "1651071080797567",
-                         "1651063385418833"
-                       ]
-                     }
-                   }
-
+             "filter": [{
+               "exists": {
+                 "field": "data.hearingDetails"
+               }
+             }]
            }
          },
          "size": %s,

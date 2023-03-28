@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.query;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.migration.query.ElasticSearchQuery;
@@ -11,7 +12,7 @@ class ElasticSearchQueryTest {
 
     private static final int QUERY_SIZE = 100;
 
-
+    @Test
     void shouldReturnQuery() {
         ElasticSearchQuery elasticSearchQuery =  ElasticSearchQuery.builder()
             .initialSearch(true)
@@ -47,7 +48,7 @@ class ElasticSearchQueryTest {
                   }""");
     }
 
-
+    @Test
     void shouldReturnSearchAfterQuery() {
         ElasticSearchQuery elasticSearchQuery =  ElasticSearchQuery.builder()
             .initialSearch(false)

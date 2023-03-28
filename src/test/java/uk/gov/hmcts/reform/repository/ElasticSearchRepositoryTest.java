@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.repository;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -101,7 +102,7 @@ class ElasticSearchRepositoryTest {
         when(authTokenGenerator.generate()).thenReturn(AUTH_TOKEN);
     }
 
-
+    @Test
     void shouldReturnSearchResultsForCaseTypeElasticSearch() {
         SearchResult searchResult = mock(SearchResult.class);
         when(coreCaseDataApi.searchCases(
@@ -115,7 +116,7 @@ class ElasticSearchRepositoryTest {
         assertThat(caseDetails).isEmpty();
     }
 
-
+    @Test
     void shouldNotReturnCaseDetailsForCaseTypeWhenSearchResultIsNull() {
         when(coreCaseDataApi.searchCases(
             USER_TOKEN,
@@ -128,7 +129,7 @@ class ElasticSearchRepositoryTest {
         assertThat(caseDetails).isEmpty();
     }
 
-
+    @Test
     void shouldReturnSearchResultsAndCaseDetailsForCaseTypeElasticSearch() {
         SearchResult searchResult = mock(SearchResult.class);
         List<CaseDetails> caseDetails = new ArrayList<>();
@@ -172,7 +173,7 @@ class ElasticSearchRepositoryTest {
         assertThat(returnCaseDetails).hasSize(2);
     }
 
-
+    @Test
     void shouldReturnOnlyInitialCaseDetailsWhenSearchAfterReturnsNullSearchResults() {
         SearchResult searchResult = mock(SearchResult.class);
         List<CaseDetails> caseDetails = new ArrayList<>();
