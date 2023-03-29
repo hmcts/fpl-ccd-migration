@@ -168,14 +168,14 @@ public class CaseMigrationProcessor {
         if (getIgnoredCases().isEmpty()) {
             log.info("Ignored cases: NONE ");
         } else {
-            log.info("Ignored cases: {} ", getIgnoredCases());
+            log.info("Ignored count :{}, cases: {}, ", getIgnoredCases().size(), getIgnoredCases());
 
         }
 
         if (getFailedCases().isEmpty()) {
             log.info("Failed cases: NONE ");
         } else {
-            log.info("Failed cases: {} ", getFailedCases());
+            log.info("Failed count:{}, cases: {} ", getFailedCases().size(), getFailedCases());
         }
 
         log.info("Data migration start at {} and completed at {}", startTime, LocalDateTime.now());
