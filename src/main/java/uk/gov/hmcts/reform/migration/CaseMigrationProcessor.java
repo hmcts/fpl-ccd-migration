@@ -168,14 +168,14 @@ public class CaseMigrationProcessor {
         if (getIgnoredCases().isEmpty()) {
             log.info("Ignored cases: NONE ");
         } else {
-            log.info("Ignored count :{}, cases: {}, ", getIgnoredCases().size(), getIgnoredCases());
+            log.info("Ignored cases: {} ", getIgnoredCases());
 
         }
 
         if (getFailedCases().isEmpty()) {
             log.info("Failed cases: NONE ");
         } else {
-            log.info("Failed count:{}, cases: {} ", getFailedCases().size(), getFailedCases());
+            log.info("Failed cases: {} ", getFailedCases());
         }
 
         log.info("Data migration start at {} and completed at {}", startTime, LocalDateTime.now());
@@ -202,7 +202,7 @@ public class CaseMigrationProcessor {
             log.info("Updating case {}", id);
             try {
                 caseDetails.getData().put(MIGRATION_ID_KEY, migrationId);
-                Optional<CaseDetails> updateCaseDetails = coreCaseDataService.update(
+                CaseDetails updateCaseDetails = coreCaseDataService.update(
                     authorisation,
                     EVENT_ID,
                     EVENT_SUMMARY,
@@ -211,7 +211,7 @@ public class CaseMigrationProcessor {
                     caseDetails
                 );
 
-                if (updateCaseDetails.isPresent()) {
+                if (Objects.nonNull(updateCaseDetails)) {
                     log.info("Case {} successfully updated", id);
                     migratedCases.add(id);
                 } else {

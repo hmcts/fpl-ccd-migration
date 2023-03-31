@@ -53,7 +53,7 @@ public class ElasticSearchRepository {
         List<CaseDetails> caseDetails = new ArrayList<>();
 
         if (Objects.nonNull(searchResult) && searchResult.getTotal() > 0) {
-            log.info("Total records to be migrated as per elastic search query: {}", searchResult.getTotal());
+            log.info("Total records to be migrated as per elastic search query {}", searchResult.getTotal());
             List<CaseDetails> searchResultCases = searchResult.getCases();
             caseDetails.addAll(searchResultCases);
             String searchAfterValue = searchResultCases.get(searchResultCases.size() - 1).getId().toString();
@@ -92,9 +92,7 @@ public class ElasticSearchRepository {
             .initialSearch(true)
             .size(querySize)
             .build();
-        log.info("Fetching the case details from elastic search for case type {} with query: {}",
-            caseType,
-            elasticSearchQuery.getQuery());
+        log.info("Fetching the case details from elastic search for case type {}.", caseType);
         String authToken = authTokenGenerator.generate();
         return coreCaseDataApi.searchCases(userToken,
                                            authToken,
@@ -115,9 +113,6 @@ public class ElasticSearchRepository {
             .searchAfterValue(searchAfterValue)
             .build();
 
-        log.info("Fetching the case details from elastic search for case type {} with query: {}",
-            caseType,
-            subsequentElasticSearchQuery.getQuery());
 
         return coreCaseDataApi.searchCases(userToken,
                 authToken,
