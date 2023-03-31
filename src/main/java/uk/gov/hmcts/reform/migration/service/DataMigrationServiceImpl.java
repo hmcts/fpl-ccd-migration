@@ -117,7 +117,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         boolean isMigrationRequired = false;
         Long caseId = (Long) data.get(CASE_ID);
         Object hearings = data.get("hearingDetails");
-
+        log.info("caseId {} : hearings : {}", caseId, hearings);
         if (Objects.nonNull(hearings)) {
             ArrayList<Map<String, Object>> hearingDetails = objectMapper.convertValue(hearings, new TypeReference<>() {
             });
