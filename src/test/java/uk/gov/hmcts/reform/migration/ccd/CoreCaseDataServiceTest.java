@@ -17,7 +17,6 @@ import uk.gov.hmcts.reform.migration.service.DataMigrationService;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.never;
@@ -77,16 +76,10 @@ class CoreCaseDataServiceTest {
         setupMocks(userDetails, caseDetails3.getData());
 
         //when
-        Optional<CaseDetails> update = underTest.update(AUTH_TOKEN,
-            EVENT_ID,
-            EVENT_SUMMARY,
-            EVENT_DESC,
-            CASE_TYPE,
-            caseDetails3);
-        assertThat(update).isPresent();
+        CaseDetails update = underTest.update(AUTH_TOKEN, EVENT_ID, EVENT_SUMMARY, EVENT_DESC, CASE_TYPE, caseDetails3);
         //then
-        assertThat(update.get().getId()).isEqualTo(CASE_ID);
-        assertThat(update.get().getData().get(MIGRATION_ID_KEY)).isEqualTo(DFPL_1124);
+        assertThat(update.getId()).isEqualTo(CASE_ID);
+        assertThat(update.getData().get(MIGRATION_ID_KEY)).isEqualTo(DFPL_1124);
 
         verify(dataMigrationService).accepts();
         verify(dataMigrationService).migrate(caseDetails3.getData());
@@ -127,14 +120,9 @@ class CoreCaseDataServiceTest {
             .thenReturn(caseDetails1 -> false);
 
         //when
-        Optional<CaseDetails> update = underTest.update(AUTH_TOKEN,
-            EVENT_ID,
-            EVENT_SUMMARY,
-            EVENT_DESC,
-            CASE_TYPE,
-            caseDetails3);
+        CaseDetails update = underTest.update(AUTH_TOKEN, EVENT_ID, EVENT_SUMMARY, EVENT_DESC, CASE_TYPE, caseDetails3);
         //then
-        assertThat(update).isNotPresent();
+        assertThat(update).isNull();
         verify(dataMigrationService).accepts();
         verify(dataMigrationService, never()).migrate(caseDetails3.getData());
         verify(coreCaseDataApi).startEventForCaseWorker(AUTH_TOKEN, AUTH_TOKEN, "30",

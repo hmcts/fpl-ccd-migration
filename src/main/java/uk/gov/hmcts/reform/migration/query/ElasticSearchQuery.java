@@ -4,36 +4,33 @@ import lombok.Builder;
 
 @Builder
 public class ElasticSearchQuery {
-    private static final String START_QUERY = """
-        {
-         "query": {
-           "bool": {
-             "filter": [{
-               "exists": {
-                 "field": "data.hearingDetails"
-               }
-             }]
-           }
-         },
-         "size": %s,
-         "_source": [
-           "reference",
-           "jurisdiction"
-         ],
-         "sort": [
-           {
-             "reference.keyword": {
-               "order": "asc"
-             }
-           }
-         ]
-        """;
+
+    private static final String START_QUERY = "{\n"
+        + "  \"query\": {\n"
+        + "    \"bool\": {\n"
+        + "      \"filter\": {\n"
+        + "        \"exists\": {\n"
+        + "          \"field\": \"data.court\"\n"
+        + "        }\n"
+        + "      }\n"
+        + "    }\n"
+        + "  },\n"
+        + "  \"size\": %s,\n"
+        + "  \"_source\": [\n"
+        + "    \"reference\",\n"
+        + "    \"jurisdiction\"\n"
+        + "  ],\n"
+        + "  \"sort\": [\n"
+        + "    {\n"
+        + "      \"reference.keyword\": {\n"
+        + "        \"order\": \"asc\"\n"
+        + "      }\n"
+        + "    }\n"
+        + "  ]";
 
     private static final String END_QUERY = "\n}";
 
-    private static final String SEARCH_AFTER = """
-        "search_after": [%s]
-        """;
+    private static final String SEARCH_AFTER = "\"search_after\": [%s]";
 
     private String searchAfterValue;
     private int size;
