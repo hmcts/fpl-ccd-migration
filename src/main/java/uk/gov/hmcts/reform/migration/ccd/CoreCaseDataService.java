@@ -51,10 +51,10 @@ public class CoreCaseDataService {
 
         if (dataMigrationService.accepts().test(updatedCaseDetails)) {
             log.info("Initiating updating case {}", updatedCaseDetails.getId());
-            updatedCaseDetails.getData().put(MIGRATION_ID_KEY,
-                caseDetails.getData().get(MIGRATION_ID_KEY));
-            updatedCaseDetails.getData().put(CASE_ID,
-                caseDetails.getId());
+
+            Map<String, Object> migratedFields = dataMigrationService.migrate(updatedCaseDetails.getData());
+            migratedFields.put(MIGRATION_ID_KEY, caseDetails.getData().get(MIGRATION_ID_KEY));
+            migratedFields.put(CASE_ID, caseDetails.getId());
 
             CaseDataContent caseDataContent = CaseDataContent.builder()
                 .eventToken(startEventResponse.getToken())
@@ -64,7 +64,7 @@ public class CoreCaseDataService {
                         .summary(eventSummary)
                         .description(eventDescription)
                         .build()
-                ).data(dataMigrationService.migrate(updatedCaseDetails.getData()))
+                ).data(migratedFields)
                 .build();
             return coreCaseDataApi.submitEventForCaseWorker(
                 AuthUtil.getBearerToken(authorisation),
