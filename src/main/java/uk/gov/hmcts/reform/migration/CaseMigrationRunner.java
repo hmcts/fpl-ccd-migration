@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import uk.gov.hmcts.reform.migration.query.ESQuery;
 import uk.gov.hmcts.reform.migration.service.DataMigrationService;
 
 @Slf4j
@@ -21,6 +22,8 @@ public class CaseMigrationRunner implements CommandLineRunner {
     @Value("${case-migration.processing.id}") String migrationId;
 
     @Value("${case-migration.enabled}") boolean enabled;
+    @Value("${case-migration.list:false}") boolean useIdList;
+
     @Value("${migration.caseType}")
     private String caseType;
 
@@ -39,14 +42,14 @@ public class CaseMigrationRunner implements CommandLineRunner {
                 return;
             }
             dataMigrationService.validateMigrationId(migrationId);
-            if (defaultThreadLimit <= 1) {
-                log.info("CaseMigrationRunner.defaultThreadLimit= {} ", defaultThreadLimit);
-                caseMigrationProcessor.migrateCases(caseType);
+            if (useIdList) {
+                // Do ID List Migration
+                // TODO - write this logic
             } else {
-                log.info("CaseMigrationRunner.defaultThreadLimit= {} ", defaultThreadLimit);
-                caseMigrationProcessor.process(caseType);
+                // Do ESQuery based migration
+                ESQuery query = dataMigrationService.getQuery(migrationId);
+                caseMigrationProcessor.migrateCases(caseType, query);
             }
-
         } catch (Exception e) {
             log.error("Migration failed with the following reason: {}", e.getMessage(), e);
         }
