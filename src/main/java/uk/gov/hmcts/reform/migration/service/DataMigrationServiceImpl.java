@@ -29,6 +29,7 @@ import static java.util.Objects.requireNonNull;
 public class DataMigrationServiceImpl implements DataMigrationService<Map<String, Object>> {
 
     public static final String DFJ_AREA = "dfjArea";
+    public static final String COURT = "court";
     private final DfjAreaLookUpService dfjAreaLookUpService;
     private final ObjectMapper objectMapper;
     private final Map<String, Function<Map<String, Object>, Map<String, Object>>> migrations = Map.of(
@@ -38,8 +39,8 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
     );
 
     private final Map<String, ESQuery> queries = Map.of(
-        "DFPL-1124", this.query1124(),
-        "DFPL-test", this.query1124()
+        "DFPL-1124", this.topLevelFieldExistsQuery(COURT),
+        "DFPL-test", this.topLevelFieldExistsQuery(COURT)
     );
 
     @Override
@@ -82,7 +83,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
     private Map<String, Object> run1124(Map<String, Object> data) {
 
         Long caseId = (Long) data.get(CASE_ID);
-        Object court = data.get("court");
+        Object court = data.get(COURT);
 
         Map<String, Object> updatedData = new HashMap<>();
         if (Objects.nonNull(court)) {
@@ -102,10 +103,10 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         return new HashMap<>();
     }
 
-    private ESQuery query1124() {
+    private ESQuery topLevelFieldExistsQuery(String field) {
         return BooleanQuery.builder()
             .filter(Filter.builder()
-                .clauses(List.of(ExistsQuery.of("data.court")))
+                .clauses(List.of(ExistsQuery.of("data." + field)))
                 .build())
             .build();
     }
