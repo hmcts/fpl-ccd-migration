@@ -103,6 +103,6 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
             log.warn("Rollback ignored {id = DFPL-1124, case reference = {}}",
                 caseId);
         }
-        return Map.of();
+        return new HashMap<>();
     }
 }
