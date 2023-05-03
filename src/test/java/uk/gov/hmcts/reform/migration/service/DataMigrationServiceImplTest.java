@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.migration.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -22,6 +23,9 @@ import static uk.gov.hmcts.reform.migration.service.DataMigrationServiceImpl.DFJ
 
 @ExtendWith(MockitoExtension.class)
 class DataMigrationServiceImplTest {
+
+    private static final String INVALID_MIGRATION_ID = "NOT_A_MIGRATION";
+
     @Mock
     private DfjAreaLookUpService dfjAreaLookUpService;
     private DataMigrationServiceImpl dataMigrationService;
@@ -58,67 +62,64 @@ class DataMigrationServiceImplTest {
 
     @Test
     void shouldThrowExceptionWhenMigrationKeyIsNotSet() {
-        assertThatThrownBy(() -> dataMigrationService.migrate(Map.of()))
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessage("Migration id not set");
+        assertThatThrownBy(() -> dataMigrationService.migrate(Map.of(), null))
+            .isInstanceOf(NullPointerException.class)
+            .hasMessage("Migration ID must not be null");
     }
 
     @Test
     void shouldThrowExceptionWhenMigrationKeyIsInvalid() {
         Map<String, Object> data = new HashMap<>();
-        data.put(MIGRATION_ID_KEY, "UNKNOW-123");
-        assertThatThrownBy(() -> dataMigrationService.migrate(data))
+        assertThatThrownBy(() -> dataMigrationService.migrate(data, INVALID_MIGRATION_ID))
             .isInstanceOf(NoSuchElementException.class)
-            .hasMessage("No migration mapped to UNKNOW-123");
+            .hasMessage("No migration mapped to " + INVALID_MIGRATION_ID);
         assertThat(data.get(MIGRATION_ID_KEY)).isNull();
     }
 
-    @Test
-    void shouldSetDfjAreaAndCourtFieldWhenMigrationIdIsValid() {
-        when(dfjAreaLookUpService.getDfjArea("344"))
-            .thenReturn(dfjAreaCourtMapping);
+    @Nested
+    class Dfpl1124 {
 
-        Map<String, Object> data = new HashMap<>();
-        data.put("id", 1649150882331141L);
-        data.put(MIGRATION_ID_KEY, "DFPL-1124");
-        data.put("court", caseDetails.getData().get("court"));
+        private static final String MIGRATION_ID = "DFPL-1124";
+        private static final String ROLLBACK_MIGRATION_ID = "DFPL-1124Rollback";
 
-        Map<String, Object> updatedData = dataMigrationService.migrate(data);
-        assertThat(updatedData.get(DFJ_AREA))
-            .isEqualTo(dfjAreaCourtMapping.getDfjArea());
-        assertThat(updatedData.get(dfjAreaCourtMapping.getCourtField()))
-            .isEqualTo(dfjAreaCourtMapping.getCourtCode());
-        assertThat(data.get(MIGRATION_ID_KEY)).isEqualTo("DFPL-1124");
+        @Test
+        void shouldSetDfjAreaAndCourtFieldWhenMigrationIdIsValid() {
+            when(dfjAreaLookUpService.getDfjArea("344"))
+                .thenReturn(dfjAreaCourtMapping);
+
+            Map<String, Object> data = new HashMap<>();
+            data.put("court", caseDetails.getData().get("court"));
+
+            Map<String, Object> updatedData = dataMigrationService.migrate(data, MIGRATION_ID);
+            assertThat(updatedData.get(DFJ_AREA))
+                .isEqualTo(dfjAreaCourtMapping.getDfjArea());
+            assertThat(updatedData.get(dfjAreaCourtMapping.getCourtField()))
+                .isEqualTo(dfjAreaCourtMapping.getCourtCode());
+        }
+
+        @Test
+        void shouldIgnoreRollbackWhenDfjAreaNotPresent() {
+
+            Map<String, Object> data = new HashMap<>();
+
+            Map<String, Object> updatedData = dataMigrationService.migrate(data, ROLLBACK_MIGRATION_ID);
+            assertThat(updatedData.get(DFJ_AREA))
+                .isNull();
+            assertThat(updatedData.get(dfjAreaCourtMapping.getCourtField()))
+                .isNull();
+        }
+
+        @Test
+        void shouldNotSetDfjAreaAndCourtFieldWhenMigrationIdIsValidButCourtNotPresent() {
+            Map<String, Object> data = new HashMap<>();
+
+            Map<String, Object> updatedData = dataMigrationService.migrate(data, MIGRATION_ID);
+            assertThat(updatedData.get(DFJ_AREA))
+                .isNull();
+            assertThat(updatedData.get(dfjAreaCourtMapping.getCourtField()))
+                .isNull();
+        }
+
     }
-
-    @Test
-    void shouldIgnoreRollbackWhenDfjAreaNotPresent() {
-
-        Map<String, Object> data = new HashMap<>();
-        data.put("id", 1649150882331141L);
-        data.put(MIGRATION_ID_KEY, "DFPL-1124Rollback");
-
-        Map<String, Object> updatedData = dataMigrationService.migrate(data);
-        assertThat(updatedData.get(DFJ_AREA))
-            .isNull();
-        assertThat(updatedData.get(dfjAreaCourtMapping.getCourtField()))
-            .isNull();
-        assertThat(data.get(MIGRATION_ID_KEY)).isEqualTo("DFPL-1124Rollback");
-    }
-
-    @Test
-    void shouldNotSetDfjAreaAndCourtFieldWhenMigrationIdIsValidButCourtNotPresent() {
-        Map<String, Object> data = new HashMap<>();
-        data.put("id", 1649150882331141L);
-        data.put(MIGRATION_ID_KEY, "DFPL-1124");
-
-        Map<String, Object> updatedData = dataMigrationService.migrate(data);
-        assertThat(updatedData.get(DFJ_AREA))
-            .isNull();
-        assertThat(updatedData.get(dfjAreaCourtMapping.getCourtField()))
-            .isNull();
-        assertThat(data.get(MIGRATION_ID_KEY)).isEqualTo("DFPL-1124");
-    }
-
 
 }

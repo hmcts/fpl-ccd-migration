@@ -6,11 +6,12 @@ import org.springframework.stereotype.Repository;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
 import uk.gov.hmcts.reform.migration.ccd.CoreCaseDataService;
-import uk.gov.hmcts.reform.migration.query.ESQuery;
+import uk.gov.hmcts.reform.migration.query.EsQuery;
 
 import java.util.List;
 
 import static java.util.Objects.requireNonNull;
+import static org.springframework.util.ObjectUtils.isEmpty;
 
 @Repository
 @Slf4j
@@ -23,17 +24,22 @@ public class ElasticSearchRepository {
         this.ccdService = ccdService;
     }
 
-    public List<CaseDetails> search(String userToken, String caseType, ESQuery query, int size, int from) {
-        requireNonNull(query);
-        return search(userToken, caseType, query.toQueryContext(size, from).toString()).getCases();
-    }
-
-    public int searchResultsSize(String userToken, String caseType, ESQuery query) {
+    public int searchResultsSize(String userToken, String caseType, EsQuery query) {
         requireNonNull(query);
         return search(userToken, caseType, query.toQueryContext(1, 0).toString()).getTotal();
     }
 
-    private SearchResult search(String userToken, String caseType, String query) {
+    public SearchResult search(String userToken, String caseType, String query) {
         return ccdService.searchCases(userToken, caseType, query);
+    }
+
+    public List<CaseDetails> search(String userToken, String caseType, EsQuery query, int size, int from) {
+        requireNonNull(query);
+        SearchResult result = search(userToken, caseType, query.toQueryContext(size, from).toString());
+        if (isEmpty(result)) {
+            log.error("ES Query returned no cases, {}", query.toQueryContext(size, from));
+            return List.of();
+        }
+        return result.getCases();
     }
 }

@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import uk.gov.hmcts.reform.migration.query.ESQuery;
+import uk.gov.hmcts.reform.migration.query.EsQuery;
 import uk.gov.hmcts.reform.migration.service.DataMigrationService;
 
 @Slf4j
@@ -47,7 +47,7 @@ public class CaseMigrationRunner implements CommandLineRunner {
                 // TODO - write this logic
             } else {
                 // Do ESQuery based migration
-                ESQuery query = dataMigrationService.getQuery(migrationId);
+                EsQuery query = dataMigrationService.getQuery(migrationId);
                 caseMigrationProcessor.migrateCases(caseType, query);
             }
         } catch (Exception e) {

@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.migration.ccd.CoreCaseDataService;
-import uk.gov.hmcts.reform.migration.query.ESQuery;
+import uk.gov.hmcts.reform.migration.query.EsQuery;
 import uk.gov.hmcts.reform.migration.repository.ElasticSearchRepository;
 import uk.gov.hmcts.reform.migration.repository.IdamRepository;
 
@@ -18,6 +18,7 @@ import java.util.stream.IntStream;
 
 import static java.math.RoundingMode.UP;
 import static java.time.LocalDateTime.now;
+import static java.util.Objects.requireNonNull;
 
 @Slf4j
 @Component
@@ -52,7 +53,11 @@ public class CaseMigrationProcessor {
         this.migrationId = migrationId;
     }
 
-    public void migrateCases(String caseType, ESQuery query) {
+    public void migrateCases(String caseType, EsQuery query) {
+        requireNonNull(caseType);
+        requireNonNull(query);
+        requireNonNull(migrationId);
+
         String userToken =  idamRepository.generateUserToken();
 
         int total;

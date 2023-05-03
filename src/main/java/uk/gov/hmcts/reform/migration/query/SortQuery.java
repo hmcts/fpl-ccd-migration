@@ -7,7 +7,7 @@ import java.util.Map;
 import static java.util.Objects.requireNonNull;
 
 @EqualsAndHashCode
-public class SortQuery implements ESQuery {
+public class SortQuery implements EsQuery {
     private final String field;
     private final SortOrder sortOrder;
 

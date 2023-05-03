@@ -4,7 +4,7 @@ import net.minidev.json.JSONObject;
 
 import java.util.Map;
 
-public interface ESQuery extends ESClause {
+public interface EsQuery extends EsClause {
     default JSONObject toQueryContext(int size, int from) {
         return new JSONObject(Map.of("size", size, "from", from, "query", this.toMap()));
     }

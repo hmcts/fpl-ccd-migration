@@ -7,7 +7,7 @@ import java.util.Map;
 import static java.util.Objects.requireNonNull;
 
 @EqualsAndHashCode
-public class ExistsQuery implements ESQuery {
+public class ExistsQuery implements EsQuery {
     private final String field;
 
     public ExistsQuery(String field) {

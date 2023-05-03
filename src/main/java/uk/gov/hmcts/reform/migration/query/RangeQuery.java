@@ -10,7 +10,7 @@ import static java.util.Objects.requireNonNull;
 
 @EqualsAndHashCode
 @Builder
-public class RangeQuery implements ESQuery {
+public class RangeQuery implements EsQuery {
 
     private final Object greaterThan;
     private final Object greaterThanOrEqual;

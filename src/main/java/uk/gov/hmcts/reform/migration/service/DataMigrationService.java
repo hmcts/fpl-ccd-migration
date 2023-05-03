@@ -1,7 +1,7 @@
 package uk.gov.hmcts.reform.migration.service;
 
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
-import uk.gov.hmcts.reform.migration.query.ESQuery;
+import uk.gov.hmcts.reform.migration.query.EsQuery;
 
 import java.util.Map;
 import java.util.function.Predicate;
@@ -16,5 +16,5 @@ public interface DataMigrationService<T> {
 
     void validateMigrationId(String migrationId);
 
-    ESQuery getQuery(String migrationId);
+    EsQuery getQuery(String migrationId);
 }

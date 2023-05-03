@@ -9,11 +9,11 @@ import java.util.stream.Collectors;
 
 @EqualsAndHashCode
 @Builder
-public class Must implements ESClause {
-    private final List<ESClause> clauses;
+public class Must implements EsClause {
+    private final List<EsClause> clauses;
 
     @Override
     public Map<String, Object> toMap() {
-        return Map.of("must", this.clauses.stream().map(ESClause::toMap).collect(Collectors.toList()));
+        return Map.of("must", this.clauses.stream().map(EsClause::toMap).collect(Collectors.toList()));
     }
 }

@@ -5,10 +5,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
-import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
+import uk.gov.hmcts.reform.migration.ccd.CoreCaseDataService;
+import uk.gov.hmcts.reform.migration.query.BooleanQuery;
+import uk.gov.hmcts.reform.migration.query.EsQuery;
+import uk.gov.hmcts.reform.migration.query.ExistsQuery;
+import uk.gov.hmcts.reform.migration.query.Filter;
 import uk.gov.hmcts.reform.migration.repository.ElasticSearchRepository;
 
 import java.util.ArrayList;
@@ -29,99 +32,52 @@ class ElasticSearchRepositoryTest {
 
     private static final String AUTH_TOKEN = "Test_Auth_Token";
 
-    private static final String INITIAL_QUERY = "{\n"
-        + "  \"query\": {\n"
-        + "    \"bool\": {\n"
-        + "      \"filter\": {\n"
-        + "        \"exists\": {\n"
-        + "          \"field\": \"data.court\"\n"
-        + "        }\n"
-        + "      }\n"
-        + "    }\n"
-        + "  },\n"
-        + "  \"size\": 100,\n"
-        + "  \"_source\": [\n"
-        + "    \"reference\",\n"
-        + "    \"jurisdiction\"\n"
-        + "  ],\n"
-        + "  \"sort\": [\n"
-        + "    {\n"
-        + "      \"reference.keyword\": {\n"
-        + "        \"order\": \"asc\"\n"
-        + "      }\n"
-        + "    }\n"
-        + "  ]\n"
-        + "}";
+    private static final EsQuery QUERY = BooleanQuery.builder()
+        .filter(Filter.builder()
+            .clauses(List.of(ExistsQuery.of("data.court")))
+            .build())
+        .build();
 
-    private static final String SEARCH_AFTER_QUERY = "{\n"
-        + "  \"query\": {\n"
-        + "    \"bool\": {\n"
-        + "      \"filter\": {\n"
-        + "        \"exists\": {\n"
-        + "          \"field\": \"data.court\"\n"
-        + "        }\n"
-        + "      }\n"
-        + "    }\n"
-        + "  },\n"
-        + "  \"size\": 100,\n"
-        + "  \"_source\": [\n"
-        + "    \"reference\",\n"
-        + "    \"jurisdiction\"\n"
-        + "  ],\n"
-        + "  \"sort\": [\n"
-        + "    {\n"
-        + "      \"reference.keyword\": {\n"
-        + "        \"order\": \"asc\"\n"
-        + "      }\n"
-        + "    }\n"
-        + "  ],\"search_after\": [1677777777]\n"
-        + "}";
-
-    private static final int QUERY_SIZE = 100;
-    private static final int CASE_PROCESS_LIMIT = 100;
+    private static final String INITIAL_QUERY = QUERY.toQueryContext(1, 0).toString();
+    private static final String AFTER_QUERY = QUERY.toQueryContext(1, 1).toString();
 
     private ElasticSearchRepository elasticSearchRepository;
 
     @Mock
-    private CoreCaseDataApi coreCaseDataApi;
-
-    @Mock
-    private AuthTokenGenerator authTokenGenerator;
+    private CoreCaseDataService coreCaseDataService;
 
     @BeforeEach
     void setUp() {
-        elasticSearchRepository = new ElasticSearchRepository(coreCaseDataApi,
-                                                              authTokenGenerator,
-                                                              QUERY_SIZE,
-                                                              CASE_PROCESS_LIMIT);
-        when(authTokenGenerator.generate()).thenReturn(AUTH_TOKEN);
+        elasticSearchRepository = new ElasticSearchRepository(coreCaseDataService);
     }
 
     @Test
     void shouldReturnSearchResultsForCaseTypeElasticSearch() {
         SearchResult searchResult = mock(SearchResult.class);
-        when(coreCaseDataApi.searchCases(
+        when(coreCaseDataService.searchCases(
             USER_TOKEN,
-            AUTH_TOKEN,
             CASE_TYPE,
-            INITIAL_QUERY
+            QUERY.toQueryContext(1, 0).toString()
         )).thenReturn(searchResult);
-        List<CaseDetails> caseDetails = elasticSearchRepository.findCaseByCaseType(USER_TOKEN, CASE_TYPE);
-        assertThat(caseDetails).isNotNull();
-        assertThat(caseDetails).isEmpty();
+        List<CaseDetails> caseDetails = elasticSearchRepository.search(USER_TOKEN, CASE_TYPE, QUERY, 1, 0);
+
+        assertThat(caseDetails)
+            .isNotNull()
+            .isEmpty();
     }
 
     @Test
     void shouldNotReturnCaseDetailsForCaseTypeWhenSearchResultIsNull() {
-        when(coreCaseDataApi.searchCases(
+        when(coreCaseDataService.searchCases(
             USER_TOKEN,
-            AUTH_TOKEN,
             CASE_TYPE,
-            INITIAL_QUERY
+            QUERY.toQueryContext(1, 0).toString()
         )).thenReturn(null);
-        List<CaseDetails> caseDetails = elasticSearchRepository.findCaseByCaseType(USER_TOKEN, CASE_TYPE);
-        assertThat(caseDetails).isNotNull();
-        assertThat(caseDetails).isEmpty();
+        List<CaseDetails> caseDetails = elasticSearchRepository.search(USER_TOKEN, CASE_TYPE, QUERY, 1, 0);
+
+        assertThat(caseDetails)
+            .isNotNull()
+            .isEmpty();
     }
 
     @Test
@@ -129,82 +85,20 @@ class ElasticSearchRepositoryTest {
         SearchResult searchResult = mock(SearchResult.class);
         List<CaseDetails> caseDetails = new ArrayList<>();
         CaseDetails details = mock(CaseDetails.class);
-        when(details.getId()).thenReturn(1677777777L);
         caseDetails.add(details);
         when(searchResult.getCases()).thenReturn(caseDetails);
-        when(searchResult.getTotal()).thenReturn(1);
-        when(coreCaseDataApi.searchCases(
+        when(coreCaseDataService.searchCases(
             USER_TOKEN,
-            AUTH_TOKEN,
             CASE_TYPE,
-            INITIAL_QUERY
+            QUERY.toQueryContext(1, 0).toString()
         )).thenReturn(searchResult);
 
-        SearchResult searchAfterResult = mock(SearchResult.class);
-        when(coreCaseDataApi.searchCases(
-            USER_TOKEN,
-            AUTH_TOKEN,
-            CASE_TYPE,
-            SEARCH_AFTER_QUERY
-        )).thenReturn(searchAfterResult);
-        List<CaseDetails> caseDetails1 = new ArrayList<>();
-        CaseDetails details1 = mock(CaseDetails.class);
-        caseDetails1.add(details1);
-        when(searchAfterResult.getCases()).thenReturn(caseDetails1);
-
-        List<CaseDetails> returnCaseDetails = elasticSearchRepository.findCaseByCaseType(USER_TOKEN, CASE_TYPE);
+        List<CaseDetails> returnCaseDetails = elasticSearchRepository.search(USER_TOKEN, CASE_TYPE, QUERY, 1, 0);
         assertThat(returnCaseDetails).isNotNull();
 
-        verify(authTokenGenerator, times(1)).generate();
-
-        verify(coreCaseDataApi, times(1)).searchCases(USER_TOKEN,
-                                                      AUTH_TOKEN,
+        verify(coreCaseDataService, times(1)).searchCases(USER_TOKEN,
                                                       CASE_TYPE,
                                                       INITIAL_QUERY);
-        verify(coreCaseDataApi, times(1)).searchCases(USER_TOKEN,
-                                                      AUTH_TOKEN,
-                                                      CASE_TYPE,
-                                                      SEARCH_AFTER_QUERY);
-        assertThat(returnCaseDetails).hasSize(2);
-    }
-
-    @Test
-    void shouldReturnOnlyInitialCaseDetailsWhenSearchAfterReturnsNullSearchResults() {
-        SearchResult searchResult = mock(SearchResult.class);
-        List<CaseDetails> caseDetails = new ArrayList<>();
-        CaseDetails details = mock(CaseDetails.class);
-        when(details.getId()).thenReturn(1677777777L);
-        caseDetails.add(details);
-        when(searchResult.getCases()).thenReturn(caseDetails);
-        when(searchResult.getTotal()).thenReturn(1);
-        when(coreCaseDataApi.searchCases(
-            USER_TOKEN,
-            AUTH_TOKEN,
-            CASE_TYPE,
-            INITIAL_QUERY
-        )).thenReturn(searchResult);
-
-        when(coreCaseDataApi.searchCases(
-            USER_TOKEN,
-            AUTH_TOKEN,
-            CASE_TYPE,
-            SEARCH_AFTER_QUERY
-        )).thenReturn(null);
-
-        List<CaseDetails> returnCaseDetails = elasticSearchRepository.findCaseByCaseType(USER_TOKEN, CASE_TYPE);
-        assertThat(returnCaseDetails).isNotNull();
-
-        verify(authTokenGenerator, times(1)).generate();
-
-        verify(coreCaseDataApi, times(1)).searchCases(USER_TOKEN,
-                                                      AUTH_TOKEN,
-                                                      CASE_TYPE,
-                                                      INITIAL_QUERY);
-        verify(coreCaseDataApi, times(1)).searchCases(USER_TOKEN,
-                                                      AUTH_TOKEN,
-                                                      CASE_TYPE,
-                                                      SEARCH_AFTER_QUERY);
-
         assertThat(returnCaseDetails).hasSize(1);
     }
 }

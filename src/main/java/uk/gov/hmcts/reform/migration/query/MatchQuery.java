@@ -7,7 +7,7 @@ import java.util.Map;
 import static java.util.Objects.requireNonNull;
 
 @EqualsAndHashCode
-public class MatchQuery implements ESQuery {
+public class MatchQuery implements EsQuery {
     private final String field;
     private final Object value;
 

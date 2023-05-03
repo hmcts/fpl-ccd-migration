@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.domain.model.DfjAreaCourtMapping;
 import uk.gov.hmcts.reform.migration.query.BooleanQuery;
-import uk.gov.hmcts.reform.migration.query.ESQuery;
+import uk.gov.hmcts.reform.migration.query.EsQuery;
 import uk.gov.hmcts.reform.migration.query.ExistsQuery;
 import uk.gov.hmcts.reform.migration.query.Filter;
 
@@ -38,7 +38,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         "DFPL-1124Rollback", this::run1124Rollback
     );
 
-    private final Map<String, ESQuery> queries = Map.of(
+    private final Map<String, EsQuery> queries = Map.of(
         "DFPL-1124", this.topLevelFieldExistsQuery(COURT),
         "DFPL-test", this.topLevelFieldExistsQuery(COURT)
     );
@@ -51,7 +51,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
     }
 
     @Override
-    public ESQuery getQuery(String migrationId) {
+    public EsQuery getQuery(String migrationId) {
         if (!queries.containsKey(migrationId)) {
             throw new NoSuchElementException("No migration mapped to " + migrationId);
         }
@@ -71,7 +71,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
 
     @Override
     public Map<String, Object> migrate(Map<String, Object> data, String migrationId) {
-        requireNonNull(migrationId);
+        requireNonNull(migrationId, "Migration ID must not be null");
         if (!migrations.containsKey(migrationId)) {
             throw new NoSuchElementException("No migration mapped to " + migrationId);
         }
@@ -103,7 +103,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         return new HashMap<>();
     }
 
-    private ESQuery topLevelFieldExistsQuery(String field) {
+    private EsQuery topLevelFieldExistsQuery(String field) {
         return BooleanQuery.builder()
             .filter(Filter.builder()
                 .clauses(List.of(ExistsQuery.of("data." + field)))

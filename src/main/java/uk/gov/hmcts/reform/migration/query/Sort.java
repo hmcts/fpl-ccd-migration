@@ -8,11 +8,11 @@ import java.util.stream.Collectors;
 
 @EqualsAndHashCode
 @Builder
-public class Sort implements ESClause<List<Object>> {
-    private final List<ESClause> clauses;
+public class Sort implements EsClause<List<Object>> {
+    private final List<EsClause> clauses;
 
     @Override
     public List<Object> toMap() {
-        return this.clauses.stream().map(ESClause::toMap).collect(Collectors.toList());
+        return this.clauses.stream().map(EsClause::toMap).collect(Collectors.toList());
     }
 }

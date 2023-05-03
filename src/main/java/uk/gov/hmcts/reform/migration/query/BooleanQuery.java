@@ -8,7 +8,7 @@ import java.util.Map;
 
 @EqualsAndHashCode
 @Builder
-public class BooleanQuery implements ESQuery {
+public class BooleanQuery implements EsQuery {
     private final MustNot mustNot;
     private final Must must;
     private final Filter filter;
