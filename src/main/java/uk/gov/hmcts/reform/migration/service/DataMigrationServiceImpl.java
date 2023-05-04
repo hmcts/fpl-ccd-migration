@@ -90,7 +90,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
             log.warn("Migration {id = DFPL-1124, case reference = {}} doesn't have court info ",
                 caseId);
         }
-        return Map.of();
+        return new HashMap<>();
     }
 
 
