@@ -13,6 +13,8 @@ import static org.springframework.util.ObjectUtils.isEmpty;
 @Slf4j
 public class ConfigParser {
 
+    private ConfigParser() {}
+
     public static Map<String, List<String>> parseConfig(String config) {
         HashMap<String, List<String>> map = new HashMap<>();
         Arrays.stream(config.split(";"))
