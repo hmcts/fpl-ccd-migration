@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.migration;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -24,6 +25,7 @@ import java.util.stream.LongStream;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -40,6 +42,7 @@ class CaseMigrationProcessorTest {
     private static final String USER_TOKEN = "Bearer eeeejjjttt";
 
     private static final String CASE_TYPE = "CARE_SUPERVISION_EPO";
+    private static final String CASE_JURISDICTION = "PUBLICLAW";
 
     private static final String MIGRATION_ID = "DFPL-TEST";
 
@@ -74,7 +77,6 @@ class CaseMigrationProcessorTest {
             DEFAUT_QUERY_SIZE,
             MIGRATION_ID);
     }
-
 
     @Test
     void shouldMigrateCasesOfACaseTypeByParallelProcessing() throws InterruptedException {
@@ -190,5 +192,28 @@ class CaseMigrationProcessorTest {
             null);
         assertThatThrownBy(() -> caseMigrationProcessor.migrateCases("Test", BooleanQuery.builder().build()))
             .isInstanceOf(NullPointerException.class);
+    }
+
+    @Nested
+    class MigrateCaseList {
+
+        @Test
+        void shouldMigrateOnlySelectCases() {
+            when(idamRepository.generateUserToken()).thenReturn(USER_TOKEN);
+
+            List<String> caseIds = List.of("12345", "67890");
+
+            caseMigrationProcessor.migrateList(CASE_TYPE, CASE_JURISDICTION, caseIds);
+
+            verify(coreCaseDataService, times(2))
+                .update(eq(USER_TOKEN),
+                    eq(EVENT_ID),
+                    eq(EVENT_SUMMARY),
+                    eq(EVENT_DESCRIPTION),
+                    eq(CASE_TYPE),
+                    any(),
+                    eq(MIGRATION_ID));
+        }
+
     }
 }
