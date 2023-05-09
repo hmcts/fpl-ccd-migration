@@ -6,8 +6,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import uk.gov.hmcts.reform.migration.configuration.CaseIdListConfiguration;
 import uk.gov.hmcts.reform.migration.query.EsQuery;
 import uk.gov.hmcts.reform.migration.service.DataMigrationService;
+
+import java.util.List;
 
 @Slf4j
 @SpringBootApplication
@@ -19,13 +22,20 @@ public class CaseMigrationRunner implements CommandLineRunner {
     @Autowired
     private DataMigrationService dataMigrationService;
 
+    @Autowired
+    private CaseIdListConfiguration caseIdListConfiguration;
+
     @Value("${case-migration.processing.id}") String migrationId;
 
     @Value("${case-migration.enabled}") boolean enabled;
-    @Value("${case-migration.list:false}") boolean useIdList;
+
+    @Value("${case-migration.use_case_id_mapping:false}") boolean useIdList;
 
     @Value("${migration.caseType}")
     private String caseType;
+
+    @Value("${migration.jurisdiction}")
+    private String jurisdiction;
 
     @Value("${default.thread.limit}")
     private int defaultThreadLimit;
@@ -41,10 +51,12 @@ public class CaseMigrationRunner implements CommandLineRunner {
             if (!enabled) {
                 return;
             }
+            log.info("Migration ID is {}", migrationId);
             dataMigrationService.validateMigrationId(migrationId);
             if (useIdList) {
                 // Do ID List Migration
-                // TODO - write this logic
+                List<String> caseIds = caseIdListConfiguration.getCaseIds(migrationId);
+                caseMigrationProcessor.migrateList(caseType, jurisdiction, caseIds);
             } else {
                 // Do ESQuery based migration
                 EsQuery query = dataMigrationService.getQuery(migrationId);

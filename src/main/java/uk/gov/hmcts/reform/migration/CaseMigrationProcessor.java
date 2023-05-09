@@ -53,6 +53,43 @@ public class CaseMigrationProcessor {
         this.migrationId = migrationId;
     }
 
+    public void migrateList(String caseType, String jurisdiction, List<String> caseIds) {
+        requireNonNull(caseType);
+        requireNonNull(jurisdiction);
+        requireNonNull(caseIds);
+
+        if (caseIds.isEmpty()) {
+            log.error("No case ids found for migration {}, aborting", migrationId);
+            return;
+        }
+
+        String userToken =  idamRepository.generateUserToken();
+        log.info("Found {} cases to migrate", caseIds.size());
+
+        caseIds.parallelStream().forEach(caseId -> {
+            long caseIdL = Long.parseLong(caseId);
+            try {
+                coreCaseDataService.update(userToken,
+                    EVENT_ID,
+                    EVENT_SUMMARY,
+                    EVENT_DESCRIPTION,
+                    caseType,
+                    CaseDetails.builder()
+                        .id(caseIdL)
+                        .jurisdiction(jurisdiction)
+                        .build(),
+                    this.migrationId);
+                log.info("Completed migrating case {}", caseId);
+                migratedCases.add(caseIdL);
+            } catch (Exception e) {
+                log.error("Failed migrating case {}", caseId);
+                failedCases.add(caseIdL);
+            }
+        });
+
+        publishStats(startTime);
+    }
+
     public void migrateCases(String caseType, EsQuery query) {
         requireNonNull(caseType);
         requireNonNull(query);
