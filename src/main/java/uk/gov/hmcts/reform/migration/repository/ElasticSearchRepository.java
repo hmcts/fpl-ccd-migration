@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.migration.repository;
 
+import feign.FeignException;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -7,6 +9,9 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
 import uk.gov.hmcts.reform.migration.ccd.CoreCaseDataService;
 import uk.gov.hmcts.reform.migration.query.EsQuery;
+import uk.gov.hmcts.reform.migration.query.Sort;
+import uk.gov.hmcts.reform.migration.query.SortOrder;
+import uk.gov.hmcts.reform.migration.query.SortQuery;
 
 import java.util.List;
 
@@ -18,6 +23,12 @@ import static org.springframework.util.ObjectUtils.isEmpty;
 public class ElasticSearchRepository {
 
     private final CoreCaseDataService ccdService;
+
+    private final Sort SORT_BY_DATE = Sort.builder()
+        .clauses(List.of(
+            SortQuery.of("reference.keyword", SortOrder.DESC)
+        ))
+        .build();
 
     @Autowired
     public ElasticSearchRepository(CoreCaseDataService ccdService) {
@@ -33,11 +44,32 @@ public class ElasticSearchRepository {
         return ccdService.searchCases(userToken, caseType, query);
     }
 
-    public List<CaseDetails> search(String userToken, String caseType, EsQuery query, int size, int from) {
+    @SneakyThrows
+    public List<CaseDetails> search(String userToken, String caseType, EsQuery query, int size, String after) {
         requireNonNull(query);
-        SearchResult result = search(userToken, caseType, query.toQueryContext(size, from).toString());
+        SearchResult result = null;
+
+        // Attempt ES search with 3 retries
+        boolean completed = false;
+        int retries = 0;
+        while (!completed && retries < 3) {
+            try {
+                String queryStr = !isEmpty(after)
+                    ? query.toQueryContext(size, after, SORT_BY_DATE).toString()
+                    : query.toQueryContext(size, SORT_BY_DATE).toString();
+
+                result = search(userToken, caseType, queryStr);
+                completed = true;
+            } catch (FeignException.GatewayTimeout e) {
+                // let CCD recover if timeouts are happening
+                Thread.sleep(1000);
+                retries++;
+            }
+        }
+
         if (isEmpty(result)) {
-            log.error("ES Query returned no cases, {}", query.toQueryContext(size, from));
+            log.error("ES Query returned no cases after 3 retries, {}",
+                query.toQueryContext(size, after, SORT_BY_DATE));
             return List.of();
         }
         return result.getCases();

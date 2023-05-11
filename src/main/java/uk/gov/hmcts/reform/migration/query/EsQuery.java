@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.migration.query;
 
 import net.minidev.json.JSONObject;
 
+import java.util.List;
 import java.util.Map;
 
 public interface EsQuery extends EsClause {
@@ -17,4 +18,22 @@ public interface EsQuery extends EsClause {
                 "sort", sort.toMap())
         );
     }
+
+    default JSONObject toQueryContext(int size, Sort sort) {
+        return new JSONObject(Map.of(
+            "size", size,
+            "query", this.toMap(),
+            "sort", sort.toMap())
+        );
+    }
+
+    default JSONObject toQueryContext(int size, String after, Sort sort) {
+        return new JSONObject(Map.of(
+            "size", size,
+            "search_after", List.of(after),
+            "query", this.toMap(),
+            "sort", sort.toMap())
+        );
+    }
+
 }

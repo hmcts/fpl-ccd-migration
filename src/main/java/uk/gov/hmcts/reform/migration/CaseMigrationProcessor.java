@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.IntStream;
 
 import static java.math.RoundingMode.UP;
 import static java.time.LocalDateTime.now;
@@ -129,10 +128,11 @@ public class CaseMigrationProcessor {
 
         int pages = paginate(total);
         log.debug("Found {} pages", pages);
-        IntStream.range(0, pages).forEach(i -> {
+        String searchAfter = null;
+        for (int i = 0; i < pages; i++) {
             try {
-                List<CaseDetails> cases = elasticSearchRepository.search(userToken, caseType, query,
-                    defaultQuerySize, i * defaultQuerySize);
+                List<CaseDetails> cases = elasticSearchRepository.search(userToken, caseType, query, defaultQuerySize, searchAfter);
+                searchAfter = cases.get(cases.size() - 1).getId().toString();
 
                 threadPool.submit(() ->
                     cases.parallelStream().forEach(caseDetails -> {
@@ -155,7 +155,7 @@ public class CaseMigrationProcessor {
             } catch (Exception e) {
                 log.error("Migration could not search for cases on page {} due to {}", i, e.getMessage(), e);
             }
-        });
+        }
 
         boolean timedOut = !threadPool.awaitQuiescence(2, TimeUnit.HOURS);
         if (timedOut) {
