@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.migration;
 
 import lombok.Getter;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -14,6 +15,8 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
 import static java.math.RoundingMode.UP;
@@ -32,6 +35,7 @@ public class CaseMigrationProcessor {
     private final ElasticSearchRepository elasticSearchRepository;
     private final IdamRepository idamRepository;
     private final int defaultQuerySize;
+    private final int defaultThreadLimit;
     private final String migrationId;
 
     @Getter
@@ -45,14 +49,17 @@ public class CaseMigrationProcessor {
                                   ElasticSearchRepository elasticSearchRepository,
                                   IdamRepository idamRepository,
                                   @Value("${default.query.size}") int defaultQuerySize,
+                                  @Value("${default.thread.limit:8}") int defaultThreadLimit,
                                   @Value("${case-migration.processing.id}") String migrationId) {
         this.coreCaseDataService = coreCaseDataService;
         this.elasticSearchRepository = elasticSearchRepository;
         this.idamRepository = idamRepository;
         this.defaultQuerySize = defaultQuerySize;
+        this.defaultThreadLimit = defaultThreadLimit;
         this.migrationId = migrationId;
     }
 
+    @SneakyThrows
     public void migrateList(String caseType, String jurisdiction, List<String> caseIds) {
         requireNonNull(caseType);
         requireNonNull(jurisdiction);
@@ -66,7 +73,9 @@ public class CaseMigrationProcessor {
         String userToken =  idamRepository.generateUserToken();
         log.info("Found {} cases to migrate", caseIds.size());
 
-        caseIds.parallelStream().forEach(caseId -> {
+        ForkJoinPool threadPool = new ForkJoinPool(defaultThreadLimit);
+
+        threadPool.submit(() -> caseIds.parallelStream().forEach(caseId -> {
             long caseIdL = Long.parseLong(caseId);
             try {
                 coreCaseDataService.update(userToken,
@@ -85,11 +94,17 @@ public class CaseMigrationProcessor {
                 log.error("Failed migrating case {}", caseId);
                 failedCases.add(caseIdL);
             }
-        });
+        }));
+
+        boolean timedOut = !threadPool.awaitQuiescence(2, TimeUnit.HOURS);
+        if (timedOut) {
+            log.error("Timed out after 2 Hours");
+        }
 
         publishStats(startTime);
     }
 
+    @SneakyThrows
     public void migrateCases(String caseType, EsQuery query) {
         requireNonNull(caseType);
         requireNonNull(query);
@@ -110,6 +125,8 @@ public class CaseMigrationProcessor {
             return;
         }
 
+        ForkJoinPool threadPool = new ForkJoinPool(defaultThreadLimit);
+
         int pages = paginate(total);
         log.debug("Found {} pages", pages);
         IntStream.range(0, pages).forEach(i -> {
@@ -117,27 +134,33 @@ public class CaseMigrationProcessor {
                 List<CaseDetails> cases = elasticSearchRepository.search(userToken, caseType, query,
                     defaultQuerySize, i * defaultQuerySize);
 
-                cases.parallelStream().forEach(caseDetails -> {
-                    try {
-                        coreCaseDataService.update(userToken,
-                            EVENT_ID,
-                            EVENT_SUMMARY,
-                            EVENT_DESCRIPTION,
-                            caseType,
-                            caseDetails,
-                            this.migrationId
-                        );
-                        log.info("Completed migrating case {}", caseDetails.getId());
-                        migratedCases.add(caseDetails.getId());
-                    } catch (Exception e) {
-                        failedCases.add(caseDetails.getId());
-                    }
-                });
+                threadPool.submit(() ->
+                    cases.parallelStream().forEach(caseDetails -> {
+                        try {
+                            coreCaseDataService.update(userToken,
+                                EVENT_ID,
+                                EVENT_SUMMARY,
+                                EVENT_DESCRIPTION,
+                                caseType,
+                                caseDetails,
+                                this.migrationId
+                            );
+                            log.info("Completed migrating case {}", caseDetails.getId());
+                            migratedCases.add(caseDetails.getId());
+                        } catch (Exception e) {
+                            failedCases.add(caseDetails.getId());
+                        }
+                    })
+                );
             } catch (Exception e) {
                 log.error("Migration could not search for cases on page {} due to {}", i, e.getMessage(), e);
             }
         });
 
+        boolean timedOut = !threadPool.awaitQuiescence(2, TimeUnit.HOURS);
+        if (timedOut) {
+            log.error("Timed out after 2 Hours");
+        }
         publishStats(startTime);
     }
 

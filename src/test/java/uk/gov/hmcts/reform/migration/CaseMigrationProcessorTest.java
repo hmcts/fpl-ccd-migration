@@ -47,6 +47,7 @@ class CaseMigrationProcessorTest {
     private static final String MIGRATION_ID = "DFPL-TEST";
 
     private static final int DEFAUT_QUERY_SIZE = 10;
+    private static final int DEFAULT_THREAD_LIMIT = 8;
 
 
     private CaseMigrationProcessor caseMigrationProcessor;
@@ -75,6 +76,7 @@ class CaseMigrationProcessorTest {
             elasticSearchRepository,
             idamRepository,
             DEFAUT_QUERY_SIZE,
+            DEFAULT_THREAD_LIMIT,
             MIGRATION_ID);
     }
 
@@ -167,6 +169,7 @@ class CaseMigrationProcessorTest {
             elasticSearchRepository,
             idamRepository,
             10,
+            DEFAULT_THREAD_LIMIT,
             "Test");
         assertThatThrownBy(() -> caseMigrationProcessor.migrateCases(null, BooleanQuery.builder().build()))
             .isInstanceOf(NullPointerException.class);
@@ -178,6 +181,7 @@ class CaseMigrationProcessorTest {
             elasticSearchRepository,
             idamRepository,
             10,
+            DEFAULT_THREAD_LIMIT,
             "Test");
         assertThatThrownBy(() -> caseMigrationProcessor.migrateCases("TEST", null))
             .isInstanceOf(NullPointerException.class);
@@ -189,6 +193,7 @@ class CaseMigrationProcessorTest {
             elasticSearchRepository,
             idamRepository,
             10,
+            DEFAULT_THREAD_LIMIT,
             null);
         assertThatThrownBy(() -> caseMigrationProcessor.migrateCases("Test", BooleanQuery.builder().build()))
             .isInstanceOf(NullPointerException.class);
