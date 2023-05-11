@@ -24,7 +24,7 @@ public class ElasticSearchRepository {
 
     private final CoreCaseDataService ccdService;
 
-    private static final Sort SORT_BY_REF = Sort.builder()
+    public static final Sort SORT_BY_REF = Sort.builder()
         .clauses(List.of(
             SortQuery.of("reference.keyword", SortOrder.DESC)
         ))
@@ -68,8 +68,8 @@ public class ElasticSearchRepository {
         }
 
         if (isEmpty(result)) {
-            log.error("ES Query returned no cases after 3 retries, {}",
-                query.toQueryContext(size, after, SORT_BY_REF));
+            log.error("ES Query returned no cases after 3 retries, {}, {}",
+                query.toQueryContext(size, SORT_BY_REF), after);
             return List.of();
         }
         return result.getCases();
