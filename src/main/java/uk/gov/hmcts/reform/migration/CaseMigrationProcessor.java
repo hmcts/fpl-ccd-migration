@@ -131,7 +131,8 @@ public class CaseMigrationProcessor {
         String searchAfter = null;
         for (int i = 0; i < pages; i++) {
             try {
-                List<CaseDetails> cases = elasticSearchRepository.search(userToken, caseType, query, defaultQuerySize, searchAfter);
+                List<CaseDetails> cases = elasticSearchRepository.search(userToken, caseType, query, defaultQuerySize,
+                    searchAfter);
                 searchAfter = cases.get(cases.size() - 1).getId().toString();
 
                 threadPool.submit(() ->
