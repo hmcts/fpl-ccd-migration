@@ -149,6 +149,7 @@ public class CaseMigrationProcessor {
                             log.info("Completed migrating case {}", caseDetails.getId());
                             migratedCases.add(caseDetails.getId());
                         } catch (Exception e) {
+                            log.error("Failed migrating case {}, {}", caseDetails.getId(), e);
                             failedCases.add(caseDetails.getId());
                         }
                     })

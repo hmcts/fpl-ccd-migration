@@ -60,7 +60,7 @@ public class ElasticSearchRepository {
 
                 result = search(userToken, caseType, queryStr);
                 completed = true;
-            } catch (FeignException.GatewayTimeout e) {
+            } catch (Exception e) {
                 // let CCD recover if timeouts are happening
                 Thread.sleep(1000);
                 retries++;
