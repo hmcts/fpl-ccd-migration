@@ -7,7 +7,12 @@ import java.util.Map;
 
 public interface EsQuery extends EsClause {
     default JSONObject toQueryContext(int size, int from) {
-        return new JSONObject(Map.of("size", size, "from", from, "query", this.toMap()));
+        return new JSONObject(Map.of(
+            "size", size,
+            "from", from,
+            "query", this.toMap(),
+            "_source", List.of("reference", "jurisdiction")
+        ));
     }
 
     default JSONObject toQueryContext(int size, int from, Sort sort) {
@@ -15,7 +20,8 @@ public interface EsQuery extends EsClause {
                 "size", size,
                 "from", from,
                 "query", this.toMap(),
-                "sort", sort.toMap())
+                "sort", sort.toMap(),
+                "_source", List.of("reference", "jurisdiction"))
         );
     }
 
@@ -23,7 +29,8 @@ public interface EsQuery extends EsClause {
         return new JSONObject(Map.of(
             "size", size,
             "query", this.toMap(),
-            "sort", sort.toMap())
+            "sort", sort.toMap(),
+            "_source", List.of("reference", "jurisdiction"))
         );
     }
 
@@ -32,7 +39,8 @@ public interface EsQuery extends EsClause {
             "size", size,
             "search_after", List.of(after),
             "query", this.toMap(),
-            "sort", sort.toMap())
+            "sort", sort.toMap(),
+            "_source", List.of("reference", "jurisdiction"))
         );
     }
 
