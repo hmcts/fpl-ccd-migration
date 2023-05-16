@@ -15,12 +15,15 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static java.math.RoundingMode.UP;
 import static java.time.LocalDateTime.now;
 import static java.util.Objects.requireNonNull;
+import static java.util.concurrent.TimeUnit.HOURS;
+import static org.springframework.util.ObjectUtils.isEmpty;
 
 @Slf4j
 @Component
@@ -36,11 +39,20 @@ public class CaseMigrationProcessor {
     private final int defaultQuerySize;
     private final int defaultThreadLimit;
     private final String migrationId;
+    private final String caseType;
+    private final String jurisdiction;
+
+    private final ForkJoinPool threadPool;
 
     @Getter
     private final List<Long> migratedCases = new ArrayList<>();
     @Getter
     private final List<Long> failedCases = new ArrayList<>();
+
+    private final ConcurrentLinkedQueue<Long> casesToMigrate = new ConcurrentLinkedQueue<>();
+
+    private boolean finishedLoading = false;
+
     private final LocalDateTime startTime = now();
 
     //@Autowired
@@ -49,72 +61,70 @@ public class CaseMigrationProcessor {
                                   IdamRepository idamRepository,
                                   @Value("${default.query.size}") int defaultQuerySize,
                                   @Value("${default.thread.limit:8}") int defaultThreadLimit,
-                                  @Value("${case-migration.processing.id}") String migrationId) {
+                                  @Value("${case-migration.processing.id}") String migrationId,
+                                  @Value("${migration.jurisdiction}") String jurisdiction,
+                                  @Value("${migration.caseType}") String caseType) {
         this.coreCaseDataService = coreCaseDataService;
         this.elasticSearchRepository = elasticSearchRepository;
         this.idamRepository = idamRepository;
         this.defaultQuerySize = defaultQuerySize;
         this.defaultThreadLimit = defaultThreadLimit;
         this.migrationId = migrationId;
-    }
-
-    @SneakyThrows
-    public void migrateList(String caseType, String jurisdiction, List<String> caseIds) {
-        requireNonNull(caseType);
-        requireNonNull(jurisdiction);
-        requireNonNull(caseIds);
-
-        if (caseIds.isEmpty()) {
-            log.error("No case ids found for migration {}, aborting", migrationId);
-            return;
-        }
+        this.jurisdiction = jurisdiction;
+        this.caseType = caseType;
+        this.threadPool = new ForkJoinPool(defaultThreadLimit);
 
         String userToken =  idamRepository.generateUserToken();
-        log.info("Found {} cases to migrate", caseIds.size());
-
-        ForkJoinPool threadPool = new ForkJoinPool(defaultThreadLimit);
-
-        threadPool.submit(() -> caseIds.parallelStream().forEach(caseId -> {
-            long caseIdL = Long.parseLong(caseId);
-            try {
-                coreCaseDataService.update(userToken,
-                    EVENT_ID,
-                    EVENT_SUMMARY,
-                    EVENT_DESCRIPTION,
-                    caseType,
-                    CaseDetails.builder()
-                        .id(caseIdL)
-                        .jurisdiction(jurisdiction)
-                        .build(),
-                    this.migrationId);
-                log.info("Completed migrating case {}", caseId);
-                migratedCases.add(caseIdL);
-            } catch (Exception e) {
-                log.error("Failed migrating case {}", caseId);
-                failedCases.add(caseIdL);
-            }
-        }));
-
-        boolean timedOut = !threadPool.awaitQuiescence(2, TimeUnit.HOURS);
-        if (timedOut) {
-            log.error("Timed out after 2 Hours");
+        // Setup consumers
+        for (int i = 0; i < defaultThreadLimit; i++) {
+            threadPool.execute(() -> worker(caseType, jurisdiction, userToken));
         }
-
-        publishStats(startTime);
     }
 
     @SneakyThrows
-    public void migrateCases(String caseType, EsQuery query) {
-        requireNonNull(caseType);
+    private void worker(String caseType, String jurisdiction, String userToken) {
+        while (!finishedLoading || !casesToMigrate.isEmpty()) {
+            // check for content
+            Long caseId = casesToMigrate.poll();
+            if (!isEmpty(caseId)) {
+                // we've removed our caseId from the queue - now need to process it
+                try {
+                    coreCaseDataService.update(userToken,
+                        EVENT_ID,
+                        EVENT_SUMMARY,
+                        EVENT_DESCRIPTION,
+                        caseType,
+                        CaseDetails.builder()
+                            .id(caseId)
+                            .jurisdiction(jurisdiction)
+                            .build(),
+                        this.migrationId
+                    );
+                    log.info("Completed migrating case {}", caseId);
+                    migratedCases.add(caseId);
+                } catch (Exception e) {
+                    log.error("Failed migrating case {}", caseId, e);
+                    failedCases.add(caseId);
+                }
+            } else {
+                // polling for 1s as no caseId polled yet
+                Thread.sleep(1000);
+            }
+        }
+    }
+
+    @SneakyThrows
+    public void migrateQuery(EsQuery query) {
         requireNonNull(query);
+        requireNonNull(caseType);
         requireNonNull(migrationId);
 
         String userToken =  idamRepository.generateUserToken();
 
+        // Get total cases to migrate
         int total;
-
         try {
-            total = elasticSearchRepository.searchResultsSize(userToken, caseType, query);
+            total = elasticSearchRepository.searchResultsSize(userToken, this.caseType, query);
             log.info("Found {} cases to migrate", total);
         } catch (Exception e) {
             log.error("Could not determine the number of cases to search for due to {}",
@@ -124,8 +134,7 @@ public class CaseMigrationProcessor {
             return;
         }
 
-        ForkJoinPool threadPool = new ForkJoinPool(defaultThreadLimit);
-
+        // Setup ESQuery provider to fill up the queue
         int pages = paginate(total);
         log.debug("Found {} pages", pages);
         String searchAfter = null;
@@ -135,34 +144,49 @@ public class CaseMigrationProcessor {
                     searchAfter);
                 searchAfter = cases.get(cases.size() - 1).getId().toString();
 
-                threadPool.submit(() ->
-                    cases.parallelStream().forEach(caseDetails -> {
-                        try {
-                            coreCaseDataService.update(userToken,
-                                EVENT_ID,
-                                EVENT_SUMMARY,
-                                EVENT_DESCRIPTION,
-                                caseType,
-                                caseDetails,
-                                this.migrationId
-                            );
-                            log.info("Completed migrating case {}", caseDetails.getId());
-                            migratedCases.add(caseDetails.getId());
-                        } catch (Exception e) {
-                            log.error("Failed migrating case {}, {}", caseDetails.getId(), e);
-                            failedCases.add(caseDetails.getId());
-                        }
-                    })
-                );
+                // add to queue
+                cases.stream()
+                    .map(CaseDetails::getId)
+                    .forEach(casesToMigrate::add);
+                log.info("{}", casesToMigrate);
             } catch (Exception e) {
-                log.error("Migration could not search for cases on page {} due to {}", i, e.getMessage(), e);
+                log.error("Could not search for page {}", i, e);
             }
         }
 
-        boolean timedOut = !threadPool.awaitQuiescence(2, TimeUnit.HOURS);
+        finishedLoading = true;
+
+        // Finalise + wait for the queue to finish processing
+        boolean timedOut = !threadPool.awaitQuiescence(2, HOURS);
         if (timedOut) {
             log.error("Timed out after 2 Hours");
         }
+
+        publishStats(startTime);
+
+    }
+
+    @SneakyThrows
+    public void migrateList(List<String> caseIds) {
+        requireNonNull(caseIds);
+
+        if (caseIds.isEmpty()) {
+            log.error("No case ids found for migration {}, aborting", migrationId);
+            return;
+        } else {
+            log.info("Found {} cases to migrate", caseIds.size());
+        }
+
+        // Add them to the queue
+        casesToMigrate.addAll(caseIds.stream().map(Long::parseLong).collect(Collectors.toList()));
+        this.finishedLoading = true;
+
+        // Wait for the threadpool to finish
+        boolean timedOut = !threadPool.awaitQuiescence(2, HOURS);
+        if (timedOut) {
+            log.error("Timed out after 2 Hours");
+        }
+
         publishStats(startTime);
     }
 

@@ -72,12 +72,15 @@ class CaseMigrationProcessorTest {
 
     @BeforeEach
     void setUp() {
+        when(idamRepository.generateUserToken()).thenReturn(USER_TOKEN);
         caseMigrationProcessor = new CaseMigrationProcessor(coreCaseDataService,
             elasticSearchRepository,
             idamRepository,
             DEFAUT_QUERY_SIZE,
             DEFAULT_THREAD_LIMIT,
-            MIGRATION_ID);
+            MIGRATION_ID,
+            CASE_JURISDICTION,
+            CASE_TYPE);
     }
 
     @Test
@@ -87,7 +90,7 @@ class CaseMigrationProcessorTest {
         when(elasticSearchRepository.search(USER_TOKEN, CASE_TYPE, QUERY, DEFAUT_QUERY_SIZE, null))
             .thenReturn(cases);
         when(elasticSearchRepository.searchResultsSize(USER_TOKEN, CASE_TYPE, QUERY)).thenReturn(2);
-        caseMigrationProcessor.migrateCases(CASE_TYPE, QUERY);
+        caseMigrationProcessor.migrateQuery(QUERY);
         verify(coreCaseDataService, times(2))
             .update(eq(USER_TOKEN),
                 eq(EVENT_ID),
@@ -122,45 +125,51 @@ class CaseMigrationProcessorTest {
             .thenReturn(caseDetails);
         when(elasticSearchRepository.searchResultsSize(USER_TOKEN, CASE_TYPE, QUERY)).thenReturn(1);
 
-        when(coreCaseDataService.update(USER_TOKEN, EVENT_ID, EVENT_SUMMARY,
-            EVENT_DESCRIPTION, CASE_TYPE, details, MIGRATION_ID))
+        when(coreCaseDataService.update(eq(USER_TOKEN), eq(EVENT_ID), eq(EVENT_SUMMARY),
+            eq(EVENT_DESCRIPTION), eq(CASE_TYPE), any(), eq(MIGRATION_ID)))
             .thenReturn(details);
-        caseMigrationProcessor.migrateCases(CASE_TYPE, QUERY);
+        caseMigrationProcessor.migrateQuery(QUERY);
         verify(coreCaseDataService, times(1))
-            .update(USER_TOKEN,
-                EVENT_ID,
-                EVENT_SUMMARY,
-                EVENT_DESCRIPTION,
-                CASE_TYPE,
-                details,
-                MIGRATION_ID);
+            .update(eq(USER_TOKEN),
+                eq(EVENT_ID),
+                eq(EVENT_SUMMARY),
+                eq(EVENT_DESCRIPTION),
+                eq(CASE_TYPE),
+                caseDetailsArgumentCaptor.capture(),
+                eq(MIGRATION_ID));
+
+        assertThat(caseDetailsArgumentCaptor.getValue().getId()).isEqualTo(1677777777L);
     }
 
     @Test
     void shouldMigrateOnlyLimitedNumberOfCases() {
         when(idamRepository.generateUserToken()).thenReturn(USER_TOKEN);
         CaseDetails details = mock(CaseDetails.class);
-        when(details.getId()).thenReturn(1677777777L);
+        when(details.getId()).thenReturn(1L);
         CaseDetails details1 = mock(CaseDetails.class);
+        when(details1.getId()).thenReturn(2L);
         List<CaseDetails> caseDetails = new ArrayList<>();
         caseDetails.add(details);
         caseDetails.add(details1);
         when(elasticSearchRepository.search(USER_TOKEN, CASE_TYPE, QUERY, DEFAUT_QUERY_SIZE, null))
             .thenReturn(caseDetails);
-        when(elasticSearchRepository.searchResultsSize(USER_TOKEN, CASE_TYPE, QUERY)).thenReturn(1);
+        when(elasticSearchRepository.searchResultsSize(USER_TOKEN, CASE_TYPE, QUERY)).thenReturn(2);
 
-        when(coreCaseDataService.update(USER_TOKEN, EVENT_ID, EVENT_SUMMARY, EVENT_DESCRIPTION, CASE_TYPE, details,
-            MIGRATION_ID))
+        when(coreCaseDataService.update(eq(USER_TOKEN), eq(EVENT_ID), eq(EVENT_SUMMARY), eq(EVENT_DESCRIPTION),
+            eq(CASE_TYPE), any(), eq(MIGRATION_ID)))
             .thenReturn(details);
-        caseMigrationProcessor.migrateCases(CASE_TYPE, QUERY);
-        verify(coreCaseDataService, times(1))
-            .update(USER_TOKEN,
-                EVENT_ID,
-                EVENT_SUMMARY,
-                EVENT_DESCRIPTION,
-                CASE_TYPE,
-                details,
-                MIGRATION_ID);
+        caseMigrationProcessor.migrateQuery(QUERY);
+        verify(coreCaseDataService, times(2))
+            .update(eq(USER_TOKEN),
+                eq(EVENT_ID),
+                eq(EVENT_SUMMARY),
+                eq(EVENT_DESCRIPTION),
+                eq(CASE_TYPE),
+                caseDetailsArgumentCaptor.capture(),
+                eq(MIGRATION_ID));
+
+        assertThat(caseDetailsArgumentCaptor.getAllValues().stream().map(CaseDetails::getId))
+            .containsExactlyInAnyOrder(1L, 2L);
     }
 
     @Test
@@ -170,8 +179,10 @@ class CaseMigrationProcessorTest {
             idamRepository,
             10,
             DEFAULT_THREAD_LIMIT,
-            "Test");
-        assertThatThrownBy(() -> caseMigrationProcessor.migrateCases(null, BooleanQuery.builder().build()))
+            "Test",
+            CASE_JURISDICTION,
+            null);
+        assertThatThrownBy(() -> caseMigrationProcessor.migrateQuery(BooleanQuery.builder().build()))
             .isInstanceOf(NullPointerException.class);
     }
 
@@ -182,8 +193,10 @@ class CaseMigrationProcessorTest {
             idamRepository,
             10,
             DEFAULT_THREAD_LIMIT,
-            "Test");
-        assertThatThrownBy(() -> caseMigrationProcessor.migrateCases("TEST", null))
+            "Test",
+            CASE_JURISDICTION,
+            CASE_TYPE);
+        assertThatThrownBy(() -> caseMigrationProcessor.migrateQuery(null))
             .isInstanceOf(NullPointerException.class);
     }
 
@@ -194,8 +207,10 @@ class CaseMigrationProcessorTest {
             idamRepository,
             10,
             DEFAULT_THREAD_LIMIT,
-            null);
-        assertThatThrownBy(() -> caseMigrationProcessor.migrateCases("Test", BooleanQuery.builder().build()))
+            null,
+            CASE_JURISDICTION,
+            CASE_TYPE);
+        assertThatThrownBy(() -> caseMigrationProcessor.migrateQuery(BooleanQuery.builder().build()))
             .isInstanceOf(NullPointerException.class);
     }
 
@@ -204,11 +219,9 @@ class CaseMigrationProcessorTest {
 
         @Test
         void shouldMigrateOnlySelectCases() {
-            when(idamRepository.generateUserToken()).thenReturn(USER_TOKEN);
-
             List<String> caseIds = List.of("12345", "67890");
 
-            caseMigrationProcessor.migrateList(CASE_TYPE, CASE_JURISDICTION, caseIds);
+            caseMigrationProcessor.migrateList(caseIds);
 
             verify(coreCaseDataService, times(2))
                 .update(eq(USER_TOKEN),

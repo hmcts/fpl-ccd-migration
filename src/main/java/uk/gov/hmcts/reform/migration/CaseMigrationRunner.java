@@ -31,15 +31,6 @@ public class CaseMigrationRunner implements CommandLineRunner {
 
     @Value("${case-migration.use_case_id_mapping:false}") boolean useIdList;
 
-    @Value("${migration.caseType}")
-    private String caseType;
-
-    @Value("${migration.jurisdiction}")
-    private String jurisdiction;
-
-    @Value("${default.thread.limit}")
-    private int defaultThreadLimit;
-
     public static void main(String[] args) {
         SpringApplication.run(CaseMigrationRunner.class, args);
     }
@@ -56,11 +47,11 @@ public class CaseMigrationRunner implements CommandLineRunner {
             if (useIdList) {
                 // Do ID List Migration
                 List<String> caseIds = caseIdListConfiguration.getCaseIds(migrationId);
-                caseMigrationProcessor.migrateList(caseType, jurisdiction, caseIds);
+                caseMigrationProcessor.migrateList(caseIds);
             } else {
                 // Do ESQuery based migration
                 EsQuery query = dataMigrationService.getQuery(migrationId);
-                caseMigrationProcessor.migrateCases(caseType, query);
+                caseMigrationProcessor.migrateQuery(query);
             }
         } catch (Exception e) {
             log.error("Migration failed with the following reason: {}", e.getMessage(), e);
