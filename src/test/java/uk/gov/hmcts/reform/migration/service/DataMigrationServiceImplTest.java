@@ -99,25 +99,18 @@ class DataMigrationServiceImplTest {
 
         @Test
         void shouldIgnoreRollbackWhenDfjAreaNotPresent() {
-
             Map<String, Object> data = new HashMap<>();
 
-            Map<String, Object> updatedData = dataMigrationService.migrate(data, ROLLBACK_MIGRATION_ID);
-            assertThat(updatedData.get(DFJ_AREA))
-                .isNull();
-            assertThat(updatedData.get(dfjAreaCourtMapping.getCourtField()))
-                .isNull();
+            assertThatThrownBy(() -> dataMigrationService.migrate(data, ROLLBACK_MIGRATION_ID))
+                .hasMessage("No `dfjArea` on the case");
         }
 
         @Test
         void shouldNotSetDfjAreaAndCourtFieldWhenMigrationIdIsValidButCourtNotPresent() {
             Map<String, Object> data = new HashMap<>();
 
-            Map<String, Object> updatedData = dataMigrationService.migrate(data, MIGRATION_ID);
-            assertThat(updatedData.get(DFJ_AREA))
-                .isNull();
-            assertThat(updatedData.get(dfjAreaCourtMapping.getCourtField()))
-                .isNull();
+            assertThatThrownBy(() -> dataMigrationService.migrate(data, MIGRATION_ID))
+                .hasMessage("No `court` on the case");
         }
 
     }
