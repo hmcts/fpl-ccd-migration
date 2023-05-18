@@ -56,7 +56,9 @@ public class CaseMigrationProcessor {
 
     private boolean finishedLoading = false;
 
-    private final LocalDateTime startTime = now();
+    private LocalDateTime startTime = now();
+
+    private boolean retryFailures;
 
     //@Autowired
     public CaseMigrationProcessor(CoreCaseDataService coreCaseDataService,
@@ -66,7 +68,8 @@ public class CaseMigrationProcessor {
                                   @Value("${default.thread.limit:8}") int defaultThreadLimit,
                                   @Value("${case-migration.processing.id}") String migrationId,
                                   @Value("${migration.jurisdiction}") String jurisdiction,
-                                  @Value("${migration.caseType}") String caseType) {
+                                  @Value("${migration.caseType}") String caseType,
+                                  @Value("${case-migration.retry_failures}") boolean retryFailures) {
         this.coreCaseDataService = coreCaseDataService;
         this.elasticSearchRepository = elasticSearchRepository;
         this.idamRepository = idamRepository;
@@ -75,14 +78,31 @@ public class CaseMigrationProcessor {
         this.migrationId = migrationId;
         this.jurisdiction = jurisdiction;
         this.caseType = caseType;
+        this.retryFailures = retryFailures;
         this.threadPool = new ForkJoinPool(defaultThreadLimit);
+
+        setupProcessor(true);
+    }
+
+    public void setupProcessor(boolean firstTry) {
+        this.startTime = now();
+        this.getFailedCases().clear();
+        this.getMigratedCases().clear();
+        this.getSkippedCases().clear();
+
+        this.finishedLoading = false;
 
         String userToken =  idamRepository.generateUserToken();
         // Setup consumers
         for (int i = 0; i < defaultThreadLimit; i++) {
             threadPool.execute(() -> worker(caseType, jurisdiction, userToken));
         }
+
+        if (!firstTry) {
+            this.retryFailures = false;
+        }
     }
+
 
     @SneakyThrows
     private void worker(String caseType, String jurisdiction, String userToken) {
@@ -170,6 +190,17 @@ public class CaseMigrationProcessor {
 
         publishStats(startTime);
 
+        if (retryFailures) {
+            List<String> toRetry = new ArrayList<>(this.getFailedCases()).stream()
+                .map(Object::toString)
+                .collect(Collectors.toList());
+
+            // reset migration tool, with no more retries allowed
+            this.setupProcessor(false);
+
+            // migrate the failed cases
+            this.migrateList(toRetry);
+        }
     }
 
     @SneakyThrows
@@ -194,6 +225,18 @@ public class CaseMigrationProcessor {
         }
 
         publishStats(startTime);
+
+        if (retryFailures) {
+            List<String> toRetry = new ArrayList<>(this.getFailedCases()).stream()
+                .map(Object::toString)
+                .collect(Collectors.toList());
+
+            // reset migration tool, with no more retries allowed
+            this.setupProcessor(false);
+
+            // migrate the failed cases
+            this.migrateList(toRetry);
+        }
     }
 
     private int paginate(int total) {
@@ -236,4 +279,5 @@ public class CaseMigrationProcessor {
 
         log.info("Data migration start at {} and completed at {}", startTime, now());
     }
+
 }

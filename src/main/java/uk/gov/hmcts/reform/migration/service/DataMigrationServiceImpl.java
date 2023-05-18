@@ -115,9 +115,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
     }
 
     /**
-     * Fetch cases that:
-     * - have a court field
-     * - AND do not have a dfjArea field (these have been migrated already)
+     * Fetch cases that have a court field AND do not have a dfjArea field (these have been migrated already).
      * @return EsQuery performing this search
      */
     private EsQuery query1124() {
@@ -134,8 +132,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
     }
 
     /**
-     * Fetch cases that:
-     * - have a dfjArea field (these have don't either have been rolled back or haven't been migrated)
+     * Fetch cases that have a dfjArea field (those migrated and not been rolled back yet).
      * @return EsQuery performing this search
      */
     private EsQuery query1124Revert() {
