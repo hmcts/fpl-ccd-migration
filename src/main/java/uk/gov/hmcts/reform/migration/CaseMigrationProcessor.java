@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
+import uk.gov.hmcts.reform.domain.exception.CaseMigrationSkippedException;
 import uk.gov.hmcts.reform.migration.ccd.CoreCaseDataService;
 import uk.gov.hmcts.reform.migration.query.EsQuery;
 import uk.gov.hmcts.reform.migration.repository.ElasticSearchRepository;
@@ -46,6 +47,8 @@ public class CaseMigrationProcessor {
 
     @Getter
     private final List<Long> migratedCases = new ArrayList<>();
+    @Getter
+    private final List<Long> skippedCases = new ArrayList<>();
     @Getter
     private final List<Long> failedCases = new ArrayList<>();
 
@@ -102,6 +105,9 @@ public class CaseMigrationProcessor {
                     );
                     log.info("Completed migrating case {}", caseId);
                     migratedCases.add(caseId);
+                } catch (CaseMigrationSkippedException e) {
+                    log.info("Skipped migrating case {}, {}", caseId, e.getMessage());
+                    skippedCases.add(caseId);
                 } catch (Exception e) {
                     log.error("Failed migrating case {}", caseId, e);
                     failedCases.add(caseId);
@@ -214,6 +220,12 @@ public class CaseMigrationProcessor {
                 task[1],
                 getMigratedCases().size()
             );
+        }
+
+        if (getSkippedCases().isEmpty()) {
+            log.info("Skipped cases: NONE ");
+        } else {
+            log.info("Skipped count:{}, cases: {} ", getSkippedCases().size(), getSkippedCases());
         }
 
         if (getFailedCases().isEmpty()) {

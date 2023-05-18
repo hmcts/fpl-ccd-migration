@@ -16,4 +16,14 @@ public class Must implements EsClause {
     public Map<String, Object> toMap() {
         return Map.of("must", this.clauses.stream().map(EsClause::toMap).collect(Collectors.toList()));
     }
+
+    public static Must of(List<EsClause> clauses) {
+        return Must.builder()
+            .clauses(clauses)
+            .build();
+    }
+
+    public static Must of(EsClause clause) {
+        return of(List.of(clause));
+    }
 }

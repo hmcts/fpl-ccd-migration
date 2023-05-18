@@ -16,4 +16,14 @@ public class MustNot implements EsClause {
     public Map<String, Object> toMap() {
         return Map.of("must_not", this.clauses.stream().map(EsClause::toMap).collect(Collectors.toList()));
     }
+
+    public static MustNot of(List<EsClause> clauses) {
+        return MustNot.builder()
+            .clauses(clauses)
+            .build();
+    }
+
+    public static MustNot of(EsClause clause) {
+        return of(List.of(clause));
+    }
 }
