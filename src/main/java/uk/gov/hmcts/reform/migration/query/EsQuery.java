@@ -11,7 +11,8 @@ public interface EsQuery extends EsClause {
             "size", size,
             "from", from,
             "query", this.toMap(),
-            "_source", List.of("reference", "jurisdiction")
+            "_source", List.of("reference", "jurisdiction"),
+            "track_total_hits", true
         ));
     }
 
@@ -21,7 +22,8 @@ public interface EsQuery extends EsClause {
                 "from", from,
                 "query", this.toMap(),
                 "sort", sort.toMap(),
-                "_source", List.of("reference", "jurisdiction"))
+                "_source", List.of("reference", "jurisdiction"),
+                "track_total_hits", true)
         );
     }
 
@@ -30,7 +32,8 @@ public interface EsQuery extends EsClause {
             "size", size,
             "query", this.toMap(),
             "sort", sort.toMap(),
-            "_source", List.of("reference", "jurisdiction"))
+            "_source", List.of("reference", "jurisdiction"),
+            "track_total_hits", true)
         );
     }
 
@@ -40,7 +43,8 @@ public interface EsQuery extends EsClause {
             "search_after", List.of(after),
             "query", this.toMap(),
             "sort", sort.toMap(),
-            "_source", List.of("reference", "jurisdiction"))
+            "_source", List.of("reference", "jurisdiction"),
+            "track_total_hits", true)
         );
     }
 
