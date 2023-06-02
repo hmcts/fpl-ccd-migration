@@ -190,7 +190,7 @@ public class CaseMigrationProcessor {
 
         publishStats(startTime);
 
-        if (retryFailures) {
+        if (retryFailures && this.getFailedCases().size() > 0) {
             List<String> toRetry = new ArrayList<>(this.getFailedCases()).stream()
                 .map(Object::toString)
                 .collect(Collectors.toList());
@@ -226,7 +226,7 @@ public class CaseMigrationProcessor {
 
         publishStats(startTime);
 
-        if (retryFailures) {
+        if (retryFailures && this.getFailedCases().size() > 0) {
             List<String> toRetry = new ArrayList<>(this.getFailedCases()).stream()
                 .map(Object::toString)
                 .collect(Collectors.toList());
