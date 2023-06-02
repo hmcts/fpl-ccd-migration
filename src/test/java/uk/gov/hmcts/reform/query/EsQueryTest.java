@@ -21,7 +21,7 @@ class EsQueryTest {
         final JSONObject queryInContext = query.toQueryContext(2, 3);
         final JSONObject expectedContext = new JSONObject(
             Map.of("query", Map.of("test", "query"), "size", 2, "from", 3,
-                "_source", List.of("reference", "jurisdiction"))
+                "_source", List.of("reference", "jurisdiction"),"track_total_hits", true)
         );
 
         assertThat(queryInContext).usingRecursiveComparison().isEqualTo(expectedContext);
@@ -39,6 +39,7 @@ class EsQueryTest {
         final JSONObject expectedContext = new JSONObject(
             Map.of("_source", List.of("reference", "jurisdiction"),
                 "query", Map.of("test", "query"),
+                "track_total_hits", true,
                 "size", 2,
                 "from", 3,
                 "sort", List.of(Map.of("data.dateSubmitted", Map.of("order", "desc")))));
