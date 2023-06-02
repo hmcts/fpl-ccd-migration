@@ -174,7 +174,6 @@ public class CaseMigrationProcessor {
                 cases.stream()
                     .map(CaseDetails::getId)
                     .forEach(casesToMigrate::add);
-                log.info("{}", casesToMigrate);
             } catch (Exception e) {
                 log.error("Could not search for page {}", i, e);
             }
