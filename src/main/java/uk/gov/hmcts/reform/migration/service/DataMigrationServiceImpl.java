@@ -44,7 +44,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
 
     private final Map<String, EsQuery> queries = Map.of(
         "DFPL-1124", this.topLevelFieldExistsQuery(COURT),
-        "DFPL-1124Rollback", this.topLevelFieldExistsQuery(COURT),
+        "DFPL-1124Rollback", this.topLevelFieldExistsQuery(DFJ_AREA),
         "DFPL-log", this.topLevelFieldExistsQuery(COURT)
     );
 
@@ -127,18 +127,6 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
                         .mustNot(MustNot.of(ExistsQuery.of("data.dfjArea")))
                         .build()
                 ))
-                .build())
-            .build();
-    }
-
-    /**
-     * Fetch cases that have a dfjArea field (those migrated and not been rolled back yet).
-     * @return EsQuery performing this search
-     */
-    private EsQuery query1124Revert() {
-        return BooleanQuery.builder()
-            .filter(Filter.builder()
-                .clauses(List.of(ExistsQuery.of("data.dfjArea")))
                 .build())
             .build();
     }
