@@ -29,53 +29,58 @@ class ElasticSearchRepositoryTest {
 
     private static final String AUTH_TOKEN = "Test_Auth_Token";
 
-    private static final String INITIAL_QUERY = "{\n"
-        + "  \"query\": {\n"
-        + "    \"bool\": {\n"
-        + "      \"filter\": {\n"
-        + "        \"exists\": {\n"
-        + "          \"field\": \"data.court\"\n"
-        + "        }\n"
-        + "      }\n"
-        + "    }\n"
-        + "  },\n"
-        + "  \"size\": 100,\n"
-        + "  \"_source\": [\n"
-        + "    \"reference\",\n"
-        + "    \"jurisdiction\"\n"
-        + "  ],\n"
-        + "  \"sort\": [\n"
-        + "    {\n"
-        + "      \"reference.keyword\": {\n"
-        + "        \"order\": \"asc\"\n"
-        + "      }\n"
-        + "    }\n"
-        + "  ]\n"
-        + "}";
+    private static final String INITIAL_QUERY = """
+        {
+         "query": {
+           "bool": {
+             "filter": [{
+               "exists": {
+                 "field": "data.hearingDetails"
+               }
+             }]
+           }
+         },
+         "size": 100,
+         "_source": [
+           "reference",
+           "jurisdiction"
+         ],
+         "sort": [
+           {
+             "reference.keyword": {
+               "order": "asc"
+             }
+           }
+         ]
 
-    private static final String SEARCH_AFTER_QUERY = "{\n"
-        + "  \"query\": {\n"
-        + "    \"bool\": {\n"
-        + "      \"filter\": {\n"
-        + "        \"exists\": {\n"
-        + "          \"field\": \"data.court\"\n"
-        + "        }\n"
-        + "      }\n"
-        + "    }\n"
-        + "  },\n"
-        + "  \"size\": 100,\n"
-        + "  \"_source\": [\n"
-        + "    \"reference\",\n"
-        + "    \"jurisdiction\"\n"
-        + "  ],\n"
-        + "  \"sort\": [\n"
-        + "    {\n"
-        + "      \"reference.keyword\": {\n"
-        + "        \"order\": \"asc\"\n"
-        + "      }\n"
-        + "    }\n"
-        + "  ],\"search_after\": [1677777777]\n"
-        + "}";
+        }""";
+
+    private static final String SEARCH_AFTER_QUERY = """
+        {
+         "query": {
+           "bool": {
+             "filter": [{
+               "exists": {
+                 "field": "data.hearingDetails"
+               }
+             }]
+           }
+         },
+         "size": 100,
+         "_source": [
+           "reference",
+           "jurisdiction"
+         ],
+         "sort": [
+           {
+             "reference.keyword": {
+               "order": "asc"
+             }
+           }
+         ]
+        ,"search_after": [1677777777]
+
+        }""";
 
     private static final int QUERY_SIZE = 100;
     private static final int CASE_PROCESS_LIMIT = 100;
