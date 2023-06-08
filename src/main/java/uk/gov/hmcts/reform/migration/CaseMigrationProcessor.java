@@ -164,18 +164,28 @@ public class CaseMigrationProcessor {
         int pages = paginate(total);
         log.debug("Found {} pages", pages);
         String searchAfter = null;
-        for (int i = 0; i < pages; i++) {
+        boolean complete = false;
+        int page = 0;
+        while (!complete) {
             try {
                 List<CaseDetails> cases = elasticSearchRepository.search(userToken, caseType, query, defaultQuerySize,
                     searchAfter);
+
+                if (cases.isEmpty()) {
+                    complete = true;
+                    continue;
+                }
+
                 searchAfter = cases.get(cases.size() - 1).getId().toString();
 
                 // add to queue
                 cases.stream()
                     .map(CaseDetails::getId)
                     .forEach(casesToMigrate::add);
+
+                page++;
             } catch (Exception e) {
-                log.error("Could not search for page {}", i, e);
+                log.error("Could not search for page {}", page, e);
             }
         }
 

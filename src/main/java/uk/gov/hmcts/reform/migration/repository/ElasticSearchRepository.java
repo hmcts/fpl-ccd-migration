@@ -48,10 +48,10 @@ public class ElasticSearchRepository {
         requireNonNull(query);
         SearchResult result = null;
 
-        // Attempt ES search with 3 retries
+        // Attempt ES search with 20 retries
         boolean completed = false;
         int retries = 0;
-        while (!completed && retries < 3) {
+        while (!completed && retries < 20) {
             try {
                 String queryStr = !isEmpty(after)
                     ? query.toQueryContext(size, after, SORT_BY_REF).toString()
@@ -62,12 +62,13 @@ public class ElasticSearchRepository {
             } catch (Exception e) {
                 // let CCD recover if timeouts are happening
                 Thread.sleep(1000);
+                log.error("Failed to get page retry = {}", retries, e);
                 retries++;
             }
         }
 
         if (isEmpty(result)) {
-            log.error("ES Query returned no cases after 3 retries, {}, {}",
+            log.error("ES Query returned no cases after 20 retries, {}, {}",
                 query.toQueryContext(size, SORT_BY_REF), after);
             return List.of();
         }
