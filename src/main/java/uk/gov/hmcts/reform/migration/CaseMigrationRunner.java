@@ -6,7 +6,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import uk.gov.hmcts.reform.migration.configuration.CaseIdListConfiguration;
+import uk.gov.hmcts.reform.migration.query.EsQuery;
 import uk.gov.hmcts.reform.migration.service.DataMigrationService;
+
+import java.util.List;
 
 @Slf4j
 @SpringBootApplication
@@ -18,14 +22,14 @@ public class CaseMigrationRunner implements CommandLineRunner {
     @Autowired
     private DataMigrationService dataMigrationService;
 
+    @Autowired
+    private CaseIdListConfiguration caseIdListConfiguration;
+
     @Value("${case-migration.processing.id}") String migrationId;
 
     @Value("${case-migration.enabled}") boolean enabled;
-    @Value("${migration.caseType}")
-    private String caseType;
 
-    @Value("${default.thread.limit}")
-    private int defaultThreadLimit;
+    @Value("${case-migration.use_case_id_mapping:false}") boolean useIdList;
 
     public static void main(String[] args) {
         SpringApplication.run(CaseMigrationRunner.class, args);
@@ -38,15 +42,17 @@ public class CaseMigrationRunner implements CommandLineRunner {
             if (!enabled) {
                 return;
             }
+            log.info("Migration ID is {}", migrationId);
             dataMigrationService.validateMigrationId(migrationId);
-            if (defaultThreadLimit <= 1) {
-                log.info("CaseMigrationRunner.defaultThreadLimit= {} ", defaultThreadLimit);
-                caseMigrationProcessor.migrateCases(caseType);
+            if (useIdList) {
+                // Do ID List Migration
+                List<String> caseIds = caseIdListConfiguration.getCaseIds(migrationId);
+                caseMigrationProcessor.migrateList(caseIds);
             } else {
-                log.info("CaseMigrationRunner.defaultThreadLimit= {} ", defaultThreadLimit);
-                caseMigrationProcessor.process(caseType);
+                // Do ESQuery based migration
+                EsQuery query = dataMigrationService.getQuery(migrationId);
+                caseMigrationProcessor.migrateQuery(query);
             }
-
         } catch (Exception e) {
             log.error("Migration failed with the following reason: {}", e.getMessage(), e);
         }

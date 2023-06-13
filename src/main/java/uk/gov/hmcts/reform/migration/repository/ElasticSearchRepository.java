@@ -1,122 +1,77 @@
 package uk.gov.hmcts.reform.migration.repository;
 
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
-import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
-import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
-import uk.gov.hmcts.reform.migration.query.ElasticSearchQuery;
+import uk.gov.hmcts.reform.migration.ccd.CoreCaseDataService;
+import uk.gov.hmcts.reform.migration.query.EsQuery;
+import uk.gov.hmcts.reform.migration.query.Sort;
+import uk.gov.hmcts.reform.migration.query.SortOrder;
+import uk.gov.hmcts.reform.migration.query.SortQuery;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+
+import static java.util.Objects.requireNonNull;
+import static org.springframework.util.ObjectUtils.isEmpty;
 
 @Repository
 @Slf4j
 public class ElasticSearchRepository {
 
-    private final CoreCaseDataApi coreCaseDataApi;
+    private final CoreCaseDataService ccdService;
 
-    private final AuthTokenGenerator authTokenGenerator;
-
-    private final int querySize;
-
-    private final int caseProcessLimit;
+    public static final Sort SORT_BY_REF = Sort.builder()
+        .clauses(List.of(
+            SortQuery.of("reference.keyword", SortOrder.DESC)
+        ))
+        .build();
 
     @Autowired
-    public ElasticSearchRepository(CoreCaseDataApi coreCaseDataApi,
-                                   AuthTokenGenerator authTokenGenerator,
-                                   @Value("${case-migration.elasticsearch.querySize}") int querySize,
-                                   @Value("${case-migration.processing.limit}") int caseProcessLimit) {
-        this.coreCaseDataApi = coreCaseDataApi;
-        this.authTokenGenerator = authTokenGenerator;
-        this.querySize = querySize;
-        this.caseProcessLimit = caseProcessLimit;
+    public ElasticSearchRepository(CoreCaseDataService ccdService) {
+        this.ccdService = ccdService;
     }
 
-    public List<CaseDetails> findCaseByCaseType(String userToken, String caseType) {
-        ElasticSearchQuery elasticSearchQuery = ElasticSearchQuery.builder()
-            .initialSearch(true)
-            .size(querySize)
-            .build();
+    public int searchResultsSize(String userToken, String caseType, EsQuery query) {
+        requireNonNull(query);
+        return search(userToken, caseType, query.toQueryContext(1, 0).toString()).getTotal();
+    }
 
-        log.info("Processing the Case Migration search for case type {}.", caseType);
-        String authToken = authTokenGenerator.generate();
-        SearchResult searchResult = coreCaseDataApi.searchCases(userToken,
-                                                                authToken,
-                                                                caseType, elasticSearchQuery.getQuery()
-        );
+    public SearchResult search(String userToken, String caseType, String query) {
+        return ccdService.searchCases(userToken, caseType, query);
+    }
 
-        List<CaseDetails> caseDetails = new ArrayList<>();
+    @SneakyThrows
+    public List<CaseDetails> search(String userToken, String caseType, EsQuery query, int size, String after) {
+        requireNonNull(query);
+        SearchResult result = null;
 
-        if (Objects.nonNull(searchResult) && searchResult.getTotal() > 0) {
-            log.info("Total records to be migrated as per elastic search query {}", searchResult.getTotal());
-            List<CaseDetails> searchResultCases = searchResult.getCases();
-            caseDetails.addAll(searchResultCases);
-            String searchAfterValue = searchResultCases.get(searchResultCases.size() - 1).getId().toString();
+        // Attempt ES search with 20 retries
+        boolean completed = false;
+        int retries = 0;
+        while (!completed && retries < 20) {
+            try {
+                String queryStr = !isEmpty(after)
+                    ? query.toQueryContext(size, after, SORT_BY_REF).toString()
+                    : query.toQueryContext(size, SORT_BY_REF).toString();
 
-            boolean keepSearching;
-            do {
-                ElasticSearchQuery subsequentElasticSearchQuery = ElasticSearchQuery.builder()
-                    .initialSearch(false)
-                    .size(querySize)
-                    .searchAfterValue(searchAfterValue)
-                    .build();
-
-                SearchResult subsequentSearchResult =
-                    coreCaseDataApi.searchCases(userToken,
-                                                authToken,
-                                                caseType, subsequentElasticSearchQuery.getQuery()
-                    );
-
-                keepSearching = false;
-                if (Objects.nonNull(subsequentSearchResult)) {
-                    caseDetails.addAll(subsequentSearchResult.getCases());
-                    keepSearching = subsequentSearchResult.getCases().size() > 0;
-                    if (keepSearching) {
-                        searchAfterValue = caseDetails.get(caseDetails.size() - 1).getId().toString();
-                    }
-                }
-            } while (keepSearching);
+                result = search(userToken, caseType, queryStr);
+                completed = true;
+            } catch (Exception e) {
+                // let CCD recover if timeouts are happening
+                Thread.sleep(1000);
+                log.error("Failed to get page retry = {}", retries, e);
+                retries++;
+            }
         }
-        log.info("The Case Migration has processed caseDetails {}.", caseDetails.size());
-        return caseDetails;
-    }
 
-
-    public SearchResult fetchFirstPage(String userToken, String caseType, int querySize) {
-        ElasticSearchQuery elasticSearchQuery = ElasticSearchQuery.builder()
-            .initialSearch(true)
-            .size(querySize)
-            .build();
-        log.info("Fetching the case details from elastic search for case type {}.", caseType);
-        String authToken = authTokenGenerator.generate();
-        return coreCaseDataApi.searchCases(userToken,
-                                           authToken,
-                                           caseType, elasticSearchQuery.getQuery()
-        );
-    }
-
-    public SearchResult fetchNextPage(String userToken,
-                                      String caseType,
-                                      String searchAfterValue,
-                                      int querySize) {
-
-        String authToken = authTokenGenerator.generate();
-
-        ElasticSearchQuery subsequentElasticSearchQuery = ElasticSearchQuery.builder()
-            .initialSearch(false)
-            .size(querySize)
-            .searchAfterValue(searchAfterValue)
-            .build();
-
-
-        return coreCaseDataApi.searchCases(userToken,
-                authToken,
-                caseType, subsequentElasticSearchQuery.getQuery()
-            );
+        if (isEmpty(result)) {
+            log.error("ES Query returned no cases after 20 retries, {}, {}",
+                query.toQueryContext(size, SORT_BY_REF), after);
+            return List.of();
+        }
+        return result.getCases();
     }
 }

@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
+import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
@@ -17,7 +18,6 @@ import uk.gov.hmcts.reform.migration.service.DataMigrationService;
 
 import java.util.Map;
 
-import static uk.gov.hmcts.reform.migration.service.DataMigrationService.CASE_ID;
 import static uk.gov.hmcts.reform.migration.service.DataMigrationService.MIGRATION_ID_KEY;
 
 @Slf4j
@@ -34,7 +34,8 @@ public class CoreCaseDataService {
                               String eventSummary,
                               String eventDescription,
                               String caseType,
-                              CaseDetails caseDetails) {
+                              CaseDetails caseDetails,
+                              String migrationId) {
         String caseId = String.valueOf(caseDetails.getId());
         UserDetails userDetails = idamClient.getUserDetails(AuthUtil.getBearerToken(authorisation));
 
@@ -51,10 +52,11 @@ public class CoreCaseDataService {
 
         if (dataMigrationService.accepts().test(updatedCaseDetails)) {
             log.info("Initiating updating case {}", updatedCaseDetails.getId());
-            updatedCaseDetails.getData().put(MIGRATION_ID_KEY,
-                caseDetails.getData().get(MIGRATION_ID_KEY));
-            updatedCaseDetails.getData().put(CASE_ID,
-                caseDetails.getId());
+
+            Map<String, Object> migratedFields = dataMigrationService.migrate(
+                updatedCaseDetails.getData(),
+                migrationId);
+            migratedFields.put(MIGRATION_ID_KEY, migrationId);
 
             CaseDataContent caseDataContent = CaseDataContent.builder()
                 .eventToken(startEventResponse.getToken())
@@ -64,7 +66,7 @@ public class CoreCaseDataService {
                         .summary(eventSummary)
                         .description(eventDescription)
                         .build()
-                ).data(dataMigrationService.migrate(updatedCaseDetails.getData()))
+                ).data(migratedFields)
                 .build();
             return coreCaseDataApi.submitEventForCaseWorker(
                 AuthUtil.getBearerToken(authorisation),
@@ -83,5 +85,9 @@ public class CoreCaseDataService {
             );
             return null;
         }
+    }
+
+    public SearchResult searchCases(String userToken, String caseType, String query) {
+        return coreCaseDataApi.searchCases(userToken, authTokenGenerator.generate(), caseType, query);
     }
 }

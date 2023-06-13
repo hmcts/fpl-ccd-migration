@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.migration;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -8,9 +9,11 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
-import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
-import uk.gov.hmcts.reform.domain.exception.CaseMigrationException;
 import uk.gov.hmcts.reform.migration.ccd.CoreCaseDataService;
+import uk.gov.hmcts.reform.migration.query.BooleanQuery;
+import uk.gov.hmcts.reform.migration.query.EsQuery;
+import uk.gov.hmcts.reform.migration.query.ExistsQuery;
+import uk.gov.hmcts.reform.migration.query.Filter;
 import uk.gov.hmcts.reform.migration.repository.ElasticSearchRepository;
 import uk.gov.hmcts.reform.migration.repository.IdamRepository;
 
@@ -22,7 +25,6 @@ import java.util.stream.LongStream;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -40,6 +42,12 @@ class CaseMigrationProcessorTest {
     private static final String USER_TOKEN = "Bearer eeeejjjttt";
 
     private static final String CASE_TYPE = "CARE_SUPERVISION_EPO";
+    private static final String CASE_JURISDICTION = "PUBLICLAW";
+
+    private static final String MIGRATION_ID = "DFPL-TEST";
+
+    private static final int DEFAUT_QUERY_SIZE = 10;
+    private static final int DEFAULT_THREAD_LIMIT = 8;
 
 
     private CaseMigrationProcessor caseMigrationProcessor;
@@ -56,83 +64,46 @@ class CaseMigrationProcessorTest {
     @Captor
     ArgumentCaptor<CaseDetails> caseDetailsArgumentCaptor;
 
+    private static final EsQuery QUERY = BooleanQuery.builder()
+        .filter(Filter.builder()
+            .clauses(List.of(ExistsQuery.of("data.court")))
+            .build())
+        .build();
+
     @BeforeEach
     void setUp() {
+        when(idamRepository.generateUserToken()).thenReturn(USER_TOKEN);
         caseMigrationProcessor = new CaseMigrationProcessor(coreCaseDataService,
             elasticSearchRepository,
             idamRepository,
-            500,
-            1,
-            2,
-            "DFPL-1124");
+            DEFAUT_QUERY_SIZE,
+            DEFAULT_THREAD_LIMIT,
+            MIGRATION_ID,
+            CASE_JURISDICTION,
+            CASE_TYPE,
+            false);
     }
-
 
     @Test
     void shouldMigrateCasesOfACaseTypeByParallelProcessing() throws InterruptedException {
         when(idamRepository.generateUserToken()).thenReturn(USER_TOKEN);
         List<CaseDetails> cases = createCaseDetails(1,2);
-        when(elasticSearchRepository.fetchFirstPage(USER_TOKEN, CASE_TYPE, 2))
-            .thenReturn(SearchResult.builder()
-                .total(cases.size())
-                .cases(cases)
-                .build());
-        caseMigrationProcessor.process(CASE_TYPE);
+        when(elasticSearchRepository.search(USER_TOKEN, CASE_TYPE, QUERY, DEFAUT_QUERY_SIZE, null))
+            .thenReturn(cases);
+        when(elasticSearchRepository.searchResultsSize(USER_TOKEN, CASE_TYPE, QUERY)).thenReturn(2);
+        caseMigrationProcessor.migrateQuery(QUERY);
         verify(coreCaseDataService, times(2))
             .update(eq(USER_TOKEN),
                 eq(EVENT_ID),
                 eq(EVENT_SUMMARY),
                 eq(EVENT_DESCRIPTION),
                 eq(CASE_TYPE),
-                caseDetailsArgumentCaptor.capture());
+                caseDetailsArgumentCaptor.capture(),
+                eq(MIGRATION_ID));
 
         assertThat(caseDetailsArgumentCaptor.getAllValues())
             .extracting("id")
-            .contains(1L,2L);
-    }
-
-    @Test
-    void shouldMigrateCasesOfACaseTypeByParallelProcessingElasticSearchWithNextPageCall()
-        throws InterruptedException {
-        when(idamRepository.generateUserToken()).thenReturn(USER_TOKEN);
-        List<CaseDetails> cases = createCaseDetails(1, 2);
-        when(elasticSearchRepository.fetchFirstPage(USER_TOKEN, CASE_TYPE, 2))
-            .thenReturn(SearchResult.builder()
-                .total(cases.size())
-                .cases(cases)
-                .build());
-        when(elasticSearchRepository.fetchNextPage(USER_TOKEN, CASE_TYPE, "2", 2))
-            .thenReturn(SearchResult.builder()
-                .total(cases.size())
-                .cases(createCaseDetails(3, 2))
-                .build());
-
-        when(elasticSearchRepository.fetchNextPage(USER_TOKEN, CASE_TYPE, "4", 2))
-            .thenReturn(SearchResult.builder()
-                .total(cases.size())
-                .cases(createCaseDetails(5, 2))
-                .build());
-
-        when(elasticSearchRepository.fetchNextPage(USER_TOKEN, CASE_TYPE, "6", 2))
-            .thenReturn(null);
-
-        when(coreCaseDataService.update(eq(USER_TOKEN), eq(EVENT_ID), eq(EVENT_SUMMARY),
-            eq(EVENT_DESCRIPTION), eq(CASE_TYPE), any()))
-            .thenReturn(cases.get(0));
-
-        caseMigrationProcessor.process(CASE_TYPE);
-
-        verify(coreCaseDataService, times(6))
-            .update(eq(USER_TOKEN),
-                eq(EVENT_ID),
-                eq(EVENT_SUMMARY),
-                eq(EVENT_DESCRIPTION),
-                eq(CASE_TYPE),
-                caseDetailsArgumentCaptor.capture());
-
-        assertThat(caseDetailsArgumentCaptor.getAllValues())
-            .extracting("id")
-            .contains(1L,2L,3L,4L,5L,6L);
+            .contains(1L, 2L);
     }
 
     private List<CaseDetails> createCaseDetails(int start, int count) {
@@ -151,96 +122,120 @@ class CaseMigrationProcessorTest {
         when(details.getId()).thenReturn(1677777777L);
         List<CaseDetails> caseDetails = new ArrayList<>();
         caseDetails.add(details);
-        when(elasticSearchRepository.findCaseByCaseType(USER_TOKEN, CASE_TYPE)).thenReturn(caseDetails);
-        List<CaseDetails> listOfCaseDetails = elasticSearchRepository.findCaseByCaseType(USER_TOKEN, CASE_TYPE);
-        assertNotNull(listOfCaseDetails);
-        when(coreCaseDataService.update(USER_TOKEN, EVENT_ID, EVENT_SUMMARY,
-            EVENT_DESCRIPTION, CASE_TYPE, details))
+        when(elasticSearchRepository.search(USER_TOKEN, CASE_TYPE, QUERY, DEFAUT_QUERY_SIZE, null))
+            .thenReturn(caseDetails);
+        when(elasticSearchRepository.searchResultsSize(USER_TOKEN, CASE_TYPE, QUERY)).thenReturn(1);
+
+        when(coreCaseDataService.update(eq(USER_TOKEN), eq(EVENT_ID), eq(EVENT_SUMMARY),
+            eq(EVENT_DESCRIPTION), eq(CASE_TYPE), any(), eq(MIGRATION_ID)))
             .thenReturn(details);
-        caseMigrationProcessor.migrateCases(CASE_TYPE);
+        caseMigrationProcessor.migrateQuery(QUERY);
         verify(coreCaseDataService, times(1))
-            .update(USER_TOKEN,
-                EVENT_ID,
-                EVENT_SUMMARY,
-                EVENT_DESCRIPTION,
-                CASE_TYPE,
-                details);
+            .update(eq(USER_TOKEN),
+                eq(EVENT_ID),
+                eq(EVENT_SUMMARY),
+                eq(EVENT_DESCRIPTION),
+                eq(CASE_TYPE),
+                caseDetailsArgumentCaptor.capture(),
+                eq(MIGRATION_ID));
+
+        assertThat(caseDetailsArgumentCaptor.getValue().getId()).isEqualTo(1677777777L);
     }
 
     @Test
     void shouldMigrateOnlyLimitedNumberOfCases() {
         when(idamRepository.generateUserToken()).thenReturn(USER_TOKEN);
         CaseDetails details = mock(CaseDetails.class);
-        when(details.getId()).thenReturn(1677777777L);
+        when(details.getId()).thenReturn(1L);
         CaseDetails details1 = mock(CaseDetails.class);
+        when(details1.getId()).thenReturn(2L);
         List<CaseDetails> caseDetails = new ArrayList<>();
         caseDetails.add(details);
         caseDetails.add(details1);
-        when(elasticSearchRepository.findCaseByCaseType(USER_TOKEN, CASE_TYPE)).thenReturn(caseDetails);
-        List<CaseDetails> listOfCaseDetails = elasticSearchRepository.findCaseByCaseType(USER_TOKEN, CASE_TYPE);
-        assertNotNull(listOfCaseDetails);
-        when(coreCaseDataService.update(USER_TOKEN, EVENT_ID, EVENT_SUMMARY,
-            EVENT_DESCRIPTION, CASE_TYPE, details))
+        when(elasticSearchRepository.search(USER_TOKEN, CASE_TYPE, QUERY, DEFAUT_QUERY_SIZE, null))
+            .thenReturn(caseDetails);
+        when(elasticSearchRepository.searchResultsSize(USER_TOKEN, CASE_TYPE, QUERY)).thenReturn(2);
+
+        when(coreCaseDataService.update(eq(USER_TOKEN), eq(EVENT_ID), eq(EVENT_SUMMARY), eq(EVENT_DESCRIPTION),
+            eq(CASE_TYPE), any(), eq(MIGRATION_ID)))
             .thenReturn(details);
-        caseMigrationProcessor.migrateCases(CASE_TYPE);
-        verify(coreCaseDataService, times(1))
-            .update(USER_TOKEN,
-                EVENT_ID,
-                EVENT_SUMMARY,
-                EVENT_DESCRIPTION,
-                CASE_TYPE,
-                details);
+        caseMigrationProcessor.migrateQuery(QUERY);
+        verify(coreCaseDataService, times(2))
+            .update(eq(USER_TOKEN),
+                eq(EVENT_ID),
+                eq(EVENT_SUMMARY),
+                eq(EVENT_DESCRIPTION),
+                eq(CASE_TYPE),
+                caseDetailsArgumentCaptor.capture(),
+                eq(MIGRATION_ID));
+
+        assertThat(caseDetailsArgumentCaptor.getAllValues().stream().map(CaseDetails::getId))
+            .containsExactlyInAnyOrder(1L, 2L);
     }
 
     @Test
-    void shouldThrowExceptionWhenMigrationIdNotSetForSingleThreadProcessing() {
+    void shouldThrowExceptionWhenCaseTypeIsNull() {
         caseMigrationProcessor = new CaseMigrationProcessor(coreCaseDataService,
             elasticSearchRepository,
             idamRepository,
-            500,
-            1,
             10,
-            null);
-        assertThatThrownBy(() -> caseMigrationProcessor.migrateCases(null))
-            .isInstanceOf(CaseMigrationException.class)
-            .hasMessage("MigrationId is not set");
+            DEFAULT_THREAD_LIMIT,
+            "Test",
+            CASE_JURISDICTION,
+            null,
+            false);
+        assertThatThrownBy(() -> caseMigrationProcessor.migrateQuery(BooleanQuery.builder().build()))
+            .isInstanceOf(NullPointerException.class);
     }
 
     @Test
-    void shouldThrowExceptionWhenMigrationIdNotSetForParallelProcessing() {
+    void shouldThrowExceptionWhenQueryIsNull() {
         caseMigrationProcessor = new CaseMigrationProcessor(coreCaseDataService,
             elasticSearchRepository,
             idamRepository,
-            500,
-            1,
             10,
-            null);
-        assertThatThrownBy(() -> caseMigrationProcessor.process(null))
-            .isInstanceOf(CaseMigrationException.class)
-            .hasMessage("MigrationId is not set");
+            DEFAULT_THREAD_LIMIT,
+            "Test",
+            CASE_JURISDICTION,
+            CASE_TYPE,
+            false);
+        assertThatThrownBy(() -> caseMigrationProcessor.migrateQuery(null))
+            .isInstanceOf(NullPointerException.class);
     }
 
     @Test
-    void shouldThrowExceptionWhenCaseTypeNullForSingleThreadProcessing() {
-        assertThatThrownBy(() -> caseMigrationProcessor.migrateCases(null))
-            .isInstanceOf(CaseMigrationException.class);
+    void shouldThrowExceptionWhenMigrationIdIsNull() {
+        caseMigrationProcessor = new CaseMigrationProcessor(coreCaseDataService,
+            elasticSearchRepository,
+            idamRepository,
+            10,
+            DEFAULT_THREAD_LIMIT,
+            null,
+            CASE_JURISDICTION,
+            CASE_TYPE,
+            false);
+        assertThatThrownBy(() -> caseMigrationProcessor.migrateQuery(BooleanQuery.builder().build()))
+            .isInstanceOf(NullPointerException.class);
     }
 
-    @Test
-    void shouldThrowExceptionWhenCaseTypeNullForParallelProcessing() {
-        assertThatThrownBy(() -> caseMigrationProcessor.process(null))
-            .isInstanceOf(CaseMigrationException.class);
-    }
+    @Nested
+    class MigrateCaseList {
 
-    @Test
-    void shouldThrowExceptionWhenMultipleCaseTypesPassedForSingleThreadProcessing() {
-        assertThatThrownBy(() -> caseMigrationProcessor.migrateCases("Cast_Type1,Cast_Type2"))
-            .isInstanceOf(CaseMigrationException.class);
-    }
+        @Test
+        void shouldMigrateOnlySelectCases() {
+            List<String> caseIds = List.of("12345", "67890");
 
-    @Test
-    void shouldThrowExceptionWhenMultipleCaseTypesPassedForParallelProcessing() {
-        assertThatThrownBy(() -> caseMigrationProcessor.process("Cast_Type1,Cast_Type2"))
-            .isInstanceOf(CaseMigrationException.class);
+            caseMigrationProcessor.migrateList(caseIds);
+
+            verify(coreCaseDataService, times(2))
+                .update(eq(USER_TOKEN),
+                    eq(EVENT_ID),
+                    eq(EVENT_SUMMARY),
+                    eq(EVENT_DESCRIPTION),
+                    eq(CASE_TYPE),
+                    any(),
+                    eq(MIGRATION_ID));
+        }
+
     }
 }

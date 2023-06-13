@@ -1,28 +1,30 @@
 package uk.gov.hmcts.reform.migration;
 
 import lombok.Getter;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
-import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
-import uk.gov.hmcts.reform.domain.exception.CaseMigrationException;
-import uk.gov.hmcts.reform.domain.exception.MigrationLimitReachedException;
+import uk.gov.hmcts.reform.domain.exception.CaseMigrationSkippedException;
 import uk.gov.hmcts.reform.migration.ccd.CoreCaseDataService;
+import uk.gov.hmcts.reform.migration.query.EsQuery;
 import uk.gov.hmcts.reform.migration.repository.ElasticSearchRepository;
 import uk.gov.hmcts.reform.migration.repository.IdamRepository;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ForkJoinPool;
+import java.util.stream.Collectors;
 
-import static uk.gov.hmcts.reform.migration.service.DataMigrationService.MIGRATION_ID_KEY;
+import static java.math.RoundingMode.UP;
+import static java.time.LocalDateTime.now;
+import static java.util.Objects.requireNonNull;
+import static java.util.concurrent.TimeUnit.HOURS;
+import static org.springframework.util.ObjectUtils.isEmpty;
 
 @Slf4j
 @Component
@@ -35,119 +37,226 @@ public class CaseMigrationProcessor {
     private final CoreCaseDataService coreCaseDataService;
     private final ElasticSearchRepository elasticSearchRepository;
     private final IdamRepository idamRepository;
-    private final int caseProcessLimit;
-    private final int defaultThreadLimit;
     private final int defaultQuerySize;
+    private final int defaultThreadLimit;
     private final String migrationId;
+    private final String caseType;
+    private final String jurisdiction;
+
+    private final ForkJoinPool threadPool;
 
     @Getter
     private final List<Long> migratedCases = new ArrayList<>();
     @Getter
-    private final List<Long> failedCases = new ArrayList<>();
+    private final List<Long> skippedCases = new ArrayList<>();
     @Getter
-    private final List<Long> ignoredCases = new ArrayList<>();
-    private final LocalDateTime startTime = LocalDateTime.now();
+    private final List<Long> failedCases = new ArrayList<>();
+
+    private final ConcurrentLinkedQueue<Long> casesToMigrate = new ConcurrentLinkedQueue<>();
+
+    private boolean finishedLoading = false;
+
+    private LocalDateTime startTime = now();
+
+    private boolean retryFailures;
 
     //@Autowired
     public CaseMigrationProcessor(CoreCaseDataService coreCaseDataService,
                                   ElasticSearchRepository elasticSearchRepository,
                                   IdamRepository idamRepository,
-                                  @Value("${case-migration.processing.limit}") int caseProcessLimit,
-                                  @Value("${default.thread.limit}") int defaultThreadLimit,
                                   @Value("${default.query.size}") int defaultQuerySize,
-                                  @Value("${case-migration.processing.id}") String migrationId) {
+                                  @Value("${default.thread.limit:8}") int defaultThreadLimit,
+                                  @Value("${case-migration.processing.id}") String migrationId,
+                                  @Value("${migration.jurisdiction}") String jurisdiction,
+                                  @Value("${migration.caseType}") String caseType,
+                                  @Value("${case-migration.retry_failures}") boolean retryFailures) {
         this.coreCaseDataService = coreCaseDataService;
         this.elasticSearchRepository = elasticSearchRepository;
         this.idamRepository = idamRepository;
-        this.caseProcessLimit = caseProcessLimit;
-        this.defaultThreadLimit = defaultThreadLimit;
         this.defaultQuerySize = defaultQuerySize;
+        this.defaultThreadLimit = defaultThreadLimit;
         this.migrationId = migrationId;
+        this.jurisdiction = jurisdiction;
+        this.caseType = caseType;
+        this.retryFailures = retryFailures;
+        this.threadPool = new ForkJoinPool(defaultThreadLimit);
+
+        setupProcessor(true);
     }
 
+    public void setupProcessor(boolean firstTry) {
+        this.startTime = now();
+        this.getFailedCases().clear();
+        this.getMigratedCases().clear();
+        this.getSkippedCases().clear();
 
-    public void process(String caseType) throws InterruptedException {
-        try {
-            validateMigrationId();
-            validateCaseType(caseType);
-            log.info("Data migration of cases started for case type: {}", caseType);
-            log.info("Data migration of cases started for defaultThreadLimit: {} defaultQuerySize : {}",
-                     defaultThreadLimit, defaultQuerySize);
-            String userToken =  idamRepository.generateUserToken();
+        this.finishedLoading = false;
 
-            SearchResult searchResult = elasticSearchRepository.fetchFirstPage(userToken, caseType, defaultQuerySize);
+        String userToken =  idamRepository.generateUserToken();
+        // Setup consumers
+        for (int i = 0; i < defaultThreadLimit; i++) {
+            threadPool.execute(() -> worker(caseType, jurisdiction, userToken));
+        }
 
-            log.info("Data migration required for cases {}", searchResult.getTotal());
-
-            if (Objects.nonNull(searchResult) && searchResult.getTotal() > 0) {
-                ExecutorService executorService = Executors.newFixedThreadPool(defaultThreadLimit);
-
-                List<CaseDetails> searchResultCases = searchResult.getCases();
-                searchResultCases
-                    .forEach(submitMigration(userToken, caseType, executorService));
-                String searchAfterValue = searchResultCases.get(searchResultCases.size() - 1).getId().toString();
-
-                boolean keepSearching;
-                do {
-                    SearchResult subsequentSearchResult = elasticSearchRepository.fetchNextPage(userToken,
-                                                                        caseType,
-                                                                        searchAfterValue,
-                                                                        defaultQuerySize);
-
-                    log.info("Data migration of cases started for searchAfterValue : {}",searchAfterValue);
-
-                    keepSearching = false;
-                    if (Objects.nonNull(subsequentSearchResult)) {
-                        List<CaseDetails> subsequentSearchResultCases = subsequentSearchResult.getCases();
-                        subsequentSearchResultCases
-                            .forEach(submitMigration(userToken, caseType, executorService));
-
-                        keepSearching = subsequentSearchResultCases.size() > 0;
-                        if (keepSearching) {
-                            searchAfterValue = subsequentSearchResultCases
-                                .get(subsequentSearchResultCases.size() - 1).getId().toString();
-                        }
-                    }
-                } while (keepSearching);
-
-                executorService.shutdown();
-                boolean status = executorService.awaitTermination(4, TimeUnit.HOURS);
-                log.info("Migration task finished with status {}", status);
-            } else {
-                log.error("No records found for case type {}", caseType);
-            }
-        } catch (MigrationLimitReachedException ex) {
-            throw ex;
-        } finally {
-            publishStats(startTime);
+        if (!firstTry) {
+            this.retryFailures = false;
         }
     }
 
-    private Consumer<CaseDetails> submitMigration(String userToken, String caseType, ExecutorService executorService) {
-        return caseDetails -> {
-            log.info("Submitting task for migration of case  {}.", caseDetails.getId());
-            executorService.submit(() -> updateCase(userToken, caseType, caseDetails));
-        };
+
+    @SneakyThrows
+    private void worker(String caseType, String jurisdiction, String userToken) {
+        while (!finishedLoading || !casesToMigrate.isEmpty()) {
+            // check for content
+            Long caseId = casesToMigrate.poll();
+            if (!isEmpty(caseId)) {
+                // we've removed our caseId from the queue - now need to process it
+                try {
+                    coreCaseDataService.update(userToken,
+                        EVENT_ID,
+                        EVENT_SUMMARY,
+                        EVENT_DESCRIPTION,
+                        caseType,
+                        CaseDetails.builder()
+                            .id(caseId)
+                            .jurisdiction(jurisdiction)
+                            .build(),
+                        this.migrationId
+                    );
+                    log.info("Completed migrating case {}", caseId);
+                    migratedCases.add(caseId);
+                } catch (CaseMigrationSkippedException e) {
+                    log.info("Skipped migrating case {}, {}", caseId, e.getMessage());
+                    skippedCases.add(caseId);
+                } catch (Exception e) {
+                    log.error("Failed migrating case {}", caseId, e);
+                    failedCases.add(caseId);
+                }
+            } else {
+                // polling for 1s as no caseId polled yet
+                Thread.sleep(1000);
+            }
+        }
     }
 
+    @SneakyThrows
+    public void migrateQuery(EsQuery query) {
+        requireNonNull(query);
+        requireNonNull(caseType);
+        requireNonNull(migrationId);
 
-    public void migrateCases(String caseType) {
-        validateMigrationId();
-        validateCaseType(caseType);
-        log.info("Data migration of cases started for case type: {}", caseType);
         String userToken =  idamRepository.generateUserToken();
-        List<CaseDetails> listOfCaseDetails = elasticSearchRepository.findCaseByCaseType(userToken, caseType);
-        listOfCaseDetails.stream()
-            .limit(caseProcessLimit)
-            .forEach(caseDetails -> updateCase(userToken, caseType, caseDetails));
+
+        // Get total cases to migrate
+        int total;
+        try {
+            total = elasticSearchRepository.searchResultsSize(userToken, this.caseType, query);
+            log.info("Found {} cases to migrate", total);
+        } catch (Exception e) {
+            log.error("Could not determine the number of cases to search for due to {}",
+                e.getMessage(), e
+            );
+            log.info("Migration finished unsuccessfully.");
+            return;
+        }
+
+        // Setup ESQuery provider to fill up the queue
+        int pages = paginate(total);
+        log.debug("Found {} pages", pages);
+        String searchAfter = null;
+        boolean complete = false;
+        int page = 0;
+        while (!complete) {
+            try {
+                List<CaseDetails> cases = elasticSearchRepository.search(userToken, caseType, query, defaultQuerySize,
+                    searchAfter);
+
+                if (cases.isEmpty()) {
+                    complete = true;
+                    continue;
+                }
+
+                searchAfter = cases.get(cases.size() - 1).getId().toString();
+
+                // add to queue
+                cases.stream()
+                    .map(CaseDetails::getId)
+                    .forEach(casesToMigrate::add);
+
+                page++;
+            } catch (Exception e) {
+                log.error("Could not search for page {}", page, e);
+            }
+        }
+
+        finishedLoading = true;
+
+        // Finalise + wait for the queue to finish processing
+        boolean timedOut = !threadPool.awaitQuiescence(2, HOURS);
+        if (timedOut) {
+            log.error("Timed out after 2 Hours");
+        }
+
         publishStats(startTime);
+
+        if (retryFailures && this.getFailedCases().size() > 0) {
+            List<String> toRetry = new ArrayList<>(this.getFailedCases()).stream()
+                .map(Object::toString)
+                .collect(Collectors.toList());
+
+            // reset migration tool, with no more retries allowed
+            this.setupProcessor(false);
+
+            // migrate the failed cases
+            this.migrateList(toRetry);
+        }
+    }
+
+    @SneakyThrows
+    public void migrateList(List<String> caseIds) {
+        requireNonNull(caseIds);
+
+        if (caseIds.isEmpty()) {
+            log.error("No case ids found for migration {}, aborting", migrationId);
+            return;
+        } else {
+            log.info("Found {} cases to migrate", caseIds.size());
+        }
+
+        // Add them to the queue
+        casesToMigrate.addAll(caseIds.stream().map(Long::parseLong).collect(Collectors.toList()));
+        this.finishedLoading = true;
+
+        // Wait for the threadpool to finish
+        boolean timedOut = !threadPool.awaitQuiescence(2, HOURS);
+        if (timedOut) {
+            log.error("Timed out after 2 Hours");
+        }
+
+        publishStats(startTime);
+
+        if (retryFailures && this.getFailedCases().size() > 0) {
+            List<String> toRetry = new ArrayList<>(this.getFailedCases()).stream()
+                .map(Object::toString)
+                .collect(Collectors.toList());
+
+            // reset migration tool, with no more retries allowed
+            this.setupProcessor(false);
+
+            // migrate the failed cases
+            this.migrateList(toRetry);
+        }
+    }
+
+    private int paginate(int total) {
+        return new BigDecimal(total).divide(new BigDecimal(defaultQuerySize), UP).intValue();
     }
 
     private void publishStats(LocalDateTime startTime) {
         log.info(LOG_STRING);
         log.info(
-            " FPLA Data migration completed: Total number of processed cases: {}",
-            getMigratedCases().size() + getFailedCases().size() + getIgnoredCases().size()
+            "FPLA Data migration completed: Total number of processed cases: {}",
+            getMigratedCases().size() + getFailedCases().size()
         );
 
         String[] task = {"Migrated", "migrations"};
@@ -159,17 +268,16 @@ public class CaseMigrationProcessor {
             log.info("{} cases: NONE ", task[0]);
         } else {
             log.info(
-                " Total number of {} performed: {} ",
+                "Total number of {} performed: {} ",
                 task[1],
                 getMigratedCases().size()
             );
         }
 
-        if (getIgnoredCases().isEmpty()) {
-            log.info("Ignored cases: NONE ");
+        if (getSkippedCases().isEmpty()) {
+            log.info("Skipped cases: NONE ");
         } else {
-            log.info("Ignored count :{}, cases: {}, ", getIgnoredCases().size(), getIgnoredCases());
-
+            log.info("Skipped count:{}, cases: {} ", getSkippedCases().size(), getSkippedCases());
         }
 
         if (getFailedCases().isEmpty()) {
@@ -178,52 +286,7 @@ public class CaseMigrationProcessor {
             log.info("Failed count:{}, cases: {} ", getFailedCases().size(), getFailedCases());
         }
 
-        log.info("Data migration start at {} and completed at {}", startTime, LocalDateTime.now());
+        log.info("Data migration start at {} and completed at {}", startTime, now());
     }
 
-    private void validateMigrationId() {
-        Optional.ofNullable(migrationId)
-            .orElseThrow(() -> new CaseMigrationException("MigrationId is not set"));
-    }
-
-    private void validateCaseType(String caseType) {
-        Optional.ofNullable(caseType)
-            .orElseThrow(() -> new CaseMigrationException("Provide case type for the migration"));
-
-        if (caseType.split(",").length > 1) {
-            throw new CaseMigrationException("Only One case type at a time is allowed for the migration");
-        }
-    }
-
-
-    private void updateCase(String authorisation, String caseType, CaseDetails caseDetails) {
-        if (Objects.nonNull(caseDetails)) {
-            Long id = caseDetails.getId();
-            log.info("Updating case {}", id);
-            try {
-                caseDetails.getData().put(MIGRATION_ID_KEY, migrationId);
-                CaseDetails updateCaseDetails = coreCaseDataService.update(
-                    authorisation,
-                    EVENT_ID,
-                    EVENT_SUMMARY,
-                    EVENT_DESCRIPTION,
-                    caseType,
-                    caseDetails
-                );
-
-                if (Objects.nonNull(updateCaseDetails)) {
-                    log.info("Case {} successfully updated", id);
-                    migratedCases.add(id);
-                } else {
-                    log.info("Case {} ignored", id);
-                    ignoredCases.add(id);
-                }
-            } catch (Exception e) {
-                log.error("Case {} update failed due to : {}", id, e);
-                failedCases.add(id);
-            }
-        } else {
-            log.error("Case details not found for case type {}", caseType);
-        }
-    }
 }
