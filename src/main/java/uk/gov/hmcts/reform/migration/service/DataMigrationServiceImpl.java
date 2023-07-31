@@ -15,7 +15,10 @@ import uk.gov.hmcts.reform.migration.query.ExistsQuery;
 import uk.gov.hmcts.reform.migration.query.Filter;
 import uk.gov.hmcts.reform.migration.query.Must;
 import uk.gov.hmcts.reform.migration.query.MustNot;
+import uk.gov.hmcts.reform.migration.query.RangeQuery;
 
+import java.time.LocalDate;
+import java.time.Month;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,14 +43,16 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         "DFPL-log", this::triggerOnlyMigration,
         "DFPL-1124Rollback", this::run1124Rollback,
         "DFPL-702", this::triggerOnlyMigration,
-        "DFPL-1352", this::triggerOnlyMigration
+        "DFPL-1352", this::triggerOnlyMigration,
+        "DFPL-796", this::triggerOnlyMigration
     );
 
     private final Map<String, EsQuery> queries = Map.of(
         "DFPL-1124", this.query1124(),
         "DFPL-1124Rollback", this.topLevelFieldExistsQuery(DFJ_AREA),
         "DFPL-log", this.topLevelFieldExistsQuery(COURT),
-        "DFPL-702", this.topLevelFieldExistsQuery(COURT)
+        "DFPL-702", this.topLevelFieldExistsQuery(COURT),
+        "DFPL-796", this.query796()
     );
 
     @Override
@@ -137,6 +142,16 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         } else {
             throw new CaseMigrationSkippedException("No `dfjArea` on the case");
         }
+    }
+
+    private EsQuery query796() {
+        return BooleanQuery.builder()
+            .filter(Filter.builder()
+                .clauses(List.of(RangeQuery.builder()
+                    .field("data.dateSubmitted")
+                    .lessThanOrEqual("2023-07-14").build()))
+                .build())
+            .build();
     }
 
     private Map<String, Object> triggerOnlyMigration(Map<String, Object> data) {
