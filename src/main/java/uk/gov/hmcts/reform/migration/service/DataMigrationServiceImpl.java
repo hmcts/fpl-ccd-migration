@@ -41,7 +41,8 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         "DFPL-1124Rollback", this::run1124Rollback,
         "DFPL-702", this::triggerOnlyMigration,
         "DFPL-1352", this::triggerOnlyMigration,
-        "DFPL-AM", this::triggerOnlyMigration
+        "DFPL-AM", this::triggerOnlyMigration,
+        "DFPL-AM-Rollback", this::triggerOnlyMigration
     );
 
     private final Map<String, EsQuery> queries = Map.of(
@@ -49,7 +50,8 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         "DFPL-1124Rollback", this.topLevelFieldExistsQuery(DFJ_AREA),
         "DFPL-log", this.topLevelFieldExistsQuery(COURT),
         "DFPL-702", this.topLevelFieldExistsQuery(COURT),
-        "DFPL-AM", this.topLevelFieldExistsQuery("caseName")
+        "DFPL-AM", this.topLevelFieldDoesNotExistQuery("hasBeenAMMigrated"),
+        "DFPL-AM-Rollback", this.topLevelFieldExistsQuery("hasBeenAMMigrated")
     );
 
     @Override
@@ -109,6 +111,14 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         return BooleanQuery.builder()
             .filter(Filter.builder()
                 .clauses(List.of(ExistsQuery.of("data." + field)))
+                .build())
+            .build();
+    }
+
+    private EsQuery topLevelFieldDoesNotExistQuery(String field) {
+        return BooleanQuery.builder()
+            .filter(Filter.builder()
+                .clauses(List.of(MustNot.of(ExistsQuery.of("data." + field))))
                 .build())
             .build();
     }
