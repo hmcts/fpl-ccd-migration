@@ -66,6 +66,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         if (!queries.containsKey(migrationId)) {
             throw new NoSuchElementException("No migration mapped to " + migrationId);
         }
+        log.info(queries.get(migrationId).toQueryContext(100, 0).toString());
         return queries.get(migrationId);
     }
 
@@ -118,13 +119,16 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
     private EsQuery topLevelFieldDoesNotExistQuery(String field) {
         return BooleanQuery.builder()
             .filter(Filter.builder()
-                .clauses(List.of(MustNot.of(ExistsQuery.of("data." + field))))
+                .clauses(List.of(BooleanQuery.builder()
+                    .mustNot(MustNot.of(ExistsQuery.of("data." + field)))
+                    .build()))
                 .build())
             .build();
     }
 
     /**
      * Fetch cases that have a court field AND do not have a dfjArea field (these have been migrated already).
+     *
      * @return EsQuery performing this search
      */
     private EsQuery query1124() {
