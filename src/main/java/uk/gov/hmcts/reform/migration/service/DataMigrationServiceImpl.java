@@ -52,7 +52,6 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         "DFPL-log", this.topLevelFieldExistsQuery(COURT),
         "DFPL-AM", this.topLevelFieldDoesNotExistQuery("hasBeenAMMigrated"),
         "DFPL-AM-Rollback", this.topLevelFieldExistsQuery("hasBeenAMMigrated"),
-        "DFPL-AM-Rollback", this.topLevelFieldExistsQuery("hasBeenAMMigrated"),
         "DFPL-CFV", this.topLevelFieldDoesNotExistQuery("hasBeenCFVMigrated"),
         "DFPL-CFV-Rollback", this.topLevelFieldExistsQuery("hasBeenCFVMigrated")
     );
