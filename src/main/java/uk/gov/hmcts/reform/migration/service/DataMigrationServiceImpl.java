@@ -42,8 +42,12 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         "DFPL-1124", this::run1124,
         "DFPL-log", this::triggerOnlyMigration,
         "DFPL-1124Rollback", this::run1124Rollback,
-        "DFPL-702", this::triggerOnlyMigration,
         "DFPL-1352", this::triggerOnlyMigration,
+        "DFPL-AM", this::triggerOnlyMigration,
+        "DFPL-AM-Rollback", this::triggerOnlyMigration,
+        "DFPL-1722", this::triggerOnlyMigration,
+        "DFPL-1724", this::triggerOnlyMigration,
+        "DFPL-1725", this::triggerOnlyMigration,
         "DFPL-796", this::triggerOnlyMigration
     );
 
@@ -51,7 +55,8 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         "DFPL-1124", this.query1124(),
         "DFPL-1124Rollback", this.topLevelFieldExistsQuery(DFJ_AREA),
         "DFPL-log", this.topLevelFieldExistsQuery(COURT),
-        "DFPL-702", this.topLevelFieldExistsQuery(COURT),
+        "DFPL-AM", this.topLevelFieldDoesNotExistQuery("hasBeenAMMigrated"),
+        "DFPL-AM-Rollback", this.topLevelFieldExistsQuery("hasBeenAMMigrated"),
         "DFPL-796", this.query796()
     );
 
@@ -67,6 +72,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         if (!queries.containsKey(migrationId)) {
             throw new NoSuchElementException("No migration mapped to " + migrationId);
         }
+        log.info(queries.get(migrationId).toQueryContext(100, 0).toString());
         return queries.get(migrationId);
     }
 
@@ -116,8 +122,19 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
             .build();
     }
 
+    private EsQuery topLevelFieldDoesNotExistQuery(String field) {
+        return BooleanQuery.builder()
+            .filter(Filter.builder()
+                .clauses(List.of(BooleanQuery.builder()
+                    .mustNot(MustNot.of(ExistsQuery.of("data." + field)))
+                    .build()))
+                .build())
+            .build();
+    }
+
     /**
      * Fetch cases that have a court field AND do not have a dfjArea field (these have been migrated already).
+     *
      * @return EsQuery performing this search
      */
     private EsQuery query1124() {
