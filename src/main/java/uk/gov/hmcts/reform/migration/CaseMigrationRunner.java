@@ -6,14 +6,25 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.openfeign.EnableFeignClients;
+import uk.gov.hmcts.reform.JudicialUserRequest;
+import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.migration.configuration.CaseIdListConfiguration;
-import uk.gov.hmcts.reform.migration.query.EsQuery;
+import uk.gov.hmcts.reform.migration.repository.IdamRepository;
+import uk.gov.hmcts.reform.migration.repository.JudicialApi;
 import uk.gov.hmcts.reform.migration.service.DataMigrationService;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import static org.apache.commons.lang3.ObjectUtils.isEmpty;
 
 @Slf4j
 @SpringBootApplication
+@EnableFeignClients(value = {
+    "uk.gov.hmcts.reform.migration.repository"
+})
 //@PropertySource("classpath:application.properties")
 public class CaseMigrationRunner implements CommandLineRunner {
 
@@ -35,24 +46,33 @@ public class CaseMigrationRunner implements CommandLineRunner {
         SpringApplication.run(CaseMigrationRunner.class, args);
     }
 
+    @Autowired
+    private JudicialApi judicialApi;
+
+    @Autowired
+    private AuthTokenGenerator authTokenGenerator;
+
+    @Autowired
+    private IdamRepository idamRepository;
+
     @Override
     public void run(String... args) {
         try {
-            log.info("Job is triggered: {}", enabled);
-            if (!enabled) {
-                return;
-            }
-            log.info("Migration ID is {}", migrationId);
-            dataMigrationService.validateMigrationId(migrationId);
-            if (useIdList) {
-                // Do ID List Migration
-                List<String> caseIds = caseIdListConfiguration.getCaseIds(migrationId);
-                caseMigrationProcessor.migrateList(caseIds);
-            } else {
-                // Do ESQuery based migration
-                EsQuery query = dataMigrationService.getQuery(migrationId);
-                caseMigrationProcessor.migrateQuery(query);
-            }
+            List<JudicialUserProfile> jups = judicialApi.findUsers(idamRepository.generateUserToken(),
+                authTokenGenerator.generate(),
+                3000,
+                JudicialUserRequest.builder()
+                    .ccdServiceName("PUBLICLAW")
+                .build());
+
+            Map<String, String> judges = jups.stream()
+                .filter(jup -> !isEmpty(jup.getSidamId()))
+                .collect(Collectors.toMap(profile -> profile.getEmailId().toLowerCase(),
+                    JudicialUserProfile::getSidamId));
+
+            log.info("Loaded {} judges", judges.size());
+
+            log.info("{}", judges);
         } catch (Exception e) {
             log.error("Migration failed with the following reason: {}", e.getMessage(), e);
         }
