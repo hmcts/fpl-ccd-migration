@@ -60,7 +60,7 @@ public class CaseMigrationRunner implements CommandLineRunner {
         try {
             List<JudicialUserProfile> jups = judicialApi.findUsers(idamRepository.generateUserToken(),
                 authTokenGenerator.generate(),
-                10000,
+                3000,
                 JudicialUserRequest.builder()
                     .ccdServiceName("PUBLICLAW")
                 .build());
@@ -70,11 +70,9 @@ public class CaseMigrationRunner implements CommandLineRunner {
                 .collect(Collectors.toMap(profile -> profile.getEmailId().toLowerCase(),
                     JudicialUserProfile::getSidamId));
 
-            log.info("Loaded {} jups", jups.size());
             log.info("Loaded {} judges", judges.size());
 
-            log.info("JUDGES WITH IDS: {}", judges);
-            log.info("ALL JUDGES: {}", jups.stream().map(JudicialUserProfile::getEmailId).collect(Collectors.toList()));
+            log.info("{}", judges);
         } catch (Exception e) {
             log.error("Migration failed with the following reason: {}", e.getMessage(), e);
         }
