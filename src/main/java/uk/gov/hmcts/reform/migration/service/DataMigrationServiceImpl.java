@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.migration.query.BooleanQuery;
 import uk.gov.hmcts.reform.migration.query.EsQuery;
 import uk.gov.hmcts.reform.migration.query.ExistsQuery;
 import uk.gov.hmcts.reform.migration.query.Filter;
+import uk.gov.hmcts.reform.migration.query.MatchQuery;
 import uk.gov.hmcts.reform.migration.query.Must;
 import uk.gov.hmcts.reform.migration.query.MustNot;
 
@@ -42,18 +43,18 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         "DFPL-1352", this::triggerOnlyMigration,
         "DFPL-AM", this::triggerOnlyMigration,
         "DFPL-AM-Rollback", this::triggerOnlyMigration,
-        "DFPL-1725", this::triggerOnlyMigration,
-        "DFPL-1734", this::triggerOnlyMigration,
+        "DFPL-1702", this::triggerOnlyMigration,
         "DFPL-1739", this::triggerOnlyMigration,
-        "DFPL-1774", this::triggerOnlyMigration
+        "DFPL-1774", this::triggerOnlyMigration,
+        "DFPL-1748", this::triggerOnlyMigration
     );
 
     private final Map<String, EsQuery> queries = Map.of(
         "DFPL-1124", this.query1124(),
         "DFPL-1124Rollback", this.topLevelFieldExistsQuery(DFJ_AREA),
         "DFPL-log", this.topLevelFieldExistsQuery(COURT),
-        "DFPL-AM", this.topLevelFieldDoesNotExistQuery("hasBeenAMMigrated"),
-        "DFPL-AM-Rollback", this.topLevelFieldExistsQuery("hasBeenAMMigrated")
+        "DFPL-AM", this.queryAM(),
+        "DFPL-AM-Rollback", this.queryAM()
     );
 
     @Override
@@ -142,6 +143,19 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
                         .mustNot(MustNot.of(ExistsQuery.of("data.dfjArea")))
                         .build()
                 ))
+                .build())
+            .build();
+    }
+
+    private EsQuery queryAM() {
+        final MatchQuery openCases = MatchQuery.of("state", "Open");
+        final MatchQuery deletedCases = MatchQuery.of("state", "Deleted");
+        final MatchQuery returnedCases = MatchQuery.of("state", "RETURNED");
+        final MatchQuery closedCases = MatchQuery.of("state", "CLOSED");
+
+        return BooleanQuery.builder()
+            .mustNot(MustNot.builder()
+                .clauses(List.of(openCases, deletedCases, returnedCases, closedCases))
                 .build())
             .build();
     }
