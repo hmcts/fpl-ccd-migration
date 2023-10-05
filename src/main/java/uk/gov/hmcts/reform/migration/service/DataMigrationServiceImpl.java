@@ -45,7 +45,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         "DFPL-AM-Rollback", this::triggerOnlyMigration,
         "DFPL-1702", this::triggerOnlyMigration,
         "DFPL-1739", this::triggerOnlyMigration,
-        "DFPL-1773", this::triggerOnlyMigration,
+        "DFPL-1774", this::triggerOnlyMigration,
         "DFPL-1748", this::triggerOnlyMigration
     );
 
