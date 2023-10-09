@@ -46,7 +46,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         "DFPL-1702", this::triggerOnlyMigration,
         "DFPL-1739", this::triggerOnlyMigration,
         "DFPL-1756", this::triggerOnlyMigration,
-        "DFPL-1748", this::triggerOnlyMigration
+        "DFPL-1782", this::triggerOnlyMigration
     );
 
     private final Map<String, EsQuery> queries = Map.of(
