@@ -51,8 +51,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         "DFPL-1124Rollback", this.topLevelFieldExistsQuery(DFJ_AREA),
         "DFPL-log", this.topLevelFieldExistsQuery(COURT),
         "DFPL-AM", this.queryAM(),
-        "DFPL-AM-Rollback", this.queryAM(),
-        "DFPL-1793", this.topLevelFieldDoesNotExistQuery("CaseRoleId")
+        "DFPL-AM-Rollback", this.queryAM()
     );
 
     @Override
