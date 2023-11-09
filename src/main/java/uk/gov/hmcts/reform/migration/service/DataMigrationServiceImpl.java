@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.migration.query.Filter;
 import uk.gov.hmcts.reform.migration.query.MatchQuery;
 import uk.gov.hmcts.reform.migration.query.Must;
 import uk.gov.hmcts.reform.migration.query.MustNot;
+import uk.gov.hmcts.reform.migration.query.TermQuery;
 
 import java.util.HashMap;
 import java.util.List;
@@ -42,10 +43,9 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         "DFPL-1124Rollback", this::run1124Rollback,
         "DFPL-AM", this::triggerOnlyMigration,
         "DFPL-AM-Rollback", this::triggerOnlyMigration,
-        "DFPL-1850", this::triggerOnlyMigration,
-        "DFPL-1883", this::triggerOnlyMigration,      
         "DFPL-CFV", this::triggerOnlyMigration,
-        "DFPL-CFV-Rollback", this::triggerOnlyMigration
+        "DFPL-CFV-Rollback", this::triggerOnlyMigration,
+        "DFPL-1855", this::triggerOnlyMigration
     );
 
     private final Map<String, EsQuery> queries = Map.of(
@@ -55,7 +55,8 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         "DFPL-AM", this.queryAM(),
         "DFPL-AM-Rollback", this.queryAM(),      
         "DFPL-CFV", this.topLevelFieldDoesNotExistQuery("hasBeenCFVMigrated"),
-        "DFPL-CFV-Rollback", this.topLevelFieldExistsQuery("hasBeenCFVMigrated")
+        "DFPL-CFV-Rollback", this.topLevelFieldExistsQuery("hasBeenCFVMigrated"),
+        "DFPL-1855", this.query1855()
     );
 
     @Override
@@ -142,6 +143,19 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
                     BooleanQuery.builder()
                         .must(Must.of(ExistsQuery.of("data.court")))
                         .mustNot(MustNot.of(ExistsQuery.of("data.dfjArea")))
+                        .build()
+                ))
+                .build())
+            .build();
+    }
+
+    private EsQuery query1855() {
+        return BooleanQuery.builder()
+            .filter(Filter.builder()
+                .clauses(List.of(
+                    BooleanQuery.builder()
+                        .must(Must.of(ExistsQuery.of("data.court")))
+                        .must(Must.of(TermQuery.of("data.court.code", "270")))
                         .build()
                 ))
                 .build())
