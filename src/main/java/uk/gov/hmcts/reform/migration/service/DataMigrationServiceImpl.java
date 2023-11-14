@@ -102,7 +102,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
             String baseLocation = caseManagementLocationMap.get("baseLocation");
             String region = caseManagementLocationMap.get("region");
             if ("195537".equals(baseLocation) && "3".equals(region)) {
-                log.info("{} Skipped cases with correct `caseManagementLocation` values.", caseId);
+                log.info("{} Skipped case with correct `caseManagementLocation` values.", caseId);
                 throw new CaseMigrationSkippedException("Case with correct caseManagementLocation values.");
             }
         }
