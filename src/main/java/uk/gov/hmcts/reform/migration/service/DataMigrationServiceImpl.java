@@ -45,7 +45,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         "DFPL-AM-Rollback", this::triggerOnlyMigration,
         "DFPL-CFV", this::triggerOnlyMigration,
         "DFPL-CFV-Rollback", this::triggerOnlyMigration,
-        "DFPL-1855", this::triggerOnlyMigration
+        "DFPL-1855", this::run1855
     );
 
     private final Map<String, EsQuery> queries = Map.of(
@@ -90,6 +90,23 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
 
         // Perform Migration
         return migrations.get(migrationId).apply(data);
+    }
+
+    private Map<String, Object> run1855(Map<String, Object> data) {
+        Long caseId = (Long) data.get(CASE_ID);
+        Object caseManagementLocation = data.get("caseManagementLocation");
+
+        if (Objects.nonNull(caseManagementLocation)) {
+            Map<String, String> caseManagementLocationMap = objectMapper.convertValue(caseManagementLocation,
+                new TypeReference<>() {});
+            String baseLocation = caseManagementLocationMap.get("baseLocation");
+            String region = caseManagementLocationMap.get("region");
+            if ("195537".equals(baseLocation) && "3".equals(region)) {
+                log.info("{} Skipped cases with correct `caseManagementLocation` values.", caseId);
+                throw new CaseMigrationSkippedException("Case with correct caseManagementLocation values.");
+            }
+        }
+        return new HashMap<>();
     }
 
     private Map<String, Object> run1124(Map<String, Object> data) {
