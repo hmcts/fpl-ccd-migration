@@ -93,7 +93,6 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
     }
 
     private Map<String, Object> run1855(Map<String, Object> data) {
-        Long caseId = (Long) data.get(CASE_ID);
         Object caseManagementLocation = data.get("caseManagementLocation");
 
         if (Objects.nonNull(caseManagementLocation)) {
@@ -102,8 +101,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
             String baseLocation = caseManagementLocationMap.get("baseLocation");
             String region = caseManagementLocationMap.get("region");
             if ("195537".equals(baseLocation) && "3".equals(region)) {
-                log.info("{} Skipped case with correct `caseManagementLocation` values.", caseId);
-                throw new CaseMigrationSkippedException("Case with correct caseManagementLocation values.");
+                throw new CaseMigrationSkippedException("Correct `caseManagementLocation` values found.");
             }
         }
         return new HashMap<>();
