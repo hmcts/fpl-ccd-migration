@@ -40,22 +40,20 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         "DFPL-1124", this::run1124,
         "DFPL-log", this::triggerOnlyMigration,
         "DFPL-1124Rollback", this::run1124Rollback,
-        "DFPL-AM", this::triggerOnlyMigration,
-        "DFPL-AM-Rollback", this::triggerOnlyMigration,
-        "DFPL-1850", this::triggerOnlyMigration,
-        "DFPL-1883", this::triggerOnlyMigration,      
-        "DFPL-CFV", this::triggerOnlyMigration,
-        "DFPL-CFV-Rollback", this::triggerOnlyMigration
+        "DFPL-CFV", this::runCFV,
+        "DFPL-CFV-Rollback", this::runCFVRollback,
+        "DFPL-CFV-dry", this::runCFV,
+        "DFPL-CFV-dry-Rollback", this::runCFVRollback
     );
 
     private final Map<String, EsQuery> queries = Map.of(
         "DFPL-1124", this.query1124(),
         "DFPL-1124Rollback", this.topLevelFieldExistsQuery(DFJ_AREA),
         "DFPL-log", this.topLevelFieldExistsQuery(COURT),
-        "DFPL-AM", this.queryAM(),
-        "DFPL-AM-Rollback", this.queryAM(),      
         "DFPL-CFV", this.topLevelFieldDoesNotExistQuery("hasBeenCFVMigrated"),
-        "DFPL-CFV-Rollback", this.topLevelFieldExistsQuery("hasBeenCFVMigrated")
+        "DFPL-CFV-Rollback", this.topLevelFieldExistsQuery("hasBeenCFVMigrated"),
+        "DFPL-CFV-dry", this.topLevelFieldDoesNotExistQuery("hasBeenCFVMigrated"),
+        "DFPL-CFV-dry-Rollback", this.topLevelFieldExistsQuery("hasBeenCFVMigrated")
     );
 
     @Override
@@ -174,6 +172,24 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
 
     private Map<String, Object> triggerOnlyMigration(Map<String, Object> data) {
         // do nothing
+        return new HashMap<>();
+    }
+
+    private Map<String, Object> runCFV(Map<String, Object> data) {
+        String hasBeenCFVMigrated = (String) data.get("hasBeenCFVMigrated");
+
+        if (Objects.nonNull(hasBeenCFVMigrated) && "Yes".equals(hasBeenCFVMigrated)) {
+            throw new CaseMigrationSkippedException("This case has already been migrated.");
+        }
+        return new HashMap<>();
+    }
+
+    private Map<String, Object> runCFVRollback(Map<String, Object> data) {
+        String hasBeenCFVMigrated = (String) data.get("hasBeenCFVMigrated");
+
+        if (Objects.isNull(hasBeenCFVMigrated)) {
+            throw new CaseMigrationSkippedException("`hasBeenCFVMigrated` was not found.");
+        }
         return new HashMap<>();
     }
 }
