@@ -178,7 +178,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
     private Map<String, Object> runCFV(Map<String, Object> data) {
         String hasBeenCFVMigrated = (String) data.get("hasBeenCFVMigrated");
 
-        if (Objects.nonNull(hasBeenCFVMigrated) && "Yes".equals(hasBeenCFVMigrated)) {
+        if (Objects.nonNull(hasBeenCFVMigrated) && "YES".equalsIgnoreCase(hasBeenCFVMigrated)) {
             throw new CaseMigrationSkippedException("This case has already been migrated.");
         }
         return new HashMap<>();
