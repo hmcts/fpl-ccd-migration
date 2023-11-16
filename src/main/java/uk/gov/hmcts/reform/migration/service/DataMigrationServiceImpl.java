@@ -40,10 +40,10 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         "DFPL-1124", this::run1124,
         "DFPL-log", this::triggerOnlyMigration,
         "DFPL-1124Rollback", this::run1124Rollback,
-        "DFPL-CFV", this::runCfv,
-        "DFPL-CFV-Rollback", this::runCfvRollback,
-        "DFPL-CFV-dry", this::runCfv,
-        "DFPL-CFV-dry-Rollback", this::runCfvRollback
+        "DFPL-CFV", this::triggerOnlyMigration,
+        "DFPL-CFV-Rollback", this::triggerOnlyMigration,
+        "DFPL-CFV-dry", this::triggerOnlyMigration,
+        "DFPL-CFV-dry-Rollback", this::triggerOnlyMigration
     );
 
     private final Map<String, EsQuery> queries = Map.of(
@@ -172,24 +172,6 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
 
     private Map<String, Object> triggerOnlyMigration(Map<String, Object> data) {
         // do nothing
-        return new HashMap<>();
-    }
-
-    private Map<String, Object> runCfv(Map<String, Object> data) {
-        String cfvMigratedFlag = (String) data.get("hasBeenCFVMigrated");
-
-        if (Objects.nonNull(cfvMigratedFlag) && "YES".equalsIgnoreCase(cfvMigratedFlag)) {
-            throw new CaseMigrationSkippedException("This case has already been migrated.");
-        }
-        return new HashMap<>();
-    }
-
-    private Map<String, Object> runCfvRollback(Map<String, Object> data) {
-        String cfvMigratedFlag = (String) data.get("hasBeenCFVMigrated");
-
-        if (Objects.isNull(cfvMigratedFlag)) {
-            throw new CaseMigrationSkippedException("`hasBeenCFVMigrated` was not found.");
-        }
         return new HashMap<>();
     }
 }
