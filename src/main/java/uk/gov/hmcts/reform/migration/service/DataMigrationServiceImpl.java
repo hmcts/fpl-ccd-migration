@@ -43,7 +43,6 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         "DFPL-CFV", this::triggerOnlyMigration,
         "DFPL-CFV-Rollback", this::triggerOnlyMigration,
         "DFPL-CFV-dry", this::triggerOnlyMigration,
-        "DFPL-CFV-dry-Rollback", this::triggerOnlyMigration,
         "DFPL-1905", this::triggerOnlyMigration
     );
 
@@ -53,8 +52,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         "DFPL-log", this.topLevelFieldExistsQuery(COURT),
         "DFPL-CFV", this.topLevelFieldDoesNotExistQuery("hasBeenCFVMigrated"),
         "DFPL-CFV-Rollback", this.topLevelFieldExistsQuery("hasBeenCFVMigrated"),
-        "DFPL-CFV-dry", this.topLevelFieldDoesNotExistQuery("hasBeenCFVMigrated"),
-        "DFPL-CFV-dry-Rollback", this.topLevelFieldExistsQuery("hasBeenCFVMigrated")
+        "DFPL-CFV-dry", this.topLevelFieldDoesNotExistQuery("hasBeenCFVMigrated")
     );
 
     @Override
