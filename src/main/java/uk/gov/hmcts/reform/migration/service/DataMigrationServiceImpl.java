@@ -40,21 +40,18 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         "DFPL-1124", this::run1124,
         "DFPL-log", this::triggerOnlyMigration,
         "DFPL-1124Rollback", this::run1124Rollback,
-        "DFPL-AM", this::triggerOnlyMigration,
-        "DFPL-AM-Rollback", this::triggerOnlyMigration,
         "DFPL-1850", this::triggerOnlyMigration,
         "DFPL-1899", this::triggerOnlyMigration,
         "DFPL-CFV", this::triggerOnlyMigration,
         "DFPL-CFV-Rollback", this::triggerOnlyMigration,
-        "DFPL-1887", this::triggerOnlyMigration
+        "DFPL-1887", this::triggerOnlyMigration,
+        "DFPL-1921", this::triggerOnlyMigration
     );
 
     private final Map<String, EsQuery> queries = Map.of(
         "DFPL-1124", this.query1124(),
         "DFPL-1124Rollback", this.topLevelFieldExistsQuery(DFJ_AREA),
         "DFPL-log", this.topLevelFieldExistsQuery(COURT),
-        "DFPL-AM", this.queryAM(),
-        "DFPL-AM-Rollback", this.queryAM(),
         "DFPL-CFV", this.topLevelFieldDoesNotExistQuery("hasBeenCFVMigrated"),
         "DFPL-CFV-Rollback", this.topLevelFieldExistsQuery("hasBeenCFVMigrated")
     );
