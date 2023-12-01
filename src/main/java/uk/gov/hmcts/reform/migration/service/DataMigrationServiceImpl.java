@@ -37,6 +37,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
     private final DfjAreaLookUpService dfjAreaLookUpService;
     private final ObjectMapper objectMapper;
     private final Map<String, Function<Map<String, Object>, Map<String, Object>>> migrations = Map.of(
+        "default", this::triggerOnlyMigration,
         "DFPL-1124", this::run1124,
         "DFPL-log", this::triggerOnlyMigration,
         "DFPL-1124Rollback", this::run1124Rollback,
@@ -84,7 +85,8 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
     public Map<String, Object> migrate(Map<String, Object> data, String migrationId) {
         requireNonNull(migrationId, "Migration ID must not be null");
         if (!migrations.containsKey(migrationId)) {
-            throw new NoSuchElementException("No migration mapped to " + migrationId);
+            log.info("No migration ID, falling back to default behaviour");
+            return migrations.get("default").apply(data);
         }
 
         // Perform Migration

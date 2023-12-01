@@ -28,6 +28,7 @@ public class CaseMigrationRunner implements CommandLineRunner {
     @Value("${case-migration.processing.id}") String migrationId;
 
     @Value("${case-migration.enabled}") boolean enabled;
+    @Value("${case-migration.validateMigrationId:false}") boolean validateMigrationId;
 
     @Value("${case-migration.use_case_id_mapping:false}") boolean useIdList;
 
@@ -43,7 +44,13 @@ public class CaseMigrationRunner implements CommandLineRunner {
                 return;
             }
             log.info("Migration ID is {}", migrationId);
-            dataMigrationService.validateMigrationId(migrationId);
+
+            // if we do not validate the migration ID - fallback behaviour may be employed, passing the migrationID
+            // through to fpl-case-service (DEFAULTS TO FALSE = NO CHECKING)
+            if (validateMigrationId) {
+                dataMigrationService.validateMigrationId(migrationId);
+            }
+
             if (useIdList) {
                 // Do ID List Migration
                 List<String> caseIds = caseIdListConfiguration.getCaseIds(migrationId);

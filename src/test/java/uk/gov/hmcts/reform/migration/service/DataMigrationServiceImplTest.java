@@ -115,4 +115,13 @@ class DataMigrationServiceImplTest {
 
     }
 
+    @Test
+    void shouldFallbackToDefaultMigrationIfNoIdInMapping() {
+        Map<String, Object> data = new HashMap<>();
+
+        Map<String, Object> updatedData = dataMigrationService.migrate(data, "not-in-mapping");
+
+        assertThat(updatedData).isEqualTo(Map.of());
+    }
+
 }
