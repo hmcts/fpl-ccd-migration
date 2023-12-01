@@ -37,17 +37,13 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
     private final DfjAreaLookUpService dfjAreaLookUpService;
     private final ObjectMapper objectMapper;
     private final Map<String, Function<Map<String, Object>, Map<String, Object>>> migrations = Map.of(
-        "DFPL-1124", this::run1124,
         "DFPL-log", this::triggerOnlyMigration,
-        "DFPL-1124Rollback", this::run1124Rollback,
         "DFPL-CFV", this::triggerOnlyMigration,
         "DFPL-CFV-Rollback", this::triggerOnlyMigration,
         "DFPL-1921", this::triggerOnlyMigration
     );
 
     private final Map<String, EsQuery> queries = Map.of(
-        "DFPL-1124", this.query1124(),
-        "DFPL-1124Rollback", this.topLevelFieldExistsQuery(DFJ_AREA),
         "DFPL-log", this.topLevelFieldExistsQuery(COURT),
         "DFPL-CFV", this.topLevelFieldDoesNotExistQuery("hasBeenCFVMigrated"),
         "DFPL-CFV-Rollback", this.topLevelFieldExistsQuery("hasBeenCFVMigrated")
