@@ -145,6 +145,9 @@
     <packageUrl regex="true">^pkg:maven/org\.springframework/spring\-webmvc@.*$</packageUrl>
     <cve>CVE-2023-20861</cve>
   </suppress>
+  <suppress>
+    <cve>CVE-2023-6378</cve>
+  </suppress>
 
   <!--End of temporary suppression section -->
 
