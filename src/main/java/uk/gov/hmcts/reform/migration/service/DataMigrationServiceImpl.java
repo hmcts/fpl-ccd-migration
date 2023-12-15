@@ -39,7 +39,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         "DFPL-CFV-Rollback", this::triggerOnlyMigration,
         "DFPL-CFV-Failure", this::triggerOnlyMigration,
         "DFPL-CFV-dry", this::triggerOnlyMigration,
-      "DFPL-1855", this::run1855
+        "DFPL-1855", this::run1855
     );
 
     private final Map<String, EsQuery> queries = Map.of(
