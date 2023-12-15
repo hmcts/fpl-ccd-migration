@@ -6,10 +6,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
+import uk.gov.hmcts.reform.domain.exception.CaseMigrationSkippedException;
 import uk.gov.hmcts.reform.migration.query.BooleanQuery;
 import uk.gov.hmcts.reform.migration.query.EsQuery;
 import uk.gov.hmcts.reform.migration.query.ExistsQuery;
 import uk.gov.hmcts.reform.migration.query.Filter;
+import uk.gov.hmcts.reform.migration.query.MatchQuery;
 import uk.gov.hmcts.reform.migration.query.MustNot;
 
 import java.util.HashMap;
@@ -20,6 +22,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import static java.util.Objects.requireNonNull;
+import static org.springframework.util.ObjectUtils.isEmpty;
 
 @Slf4j
 @Component
@@ -33,15 +36,17 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         "DFPL-CFV", this::triggerOnlyMigration,
         "DFPL-CFV-Rollback", this::triggerOnlyMigration,
         "DFPL-CFV-Failure", this::triggerOnlyMigration,
-        "DFPL-CFV-dry", this::triggerOnlyMigration
+        "DFPL-CFV-dry", this::triggerOnlyMigration,
+        "DFPL-1934", this::run1934
     );
 
     private final Map<String, EsQuery> queries = Map.of(
-        "DFPL-log", this.topLevelFieldExistsQuery(COURT),
+        "DFPL-log", this.query1934(),
         "DFPL-CFV", this.topLevelFieldDoesNotExistQuery("hasBeenCFVMigrated"),
         "DFPL-CFV-Rollback", this.topLevelFieldExistsQuery("hasBeenCFVMigrated"),
         "DFPL-CFV-Failure", this.topLevelFieldDoesNotExistQuery("hasBeenCFVMigrated"),
-        "DFPL-CFV-dry", this.topLevelFieldDoesNotExistQuery("hasBeenCFVMigrated")
+        "DFPL-CFV-dry", this.topLevelFieldDoesNotExistQuery("hasBeenCFVMigrated"),
+        "DFPL-1934", this.query1934()
     );
 
     @Override
@@ -77,6 +82,18 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         return migrations.get(migrationId).apply(data);
     }
 
+    private EsQuery query1934() {
+        // Can skip Open + Deleted cases as these won't have the field on them
+        final MatchQuery openCases = MatchQuery.of("state", "Open");
+        final MatchQuery deletedCases = MatchQuery.of("state", "Deleted");
+
+        return BooleanQuery.builder()
+            .mustNot(MustNot.builder()
+                .clauses(List.of(openCases, deletedCases))
+                .build())
+            .build();
+    }
+
     private EsQuery topLevelFieldExistsQuery(String field) {
         return BooleanQuery.builder()
             .filter(Filter.builder()
@@ -99,4 +116,13 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         // do nothing
         return new HashMap<>();
     }
+
+    private Map<String, Object> run1934(Map<String, Object> data) {
+        // do nothing
+        if (isEmpty(data.get("changeOrganisationRequestField"))) {
+            throw new CaseMigrationSkippedException("Skipping case, changeOrganisationRequestField is empty");
+        }
+        return new HashMap<>();
+    }
+
 }
