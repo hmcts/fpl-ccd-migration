@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.migration.service;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +20,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -42,7 +40,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         "DFPL-CFV-Failure", this::triggerOnlyMigration,
         "DFPL-CFV-dry", this::triggerOnlyMigration,
         "DFPL-1934", this::run1934,
-        "DFPL-1855", this::run1855,
+        "DFPL-2022", this::triggerOnlyMigration,
         "DFPL-1954", this::triggerOnlyMigration,
         "DFPL-1948", this::triggerOnlyMigration
     );
@@ -51,7 +49,6 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         "DFPL-log", this.query1934(),
         "DFPL-CFV", this.topLevelFieldDoesNotExistQuery("hasBeenCFVMigrated"),
         "DFPL-CFV-Rollback", this.topLevelFieldExistsQuery("hasBeenCFVMigrated"),
-        "DFPL-1855", this.query1855(),
         "DFPL-CFV-Failure", this.topLevelFieldDoesNotExistQuery("hasBeenCFVMigrated"),
         "DFPL-CFV-dry", this.topLevelFieldDoesNotExistQuery("hasBeenCFVMigrated"),
         "DFPL-1934", this.query1934()
@@ -100,22 +97,6 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
                 .clauses(List.of(openCases, deletedCases))
                 .build())
             .build();
-    }
-
-    private Map<String, Object> run1855(Map<String, Object> data) {
-        Object caseManagementLocation = data.get("caseManagementLocation");
-
-        if (Objects.nonNull(caseManagementLocation)) {
-            Map<String, String> caseManagementLocationMap = objectMapper.convertValue(caseManagementLocation,
-                new TypeReference<>() {});
-            String baseLocation = caseManagementLocationMap.get("baseLocation");
-            String region = caseManagementLocationMap.get("region");
-            if ("195537".equals(baseLocation) && "3".equals(region)) {
-                throw new CaseMigrationSkippedException("Correct `caseManagementLocation` values found.");
-            }
-        }
-        return new HashMap<>();
-
     }
 
     private EsQuery topLevelFieldExistsQuery(String field) {
