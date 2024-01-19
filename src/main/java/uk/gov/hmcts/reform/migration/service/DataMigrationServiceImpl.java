@@ -142,13 +142,13 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
             .build();
     }
 
+    @SuppressWarnings("unchecked")
     private boolean processHearingDetails(Object hearingDetails, Predicate<Map<String, Object>> checkHearingDetails) {
         if (Objects.nonNull(hearingDetails)) {
             List<Map<String, Object>> detailsMap = objectMapper.convertValue(hearingDetails, new TypeReference<>() {});
             return detailsMap.stream()
                 .map(hearingDetail -> hearingDetail.get("value"))
                 .filter(Objects::nonNull)
-                .filter(value -> value instanceof Map)
                 .map(value -> (Map<String, Object>) value)
                 .anyMatch(checkHearingDetails);
         }
