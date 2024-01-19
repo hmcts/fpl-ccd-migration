@@ -149,13 +149,36 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         return new HashMap<>();
     }
 
+    @SuppressWarnings("unchecked")
     private Map<String, Object> run2094(Map<String, Object> data) {
         // do nothing
         if (isEmpty(data.get("orderCollection"))) {
             throw new CaseMigrationSkippedException("Skipping case, orderCollection is empty");
         }
 
+        List<Map<String, Object>> orderCollection = (List<Map<String, Object>>) data.get("orderCollection");
+
+        // check new version of order
+        boolean hasFinalOrder = orderCollection.stream()
+            .map(orderElement -> (Map<String, Object>) orderElement.get("value"))
+            .anyMatch(order -> isOldVersionFinalOrder(order) || isNewVersionFinalOrder(order));
+
+        if (!hasFinalOrder) {
+            throw new CaseMigrationSkippedException("Skipping case, no final order found");
+        }
+
         return new HashMap<>();
     }
 
+    private boolean isOldVersionFinalOrder(Map<String, Object> order) {
+        String orderType = order.get("type").toString();
+        return isEmpty(order.get("dateTimeIssued")) &&
+               (orderType.contains("Final") || orderType.contains("Emergency protection order"));
+    }
+
+    private boolean isNewVersionFinalOrder(Map<String, Object> order) {
+        return !isEmpty(order.get("dateTimeIssued"))
+               && !isEmpty(order.get("markedFinal"))
+               && "YES".equals(order.get("markedFinal").toString().toUpperCase());
+    }
 }
