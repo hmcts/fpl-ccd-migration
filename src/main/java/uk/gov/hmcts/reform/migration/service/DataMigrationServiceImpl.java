@@ -42,7 +42,8 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         "DFPL-1934", this::run1934,
         "DFPL-1957", this::triggerOnlyMigration,
         "DFPL-1993", this::triggerOnlyMigration,
-        "DFPL-2033", this::triggerOnlyMigration
+        "DFPL-2033", this::triggerOnlyMigration,
+        "DFPL-2094", this::run2094
     );
 
     private final Map<String, EsQuery> queries = Map.of(
@@ -51,7 +52,8 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         "DFPL-CFV-Rollback", this.topLevelFieldExistsQuery("hasBeenCFVMigrated"),
         "DFPL-CFV-Failure", this.topLevelFieldDoesNotExistQuery("hasBeenCFVMigrated"),
         "DFPL-CFV-dry", this.topLevelFieldDoesNotExistQuery("hasBeenCFVMigrated"),
-        "DFPL-1934", this.query1934()
+        "DFPL-1934", this.query1934(),
+        "DFPL-2094", this.query2094()
     );
 
     @Override
@@ -117,6 +119,10 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
             .build();
     }
 
+    private EsQuery query2094() {
+        return MatchQuery.of("state", "CLOSED");
+    }
+
     private EsQuery query1855() {
         return BooleanQuery.builder()
             .filter(Filter.builder()
@@ -140,6 +146,15 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         if (isEmpty(data.get("changeOrganisationRequestField"))) {
             throw new CaseMigrationSkippedException("Skipping case, changeOrganisationRequestField is empty");
         }
+        return new HashMap<>();
+    }
+
+    private Map<String, Object> run2094(Map<String, Object> data) {
+        // do nothing
+        if (isEmpty(data.get("orderCollection"))) {
+            throw new CaseMigrationSkippedException("Skipping case, orderCollection is empty");
+        }
+
         return new HashMap<>();
     }
 
