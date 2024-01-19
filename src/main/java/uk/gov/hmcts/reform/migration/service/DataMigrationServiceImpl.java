@@ -38,7 +38,6 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         "DFPL-CFV-Failure", this::triggerOnlyMigration,
         "DFPL-CFV-dry", this::triggerOnlyMigration,
         "DFPL-1934", this::run1934,
-        "DFPL-1957", this::triggerOnlyMigration,
         "DFPL-1993", this::triggerOnlyMigration,
         "DFPL-2033", this::triggerOnlyMigration,
         "DFPL-1233", this::run1233,
@@ -143,10 +142,15 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
             .build();
     }
 
-    private boolean processHearingDetails(Object hearingDetails, Predicate<Map<String, Object>> hearingDetailCheck) {
+    private boolean processHearingDetails(Object hearingDetails, Predicate<Map<String, Object>> checkHearingDetails) {
         if (Objects.nonNull(hearingDetails)) {
-            List<Map<String, Object>> hearingsMap = objectMapper.convertValue(hearingDetails, new TypeReference<>() {});
-            return hearingsMap.stream().anyMatch(hearingDetailCheck);
+            List<Map<String, Object>> detailsMap = objectMapper.convertValue(hearingDetails, new TypeReference<>() {});
+            return detailsMap.stream()
+                .map(hearingDetail -> hearingDetail.get("value"))
+                .filter(Objects::nonNull)
+                .filter(value -> value instanceof Map)
+                .map(value -> (Map<String, Object>) value)
+                .anyMatch(checkHearingDetails);
         }
         return false;
     }
