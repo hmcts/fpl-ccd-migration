@@ -171,6 +171,9 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
     }
 
     private boolean isOldVersionFinalOrder(Map<String, Object> order) {
+        if (isEmpty(order.get("type"))) {
+            return false;
+        }
         String orderType = order.get("type").toString();
         return isEmpty(order.get("dateTimeIssued")) &&
                (orderType.contains("Final") || orderType.contains("Emergency protection order"));
