@@ -142,7 +142,6 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
             .build();
     }
 
-    @SuppressWarnings("unchecked")
     private boolean processHearingDetails(Object hearingDetails, Predicate<Map<String, Object>> checkHearingDetails) {
         if (Objects.nonNull(hearingDetails)) {
             List<Map<String, Object>> detailsMap = objectMapper.convertValue(hearingDetails, new TypeReference<>() {});
@@ -157,6 +156,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
 
     private Map<String, Object> run1233(Map<String, Object> data) throws CaseMigrationSkippedException {
         Object hearingDetails = data.get("hearingDetails");
+        @SuppressWarnings("unchecked")
         boolean hasOtherTypeHearings = processHearingDetails(hearingDetails, hearingDetail ->
             "OTHER".equals(((Map<String, Object>) hearingDetail.get("value")).get("type")));
 
@@ -168,6 +168,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
 
     private Map<String, Object> run1233Rollback(Map<String, Object> data) throws CaseMigrationSkippedException {
         Object hearingDetails = data.get("hearingDetails");
+        @SuppressWarnings("unchecked")
         boolean hasNonEmptyTypeDetails = processHearingDetails(hearingDetails, hearingDetail ->
             Objects.nonNull(((Map<String, Object>) hearingDetail.get("value")).get("typeDetails")));
 
