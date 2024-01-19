@@ -141,6 +141,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
                 .build())
             .build();
     }
+
     @SuppressWarnings("unchecked")
     private boolean processHearingDetails(Object hearingDetails, Predicate<Map<String, Object>> checkHearingDetails) {
         if (Objects.nonNull(hearingDetails)) {
