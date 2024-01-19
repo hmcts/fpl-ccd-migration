@@ -117,19 +117,6 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
             .build();
     }
 
-    private EsQuery query1855() {
-        return BooleanQuery.builder()
-            .filter(Filter.builder()
-                .clauses(List.of(
-                    BooleanQuery.builder()
-                        .must(Must.of(ExistsQuery.of("data.court")))
-                        .must(Must.of(TermQuery.of("data.court.code", "270")))
-                        .build()
-                ))
-                .build())
-            .build();
-    }
-
     private EsQuery query1233() {
         return BooleanQuery.builder()
             .filter(Filter.builder()
