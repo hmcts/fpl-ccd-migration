@@ -15,7 +15,6 @@ import uk.gov.hmcts.reform.migration.query.Filter;
 import uk.gov.hmcts.reform.migration.query.MatchQuery;
 import uk.gov.hmcts.reform.migration.query.Must;
 import uk.gov.hmcts.reform.migration.query.MustNot;
-import uk.gov.hmcts.reform.migration.query.TermQuery;
 
 import java.util.*;
 import java.util.function.Function;
