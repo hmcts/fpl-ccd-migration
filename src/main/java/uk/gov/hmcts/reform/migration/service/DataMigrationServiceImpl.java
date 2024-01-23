@@ -158,7 +158,6 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
 
     private Map<String, Object> run1233Rollback(Map<String, Object> data) throws CaseMigrationSkippedException {
         Object hearingDetails = data.get("hearingDetails");
-        @SuppressWarnings("unchecked")
         boolean hasNonEmptyTypeDetails = processHearingDetails(hearingDetails, hearingDetail ->
             Objects.nonNull((hearingDetail.get("typeDetails"))));
 
