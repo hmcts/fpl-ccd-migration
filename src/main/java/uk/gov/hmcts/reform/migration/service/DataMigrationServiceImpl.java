@@ -147,9 +147,8 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
 
     private Map<String, Object> run1233(Map<String, Object> data) throws CaseMigrationSkippedException {
         Object hearingDetails = data.get("hearingDetails");
-        @SuppressWarnings("unchecked")
-        boolean hasOtherTypeHearings = processHearingDetails(hearingDetails, hearingDetail ->
-            "OTHER".equals(((Map<String, Object>) hearingDetail.get("value")).get("type")));
+        boolean hasOtherTypeHearings = processHearingDetails(hearingDetails, hearingDetail -> hearingDetail.get("type")
+            .equals("OTHER"));
 
         if (!hasOtherTypeHearings) {
             throw new CaseMigrationSkippedException("Skipping case - no hearings with type OTHER found.");
@@ -161,7 +160,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         Object hearingDetails = data.get("hearingDetails");
         @SuppressWarnings("unchecked")
         boolean hasNonEmptyTypeDetails = processHearingDetails(hearingDetails, hearingDetail ->
-            Objects.nonNull(((Map<String, Object>) hearingDetail.get("value")).get("typeDetails")));
+            Objects.nonNull((hearingDetail.get("typeDetails"))));
 
         if (!hasNonEmptyTypeDetails) {
             throw new CaseMigrationSkippedException("Skipping case - no hearings with type details set.");
