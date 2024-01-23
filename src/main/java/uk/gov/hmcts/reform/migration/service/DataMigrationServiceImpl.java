@@ -43,7 +43,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         "DFPL-1957", this::triggerOnlyMigration,
         "DFPL-2033", this::triggerOnlyMigration,
         "DFPL-2094", this::run2094,
-        "DFPL-2094-rollback", this::run2094
+        "DFPL-2094-rollback", this::run2094Rollback
     );
 
     private final Map<String, EsQuery> queries = Map.of(
@@ -168,6 +168,20 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
 
         if (!hasFinalOrder) {
             throw new CaseMigrationSkippedException("Skipping case, no final order found");
+        }
+
+        return new HashMap<>();
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> run2094Rollback(Map<String, Object> data) {
+        if (isEmpty(data.get("closeCaseTabField"))) {
+            throw new CaseMigrationSkippedException("Skipping case, closeCaseTabField is empty");
+        }
+
+        Map<String, Object> closeCaseTabField = (Map<String, Object>) data.get("closeCaseTabField");
+        if (isEmpty(closeCaseTabField.get("dateBackup"))) {
+            throw new CaseMigrationSkippedException("Skipping case, dateBackup is empty");
         }
 
         return new HashMap<>();
