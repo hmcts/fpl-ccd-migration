@@ -54,7 +54,8 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         "DFPL-CFV-Failure", this.topLevelFieldDoesNotExistQuery("hasBeenCFVMigrated"),
         "DFPL-CFV-dry", this.topLevelFieldDoesNotExistQuery("hasBeenCFVMigrated"),
         "DFPL-1934", this.query1934(),
-        "DFPL-1233", this.query1233()
+        "DFPL-1233", this.query1233(),
+        "DFPL-1233Rollback", this.query1233()
     );
 
     @Override
