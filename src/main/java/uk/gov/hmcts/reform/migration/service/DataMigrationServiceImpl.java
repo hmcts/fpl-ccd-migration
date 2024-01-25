@@ -41,8 +41,9 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         "DFPL-CFV-dry", this::triggerOnlyMigration,
         "DFPL-1934", this::run1934,
         "DFPL-1957", this::triggerOnlyMigration,
-        "DFPL-1993", this::triggerOnlyMigration,
-        "DFPL-2033", this::triggerOnlyMigration
+        "DFPL-2033", this::triggerOnlyMigration,
+        "DFPL-2094", this::run2094,
+        "DFPL-2094-rollback", this::run2094Rollback
     );
 
     private final Map<String, EsQuery> queries = Map.of(
@@ -51,7 +52,9 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         "DFPL-CFV-Rollback", this.topLevelFieldExistsQuery("hasBeenCFVMigrated"),
         "DFPL-CFV-Failure", this.topLevelFieldDoesNotExistQuery("hasBeenCFVMigrated"),
         "DFPL-CFV-dry", this.topLevelFieldDoesNotExistQuery("hasBeenCFVMigrated"),
-        "DFPL-1934", this.query1934()
+        "DFPL-1934", this.query1934(),
+        "DFPL-2094", this.query2094(),
+        "DFPL-2094-rollback", this.query2094()
     );
 
     @Override
@@ -117,6 +120,10 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
             .build();
     }
 
+    private EsQuery query2094() {
+        return MatchQuery.of("state", "CLOSED");
+    }
+
     private EsQuery query1855() {
         return BooleanQuery.builder()
             .filter(Filter.builder()
@@ -143,4 +150,40 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         return new HashMap<>();
     }
 
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> run2094(Map<String, Object> data) {
+        // do nothing
+        if (isEmpty(data.get("orderCollection"))) {
+            throw new CaseMigrationSkippedException("Skipping case, orderCollection is empty");
+        }
+
+        List<Map<String, Object>> orderCollection = (List<Map<String, Object>>) data.get("orderCollection");
+
+        // check new version of order
+        boolean hasFinalOrder = orderCollection.stream()
+            .map(orderElement -> (Map<String, Object>) orderElement.get("value"))
+            .anyMatch(order -> !isEmpty(order.get("dateTimeIssued"))
+                               && !isEmpty(order.get("markedFinal"))
+                               && "YES".equals(order.get("markedFinal").toString().toUpperCase()));
+
+        if (!hasFinalOrder) {
+            throw new CaseMigrationSkippedException("Skipping case, no final order found");
+        }
+
+        return new HashMap<>();
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> run2094Rollback(Map<String, Object> data) {
+        if (isEmpty(data.get("closeCaseTabField"))) {
+            throw new CaseMigrationSkippedException("Skipping case, closeCaseTabField is empty");
+        }
+
+        Map<String, Object> closeCaseTabField = (Map<String, Object>) data.get("closeCaseTabField");
+        if (isEmpty(closeCaseTabField.get("dateBackup"))) {
+            throw new CaseMigrationSkippedException("Skipping case, dateBackup is empty");
+        }
+
+        return new HashMap<>();
+    }
 }
