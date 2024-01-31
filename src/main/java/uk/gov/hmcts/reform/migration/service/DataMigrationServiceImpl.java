@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.migration.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -35,14 +37,12 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
     private final ObjectMapper objectMapper;
     private final Map<String, Function<Map<String, Object>, Map<String, Object>>> migrations = Map.of(
         "DFPL-log", this::triggerOnlyMigration,
-        "DFPL-CFV", this::triggerOnlyMigration,
-        "DFPL-CFV-Rollback", this::triggerOnlyMigration,
-        "DFPL-CFV-Failure", this::triggerOnlyMigration,
-        "DFPL-CFV-dry", this::triggerOnlyMigration,
         "DFPL-1934", this::run1934,
         "DFPL-1956", this::triggerOnlyMigration,
         "DFPL-2094", this::run2094,
-        "DFPL-2094-rollback", this::run2094Rollback
+        "DFPL-2094-rollback", this::run2094Rollback,
+        "DFPL-1233", this::run1233,
+        "DFPL-1233Rollback", this::run1233Rollback
     );
 
     private final Map<String, EsQuery> queries = Map.of(
@@ -53,7 +53,9 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         "DFPL-CFV-dry", this.topLevelFieldDoesNotExistQuery("hasBeenCFVMigrated"),
         "DFPL-1934", this.query1934(),
         "DFPL-2094", this.query2094(),
-        "DFPL-2094-rollback", this.query2094()
+        "DFPL-2094-rollback", this.query2094(),
+        "DFPL-1233", this.query1233(),
+        "DFPL-1233Rollback", this.query1233()
     );
 
     @Override
@@ -136,6 +138,18 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
             .build();
     }
 
+    private EsQuery query1233() {
+        return BooleanQuery.builder()
+            .filter(Filter.builder()
+                .clauses(List.of(
+                    BooleanQuery.builder()
+                        .must(Must.of(ExistsQuery.of("data.hearingDetails")))
+                        .build()
+                ))
+                .build())
+            .build();
+    }
+
     private Map<String, Object> triggerOnlyMigration(Map<String, Object> data) {
         // do nothing
         return new HashMap<>();
@@ -183,6 +197,41 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
             throw new CaseMigrationSkippedException("Skipping case, dateBackup is empty");
         }
 
+        return new HashMap<>();
+    }
+
+    @SuppressWarnings("unchecked")
+    private boolean processHearingDetails(Object hearingDetails, Predicate<Map<String, Object>> checkHearingDetails) {
+        if (Objects.nonNull(hearingDetails)) {
+            List<Map<String, Object>> detailsMap = objectMapper.convertValue(hearingDetails, new TypeReference<>() {});
+            return detailsMap.stream()
+                .map(hearingDetail -> hearingDetail.get("value"))
+                .filter(Objects::nonNull)
+                .map(value -> (Map<String, Object>) value)
+                .anyMatch(checkHearingDetails);
+        }
+        return false;
+    }
+
+    private Map<String, Object> run1233(Map<String, Object> data) throws CaseMigrationSkippedException {
+        Object hearingDetails = data.get("hearingDetails");
+        boolean hasOtherTypeHearings = processHearingDetails(hearingDetails, hearingDetail -> hearingDetail.get("type")
+            .equals("OTHER"));
+
+        if (!hasOtherTypeHearings) {
+            throw new CaseMigrationSkippedException("Skipping case - no hearings with type OTHER found.");
+        }
+        return new HashMap<>();
+    }
+
+    private Map<String, Object> run1233Rollback(Map<String, Object> data) throws CaseMigrationSkippedException {
+        Object hearingDetails = data.get("hearingDetails");
+        boolean hasNonEmptyTypeDetails = processHearingDetails(hearingDetails, hearingDetail ->
+            Objects.nonNull((hearingDetail.get("typeDetails"))));
+
+        if (!hasNonEmptyTypeDetails) {
+            throw new CaseMigrationSkippedException("Skipping case - no hearings with type details set.");
+        }
         return new HashMap<>();
     }
 }
