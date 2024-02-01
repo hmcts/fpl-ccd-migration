@@ -42,7 +42,8 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         "DFPL-2094", this::run2094,
         "DFPL-2094-rollback", this::run2094Rollback,
         "DFPL-1233", this::run1233,
-        "DFPL-1233Rollback", this::run1233Rollback
+        "DFPL-1233Rollback", this::run1233Rollback,
+        "DFPL-1882", this::run1882
     );
 
     private final Map<String, EsQuery> queries = Map.of(
@@ -55,7 +56,8 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         "DFPL-2094", this.query2094(),
         "DFPL-2094-rollback", this.query2094(),
         "DFPL-1233", this.query1233(),
-        "DFPL-1233Rollback", this.query1233()
+//        "DFPL-1233Rollback", this.query1233(),
+        "DFPL-1882", this.query1882()
     );
 
     @Override
@@ -150,6 +152,19 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
             .build();
     }
 
+    private EsQuery query1882() {
+        return BooleanQuery.builder()
+            .filter(Filter.builder()
+                .clauses(List.of(
+                    BooleanQuery.builder()
+                        .must(Must.of(TermQuery.of("allocatedJudge.judgeTitle", "OTHER")))
+                        .must(Must.of(TermQuery.of("allocatedJudge.otherTitle", "Unknown")))
+                        .build()
+                ))
+                .build())
+            .build();
+    }
+
     private Map<String, Object> triggerOnlyMigration(Map<String, Object> data) {
         // do nothing
         return new HashMap<>();
@@ -231,6 +246,17 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
 
         if (!hasNonEmptyTypeDetails) {
             throw new CaseMigrationSkippedException("Skipping case - no hearings with type details set.");
+        }
+        return new HashMap<>();
+    }
+
+    private Map<String, Object> run1882(Map<String, Object> data) throws CaseMigrationSkippedException {
+        Object hearingDetails = data.get("hearingDetails");
+        boolean hasOtherTypeHearings = processHearingDetails(hearingDetails, hearingDetail -> hearingDetail.get("type")
+            .equals("OTHER"));
+
+        if (!hasOtherTypeHearings) {
+            throw new CaseMigrationSkippedException("Skipping case - no hearings with type OTHER found.");
         }
         return new HashMap<>();
     }
