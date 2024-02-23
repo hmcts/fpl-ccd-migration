@@ -2,6 +2,8 @@ package uk.gov.hmcts.reform.migration.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +45,10 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         "DFPL-2094-rollback", this::run2094Rollback,
         "DFPL-1233", this::run1233,
         "DFPL-1233Rollback", this::run1233Rollback,
-        "DFPL-1882", this::triggerOnlyMigration
+        "DFPL-1882", this::triggerOnlyMigration,
+        "DFPL-2051", this::triggerOnlyMigration,
+        "DFPL-2148", this::triggerOnlyMigration,
+        "DFPL-2149", this::triggerOnlyMigration
     );
 
     private final Map<String, EsQuery> queries = Map.of(
