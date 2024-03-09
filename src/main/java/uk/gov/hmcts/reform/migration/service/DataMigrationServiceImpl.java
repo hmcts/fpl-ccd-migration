@@ -48,7 +48,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
     );
 
     private final Map<String, EsQuery> queries = Map.of(
-        "DFPL-log", this.query1934(),
+        "DFPL-log", this.topLevelFieldExistsQuery("caseName"),
         "DFPL-CFV", this.topLevelFieldDoesNotExistQuery("hasBeenCFVMigrated"),
         "DFPL-CFV-Rollback", this.topLevelFieldExistsQuery("hasBeenCFVMigrated"),
         "DFPL-CFV-Failure", this.topLevelFieldDoesNotExistQuery("hasBeenCFVMigrated"),
