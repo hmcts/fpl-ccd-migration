@@ -78,10 +78,12 @@ class CaseMigrationProcessorTest {
             idamRepository,
             DEFAUT_QUERY_SIZE,
             DEFAULT_THREAD_LIMIT,
+            0,
             MIGRATION_ID,
             CASE_JURISDICTION,
             CASE_TYPE,
-            false);
+            false,
+            120);
     }
 
     @Test
@@ -180,10 +182,12 @@ class CaseMigrationProcessorTest {
             idamRepository,
             10,
             DEFAULT_THREAD_LIMIT,
+            0,
             "Test",
             CASE_JURISDICTION,
             null,
-            false);
+            false,
+            120);
         assertThatThrownBy(() -> caseMigrationProcessor.migrateQuery(BooleanQuery.builder().build()))
             .isInstanceOf(NullPointerException.class);
     }
@@ -195,10 +199,12 @@ class CaseMigrationProcessorTest {
             idamRepository,
             10,
             DEFAULT_THREAD_LIMIT,
+            0,
             "Test",
             CASE_JURISDICTION,
             CASE_TYPE,
-            false);
+            false,
+            120);
         assertThatThrownBy(() -> caseMigrationProcessor.migrateQuery(null))
             .isInstanceOf(NullPointerException.class);
     }
@@ -210,10 +216,12 @@ class CaseMigrationProcessorTest {
             idamRepository,
             10,
             DEFAULT_THREAD_LIMIT,
+            0,
             null,
             CASE_JURISDICTION,
             CASE_TYPE,
-            false);
+            false,
+            120);
         assertThatThrownBy(() -> caseMigrationProcessor.migrateQuery(BooleanQuery.builder().build()))
             .isInstanceOf(NullPointerException.class);
     }
