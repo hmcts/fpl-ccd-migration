@@ -205,7 +205,7 @@ public class CaseMigrationProcessor {
         // Finalise + wait for the queue to finish processing
         boolean timedOut = !threadPool.awaitQuiescence(timeout, SECONDS);
         if (timedOut) {
-            log.error("Timed out after {} minutes", timeout);
+            log.error("Timed out after {} seconds", timeout);
         }
 
         publishStats(startTime);
@@ -241,7 +241,7 @@ public class CaseMigrationProcessor {
         // Wait for the threadpool to finish
         boolean timedOut = !threadPool.awaitQuiescence(timeout, SECONDS);
         if (timedOut) {
-            log.error("Timed out after {} minutes", timeout);
+            log.error("Timed out after {} seconds", timeout);
         }
 
         publishStats(startTime);
