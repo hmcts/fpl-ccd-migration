@@ -83,7 +83,7 @@ class CaseMigrationProcessorTest {
             CASE_JURISDICTION,
             CASE_TYPE,
             false,
-            120);
+            300);
     }
 
     @Test
@@ -187,7 +187,7 @@ class CaseMigrationProcessorTest {
             CASE_JURISDICTION,
             null,
             false,
-            120);
+            300);
         assertThatThrownBy(() -> caseMigrationProcessor.migrateQuery(BooleanQuery.builder().build()))
             .isInstanceOf(NullPointerException.class);
     }
@@ -204,9 +204,56 @@ class CaseMigrationProcessorTest {
             CASE_JURISDICTION,
             CASE_TYPE,
             false,
-            120);
+            300);
         assertThatThrownBy(() -> caseMigrationProcessor.migrateQuery(null))
             .isInstanceOf(NullPointerException.class);
+    }
+
+    @Test
+    void shouldTimeoutIfSet() {
+        when(idamRepository.generateUserToken()).thenReturn(USER_TOKEN);
+        CaseDetails details = mock(CaseDetails.class);
+        when(details.getId()).thenReturn(1L);
+        CaseDetails details1 = mock(CaseDetails.class);
+        when(details1.getId()).thenReturn(2L);
+        List<CaseDetails> caseDetails = new ArrayList<>();
+        caseDetails.add(details);
+        caseDetails.add(details1);
+
+        caseMigrationProcessor = new CaseMigrationProcessor(coreCaseDataService,
+            elasticSearchRepository,
+            idamRepository,
+            DEFAUT_QUERY_SIZE,
+            1,                  // single thread - one migration at a time
+            20,                 // 20 seconds between each migration
+            MIGRATION_ID,
+            CASE_JURISDICTION,
+            CASE_TYPE,
+            false,
+            10);                // timeout in 10 seconds, should only migrate one case
+
+
+        when(elasticSearchRepository.search(USER_TOKEN, CASE_TYPE, QUERY, DEFAUT_QUERY_SIZE, null))
+            .thenReturn(caseDetails);
+        when(elasticSearchRepository.searchResultsSize(USER_TOKEN, CASE_TYPE, QUERY)).thenReturn(2);
+
+        when(coreCaseDataService.update(eq(USER_TOKEN), eq(EVENT_ID), eq(EVENT_SUMMARY), eq(EVENT_DESCRIPTION),
+            eq(CASE_TYPE), any(), eq(MIGRATION_ID)))
+            .thenReturn(details);
+        caseMigrationProcessor.migrateQuery(QUERY);
+
+        // Ensure only one case migrated
+        verify(coreCaseDataService, times(1))
+            .update(eq(USER_TOKEN),
+                eq(EVENT_ID),
+                eq(EVENT_SUMMARY),
+                eq(EVENT_DESCRIPTION),
+                eq(CASE_TYPE),
+                caseDetailsArgumentCaptor.capture(),
+                eq(MIGRATION_ID));
+
+        assertThat(caseDetailsArgumentCaptor.getAllValues().stream().map(CaseDetails::getId))
+            .containsExactly(1L);
     }
 
     @Test
@@ -221,7 +268,7 @@ class CaseMigrationProcessorTest {
             CASE_JURISDICTION,
             CASE_TYPE,
             false,
-            120);
+            300);
         assertThatThrownBy(() -> caseMigrationProcessor.migrateQuery(BooleanQuery.builder().build()))
             .isInstanceOf(NullPointerException.class);
     }

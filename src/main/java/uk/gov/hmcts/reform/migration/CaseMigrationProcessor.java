@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 import static java.math.RoundingMode.UP;
 import static java.time.LocalDateTime.now;
 import static java.util.Objects.requireNonNull;
-import static java.util.concurrent.TimeUnit.MINUTES;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.springframework.util.ObjectUtils.isEmpty;
 
 @Slf4j
@@ -73,13 +73,13 @@ public class CaseMigrationProcessor {
                                   @Value("${migration.jurisdiction}") String jurisdiction,
                                   @Value("${migration.caseType}") String caseType,
                                   @Value("${case-migration.retry_failures}") boolean retryFailures,
-                                  @Value("${case-migration.timeout:120") int timeout) {
+                                  @Value("${case-migration.timeout:7200") int timeout) {
         this.coreCaseDataService = coreCaseDataService;
         this.elasticSearchRepository = elasticSearchRepository;
         this.idamRepository = idamRepository;
         this.defaultQuerySize = defaultQuerySize;
         this.defaultThreadLimit = defaultThreadLimit;
-        this.defaultThreadDelay = defaultThreadDelay;
+        this.defaultThreadDelay = defaultThreadDelay * 1000;
         this.migrationId = migrationId;
         this.jurisdiction = jurisdiction;
         this.caseType = caseType;
@@ -203,7 +203,7 @@ public class CaseMigrationProcessor {
         finishedLoading = true;
 
         // Finalise + wait for the queue to finish processing
-        boolean timedOut = !threadPool.awaitQuiescence(timeout, MINUTES);
+        boolean timedOut = !threadPool.awaitQuiescence(timeout, SECONDS);
         if (timedOut) {
             log.error("Timed out after {} minutes", timeout);
         }
@@ -239,7 +239,7 @@ public class CaseMigrationProcessor {
         this.finishedLoading = true;
 
         // Wait for the threadpool to finish
-        boolean timedOut = !threadPool.awaitQuiescence(timeout, MINUTES);
+        boolean timedOut = !threadPool.awaitQuiescence(timeout, SECONDS);
         if (timedOut) {
             log.error("Timed out after {} minutes", timeout);
         }
