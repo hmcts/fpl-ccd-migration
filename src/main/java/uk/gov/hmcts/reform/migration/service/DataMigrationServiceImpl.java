@@ -43,22 +43,34 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         "DFPL-2094-rollback", this::run2094Rollback,
         "DFPL-1233", this::run1233,
         "DFPL-1233Rollback", this::run1233Rollback,
-        "DFPL-2051", this::triggerOnlyMigration,
-        "DFPL-2205", this::triggerOnlyMigration
-    );
+        "DFPL-1930", this::triggerOnlyMigration,
+        "DFPL-AM", this::triggerOnlyMigration,
+        "DFPL-AM-Rollback", this::triggerOnlyMigration
+        );
 
     private final Map<String, EsQuery> queries = Map.of(
         "DFPL-log", this.query1934(),
-        "DFPL-CFV", this.topLevelFieldDoesNotExistQuery("hasBeenCFVMigrated"),
-        "DFPL-CFV-Rollback", this.topLevelFieldExistsQuery("hasBeenCFVMigrated"),
-        "DFPL-CFV-Failure", this.topLevelFieldDoesNotExistQuery("hasBeenCFVMigrated"),
-        "DFPL-CFV-dry", this.topLevelFieldDoesNotExistQuery("hasBeenCFVMigrated"),
         "DFPL-1934", this.query1934(),
         "DFPL-2094", this.query2094(),
         "DFPL-2094-rollback", this.query2094(),
         "DFPL-1233", this.query1233(),
-        "DFPL-1233Rollback", this.query1233()
+        "DFPL-1233Rollback", this.query1233(),
+        "DFPL-AM", this.queryAM(),
+        "DFPL-AM-Rollback", this.queryAM()
     );
+
+    private EsQuery queryAM() {
+        final MatchQuery openCases = MatchQuery.of("state", "Open");
+        final MatchQuery deletedCases = MatchQuery.of("state", "Deleted");
+        final MatchQuery returnedCases = MatchQuery.of("state", "RETURNED");
+        final MatchQuery closedCases = MatchQuery.of("state", "CLOSED");
+
+        return BooleanQuery.builder()
+            .mustNot(MustNot.builder()
+                .clauses(List.of(openCases, deletedCases, returnedCases, closedCases))
+                .build())
+            .build();
+    }
 
     @Override
     public void validateMigrationId(String migrationId) {
