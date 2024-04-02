@@ -232,7 +232,11 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         boolean hasOtherTypeHearings = processHearingDetails(hearingDetails, hearingDetail -> hearingDetail.get("type")
             .equals("OTHER"));
 
-        if (!hasOtherTypeHearings) {
+        Object cancelledHearingDetails = data.get("cancelledHearingDetails");
+        boolean hasOtherTypeCancelledHearings = processHearingDetails(cancelledHearingDetails, hearingDetail ->
+            "OTHER".equals(hearingDetail.get("type")));
+
+        if (!hasOtherTypeHearings && !hasOtherTypeCancelledHearings) {
             throw new CaseMigrationSkippedException("Skipping case - no hearings with type OTHER found.");
         }
         return new HashMap<>();
@@ -243,7 +247,11 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         boolean hasNonEmptyTypeDetails = processHearingDetails(hearingDetails, hearingDetail ->
             Objects.nonNull((hearingDetail.get("typeDetails"))));
 
-        if (!hasNonEmptyTypeDetails) {
+        Object cancelledHearingDetails = data.get("cancelledHearingDetails");
+        boolean hasNonEmptyTypeCancelledDetails = processHearingDetails(cancelledHearingDetails, hearingDetail ->
+            Objects.nonNull(hearingDetail.get("typeDetails")));
+
+        if (!hasNonEmptyTypeDetails && !hasNonEmptyTypeCancelledDetails) {
             throw new CaseMigrationSkippedException("Skipping case - no hearings with type details set.");
         }
         return new HashMap<>();
