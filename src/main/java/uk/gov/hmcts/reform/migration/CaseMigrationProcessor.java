@@ -68,12 +68,12 @@ public class CaseMigrationProcessor {
                                   IdamRepository idamRepository,
                                   @Value("${default.query.size}") int defaultQuerySize,
                                   @Value("${default.thread.limit:8}") int defaultThreadLimit,
-                                  @Value("${default.thread.delay:0") int defaultThreadDelay,
+                                  @Value("${default.thread.delay:0}") int defaultThreadDelay,
                                   @Value("${case-migration.processing.id}") String migrationId,
                                   @Value("${migration.jurisdiction}") String jurisdiction,
                                   @Value("${migration.caseType}") String caseType,
                                   @Value("${case-migration.retry_failures}") boolean retryFailures,
-                                  @Value("${case-migration.timeout:7200") int timeout) {
+                                  @Value("${case-migration.timeout:7200}") int timeout) {
         this.coreCaseDataService = coreCaseDataService;
         this.elasticSearchRepository = elasticSearchRepository;
         this.idamRepository = idamRepository;
