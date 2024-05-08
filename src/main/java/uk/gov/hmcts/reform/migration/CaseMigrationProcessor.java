@@ -91,6 +91,9 @@ public class CaseMigrationProcessor {
     }
 
     public void setupProcessor(boolean firstTry) {
+        log.info("Setting up migration tool, timeout: {}s, thread delay: {}s, num threads: {}",
+            this.timeout, this.defaultThreadDelay, this.defaultThreadLimit);
+
         this.startTime = now();
         this.getFailedCases().clear();
         this.getMigratedCases().clear();
