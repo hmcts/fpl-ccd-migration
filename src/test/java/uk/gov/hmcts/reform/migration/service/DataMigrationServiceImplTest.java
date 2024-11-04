@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.migration.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,7 +26,7 @@ class DataMigrationServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        dataMigrationService = new DataMigrationServiceImpl(new ObjectMapper());
+        dataMigrationService = new DataMigrationServiceImpl();
 
         Map<String, String> court = Map.of("code", "344",
             "name", "Family Court sitting at Swansea",
