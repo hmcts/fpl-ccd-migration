@@ -46,7 +46,7 @@ class DataMigrationServiceImplTest {
 
     @Test
     void shouldThrowExceptionWhenMigrationKeyIsNotSet() {
-        assertThatThrownBy(() -> dataMigrationService.migrate(Map.of(), null))
+        assertThatThrownBy(() -> dataMigrationService.migrate(caseDetails, null))
             .isInstanceOf(NullPointerException.class)
             .hasMessage("Migration ID must not be null");
     }
@@ -54,7 +54,7 @@ class DataMigrationServiceImplTest {
     @Test
     void shouldThrowExceptionWhenMigrationKeyIsInvalid() {
         Map<String, Object> data = new HashMap<>();
-        assertThatThrownBy(() -> dataMigrationService.migrate(data, INVALID_MIGRATION_ID))
+        assertThatThrownBy(() -> dataMigrationService.migrate(caseDetails, INVALID_MIGRATION_ID))
             .isInstanceOf(NoSuchElementException.class)
             .hasMessage("No migration mapped to " + INVALID_MIGRATION_ID);
         assertThat(data.get(MIGRATION_ID_KEY)).isNull();

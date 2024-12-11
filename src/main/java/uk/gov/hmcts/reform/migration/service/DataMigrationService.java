@@ -12,7 +12,7 @@ public interface DataMigrationService<T> {
 
     Predicate<CaseDetails> accepts();
 
-    T migrate(Map<String, Object> data, String migrationId);
+    T migrate(CaseDetails caseDetails, String migrationId);
 
     void validateMigrationId(String migrationId);
 
