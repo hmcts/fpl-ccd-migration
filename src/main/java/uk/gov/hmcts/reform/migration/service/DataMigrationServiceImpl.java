@@ -109,16 +109,22 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         return new HashMap<>();
     }
 
-    private Map<String, Object> triggerTTLMigration(CaseDetails caseDetails) {
-        HashMap<String, Object> ttlMap = new HashMap();
+    public Map<String, Object> triggerTTLMigration(CaseDetails caseDetails) {
+        HashMap<String, Object> ttlMap = new HashMap<>();
         ttlMap.put("OverrideTTL", null);
         ttlMap.put("Suspend", "NO");
 
         ObjectMapper objectMapper = new ObjectMapper();
 
         switch(caseDetails.getState()){
+            case "Deleted":
+                //Check for deleted from returned
+                break;
+            case "Returned":
+                //Check for Returned from deleted
+                break;
             case "Open":
-                ttlMap.put("SystemTTL", caseDetails.getCreatedDate().plusDays(180));
+                ttlMap.put("SystemTTL", caseDetails.getCreatedDate().toLocalDate().plusDays(180));
                 break;
             case "Submitted", "Gatekeeping", "GATEKEEPING_LISTING":
                 Object dateSubmitted = caseDetails.getData().get("dateSubmitted");
@@ -158,6 +164,24 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         }
 
         HashMap<String, Object> updates = new HashMap<>();
+        updates.put("TTL", ttlMap);
+        return updates;
+    }
+
+    public Map<String, Object> triggerSuspendTTLMigration(CaseDetails caseDetails) {
+        HashMap<String, Object> updates = new HashMap<>();
+        HashMap<String, Object> ttlMap = new HashMap<>();
+
+        if (caseDetails.getData().containsKey("TTL")) {
+            ttlMap.put("OverrideTTL", caseDetails.getData().get("OverrideTTL"));
+            ttlMap.put("Suspend", "YES");
+            ttlMap.put("SystemTTL", caseDetails.getData().get("SystemTTL"));
+        } else {
+            ttlMap.put("OverrideTTL", null);
+            ttlMap.put("Suspend", "YES");
+            ttlMap.put("SystemTTL", null);
+        }
+
         updates.put("TTL", ttlMap);
         return updates;
     }
