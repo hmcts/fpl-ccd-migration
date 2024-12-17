@@ -36,7 +36,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
     public static final String COURT = "court";
     private final Map<String, Function<CaseDetails, Map<String, Object>>> migrations = Map.of(
         "DFPL-log", this::triggerOnlyMigration,
-        "DFPL-2572", this::triggerTTLMigration
+        "DFPL-2572", this::triggerTtlMigration
         );
 
     private final Map<String, EsQuery> queries = Map.of(
@@ -109,7 +109,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         return new HashMap<>();
     }
 
-    public Map<String, Object> triggerTTLMigration(CaseDetails caseDetails) {
+    public Map<String, Object> triggerTtlMigration(CaseDetails caseDetails) {
         HashMap<String, Object> ttlMap = new HashMap<>();
         ttlMap.put("OverrideTTL", null);
         ttlMap.put("Suspend", "NO");
@@ -168,7 +168,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         return updates;
     }
 
-    public Map<String, Object> triggerSuspendMigrationTTL(CaseDetails caseDetails) {
+    public Map<String, Object> triggerSuspendMigrationTtl(CaseDetails caseDetails) {
         HashMap<String, Object> updates = new HashMap<>();
         HashMap<String, Object> ttlMap = new HashMap<>();
 

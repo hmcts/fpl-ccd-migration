@@ -63,7 +63,7 @@ class DataMigrationServiceImplTest {
     }
 
     @Test
-    void shouldPopulateTTLOnOpenCase() {
+    void shouldPopulateTtlOnOpenCase() {
         LocalDateTime now = LocalDateTime.now();
         LocalDate expectedSystemTTL = now.toLocalDate().plusDays(180);
         Map<String, Object> expectedTTL = new HashMap<>();
@@ -75,11 +75,11 @@ class DataMigrationServiceImplTest {
             .createdDate(now)
             .state("Open").build();
 
-        assertThat(dataMigrationService.triggerTTLMigration(caseDetails).equals(expectedTTL));
+        assertThat(dataMigrationService.triggerTtlMigration(caseDetails).equals(expectedTTL));
     }
 
     @Test
-    void shouldPopulateTTLOnSubmittedCase() {
+    void shouldPopulateTtlOnSubmittedCase() {
         LocalDate now = LocalDate.now();
         LocalDate expectedSystemTTL = now.plusDays(6575);
         Map<String, Object> expectedTTL = new HashMap<>();
@@ -94,11 +94,11 @@ class DataMigrationServiceImplTest {
             .data(caseData)
             .state("Submitted").build();
 
-        assertThat(dataMigrationService.triggerTTLMigration(caseDetails).equals(expectedTTL));
+        assertThat(dataMigrationService.triggerTtlMigration(caseDetails).equals(expectedTTL));
     }
 
     @Test
-    void shouldPopulateTTLOnClosedCase() {
+    void shouldPopulateTtlOnClosedCase() {
         LocalDate now = LocalDate.now();
         LocalDate expectedSystemTTL = now.plusDays(6575);
 
@@ -117,11 +117,11 @@ class DataMigrationServiceImplTest {
             .data(caseData)
             .state("CLOSED").build();
 
-        assertThat(dataMigrationService.triggerTTLMigration(caseDetails).equals(expectedTTL));
+        assertThat(dataMigrationService.triggerTtlMigration(caseDetails).equals(expectedTTL));
     }
 
     /*@Test
-    void shouldPopulateTTLOnCaseManagementCase() {
+    void shouldPopulateTtlOnCaseManagementCase() {
         LocalDate now = LocalDate.now();
         LocalDate expectedSystemTTL = now.plusDays(6575);
 
@@ -144,7 +144,7 @@ class DataMigrationServiceImplTest {
     }*/
 
     @Test
-    void shouldSetSuspendOnTTLCaseWithExistingTTL(){
+    void shouldSetSuspendOnTtlCaseWithExistingTtl(){
         LocalDate now = LocalDate.now();
         LocalDate expectedSystemTTL = now.plusDays(6575);
 
@@ -165,11 +165,11 @@ class DataMigrationServiceImplTest {
             .data(caseData)
             .state("CASE_MANAGEMENT").build();
 
-        assertThat(dataMigrationService.triggerSuspendMigrationTTL(caseDetails).equals(expectedTTL));
+        assertThat(dataMigrationService.triggerSuspendMigrationTtl(caseDetails).equals(expectedTTL));
     }
 
     @Test
-    void shouldSetSuspendOnTTLCaseWithoutExistingTTL(){
+    void shouldSetSuspendOnTTLCaseWithoutExistingTtl(){
         Map<String, Object> expectedTTL = new HashMap<>();
         expectedTTL.put("OverrideTTL", null);
         expectedTTL.put("Suspend", "YES");
@@ -181,6 +181,6 @@ class DataMigrationServiceImplTest {
             .data(caseData)
             .state("CASE_MANAGEMENT").build();
 
-        assertThat(dataMigrationService.triggerSuspendMigrationTTL(caseDetails).equals(expectedTTL));
+        assertThat(dataMigrationService.triggerSuspendMigrationTtl(caseDetails).equals(expectedTTL));
     }
 }
