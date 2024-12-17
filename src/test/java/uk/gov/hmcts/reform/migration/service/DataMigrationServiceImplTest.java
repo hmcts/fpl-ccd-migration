@@ -165,7 +165,7 @@ class DataMigrationServiceImplTest {
             .data(caseData)
             .state("CASE_MANAGEMENT").build();
 
-        assertThat(dataMigrationService.triggerSuspendTTLMigration(caseDetails).equals(expectedTTL));
+        assertThat(dataMigrationService.triggerSuspendMigrationTTL(caseDetails).equals(expectedTTL));
     }
 
     @Test
@@ -181,6 +181,6 @@ class DataMigrationServiceImplTest {
             .data(caseData)
             .state("CASE_MANAGEMENT").build();
 
-        assertThat(dataMigrationService.triggerSuspendTTLMigration(caseDetails).equals(expectedTTL));
+        assertThat(dataMigrationService.triggerSuspendMigrationTTL(caseDetails).equals(expectedTTL));
     }
 }

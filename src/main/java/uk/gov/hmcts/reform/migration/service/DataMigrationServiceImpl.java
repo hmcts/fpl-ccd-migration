@@ -116,7 +116,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
 
         ObjectMapper objectMapper = new ObjectMapper();
 
-        switch(caseDetails.getState()){
+        switch (caseDetails.getState()) {
             case "Deleted":
                 //Check for deleted from returned
                 break;
@@ -159,8 +159,8 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
                 ttlMap.put("SystemTTL", convertValueToLocalDate(lastIssuedDate).plusDays(6575));
                 break;
             default:
-                throw new AssertionError(format("Migration 2572, case with id: %s " +
-                    "not in valid state for TTL migration", caseDetails.getId()));
+                throw new AssertionError(format("Migration 2572, case with id: %s "
+                    + "not in valid state for TTL migration", caseDetails.getId()));
         }
 
         HashMap<String, Object> updates = new HashMap<>();
@@ -168,7 +168,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         return updates;
     }
 
-    public Map<String, Object> triggerSuspendTTLMigration(CaseDetails caseDetails) {
+    public Map<String, Object> triggerSuspendMigrationTTL(CaseDetails caseDetails) {
         HashMap<String, Object> updates = new HashMap<>();
         HashMap<String, Object> ttlMap = new HashMap<>();
 
