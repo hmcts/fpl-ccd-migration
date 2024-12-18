@@ -5,12 +5,16 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
+import uk.gov.hmcts.reform.fpl.model.common.Element;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -120,7 +124,7 @@ class DataMigrationServiceImplTest {
         assertThat(dataMigrationService.triggerTtlMigration(caseDetails).equals(expectedTtl));
     }
 
-    /*@Test
+    @Test
     void shouldPopulateTtlOnCaseManagementCase() {
         LocalDate now = LocalDate.now();
         LocalDate expectedSystemTtl = now.plusDays(6575);
@@ -130,8 +134,16 @@ class DataMigrationServiceImplTest {
         expectedTtl.put("Suspend", "NO");
         expectedTtl.put("SystemTTL", expectedSystemTtl);
 
-        Map<String, Object> orderCollection = new HashMap<>();
-        orderCollection.put("date", now.toString());
+        Map<String, Object> order1 = new HashMap<>();
+        order1.put("approvalDate", now.minusDays(2).toString());
+        Map<String, Object> order2 = new HashMap<>();
+        order2.put("approvalDate", now.toString());
+        Map<String, Object> order3 = new HashMap<>();
+        order3.put("approvalDate", now.minusDays(4).toString());
+
+        List<Element<Map<String, Object>>> orderCollection = List.of(new Element<>(UUID.randomUUID(), order1),
+            new Element<>(UUID.randomUUID(), order2),
+            new Element<>(UUID.randomUUID(), order3));
 
         Map<String, Object> caseData = new HashMap<>();
         caseData.put("orderCollection", orderCollection);
@@ -140,8 +152,8 @@ class DataMigrationServiceImplTest {
             .data(caseData)
             .state("CASE_MANAGEMENT").build();
 
-        assertThat(dataMigrationService.triggerTTLMigration(caseDetails).equals(expectedTtl));
-    }*/
+        assertThat(dataMigrationService.triggerTtlMigration(caseDetails).equals(expectedTtl));
+    }
 
     @Test
     void shouldSetSuspendOnTtlCaseWithExistingTtl() {

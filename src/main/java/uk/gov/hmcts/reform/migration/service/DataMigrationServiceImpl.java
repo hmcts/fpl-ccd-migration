@@ -117,16 +117,10 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         ObjectMapper objectMapper = new ObjectMapper();
 
         switch (caseDetails.getState()) {
-            case "Deleted":
-                //Check for deleted from returned
-                break;
-            case "Returned":
-                //Check for Returned from deleted
-                break;
             case "Open":
                 ttlMap.put("SystemTTL", caseDetails.getCreatedDate().toLocalDate().plusDays(180));
                 break;
-            case "Submitted", "Gatekeeping", "GATEKEEPING_LISTING":
+            case "Submitted", "Gatekeeping", "GATEKEEPING_LISTING", "Returned":
                 Object dateSubmitted = caseDetails.getData().get("dateSubmitted");
 
                 ttlMap.put("SystemTTL", convertValueToLocalDate(dateSubmitted).plusDays(6575));
