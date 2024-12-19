@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.fpl.model.common.Element;
@@ -112,18 +113,19 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
     public Map<String, Object> triggerTtlMigration(CaseDetails caseDetails) {
         HashMap<String, Object> ttlMap = new HashMap<>();
         ttlMap.put("OverrideTTL", null);
-        ttlMap.put("Suspend", "NO");
+        ttlMap.put("Suspended", "No");
 
         ObjectMapper objectMapper = new ObjectMapper();
 
         switch (caseDetails.getState()) {
             case "Open":
-                ttlMap.put("SystemTTL", caseDetails.getCreatedDate().toLocalDate().plusDays(180));
+                ttlMap.put("SystemTTL", addDaysAndConvertToString(
+                    caseDetails.getCreatedDate().toLocalDate(), 180));
                 break;
             case "Submitted", "Gatekeeping", "GATEKEEPING_LISTING", "Returned":
-                Object dateSubmitted = caseDetails.getData().get("dateSubmitted");
+                LocalDate dateSubmitted = convertValueToLocalDate(caseDetails.getData().get("dateSubmitted"));
 
-                ttlMap.put("SystemTTL", convertValueToLocalDate(dateSubmitted).plusDays(6575));
+                ttlMap.put("SystemTTL", addDaysAndConvertToString(dateSubmitted, 6575));
                 break;
             case "CLOSED":
                 Map<String, Object> closedCase = objectMapper.convertValue(
@@ -136,21 +138,27 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
                 ttlMap.put("SystemTTL", convertValueToLocalDate(closedCaseDate).plusDays(6575));
                 break;
             case "CASE_MANAGEMENT", "FINAL_HEARING":
-                List<Element<Map<String,Object>>> orderCollection = objectMapper.convertValue(
-                    caseDetails.getData().get("orderCollection"),
-                    new TypeReference<List<Element<Map<String, Object>>>>() {}
-                );
+                if (caseDetails.getData().get("orderCollection") == null) {
+                    dateSubmitted = convertValueToLocalDate(caseDetails.getData().get("dateSubmitted"));
+                    ttlMap.put("SystemTTL", addDaysAndConvertToString(dateSubmitted, 6575));
+                } else {
+                    List<Element<Map<String,Object>>> orderCollection = objectMapper.convertValue(
+                        caseDetails.getData().get("orderCollection"),
+                        new TypeReference<List<Element<Map<String, Object>>>>() {}
+                    );
 
-                orderCollection.sort((element1, element2) ->
-                    convertValueToLocalDate(element1.getValue().get("approvalDate"))
-                        .compareTo(convertValueToLocalDate(element2.getValue().get("approvalDate"))));
+                    orderCollection.sort((element1, element2) ->
+                        convertValueToLocalDate(element1.getValue().get("approvalDate"))
+                            .compareTo(convertValueToLocalDate(element2.getValue().get("approvalDate"))));
 
-                Object lastIssuedDate = orderCollection
-                    .get(orderCollection.size() - 1)
-                    .getValue()
-                    .get("approvalDate");
+                    Object lastApprovalDate = orderCollection
+                        .get(orderCollection.size() - 1)
+                        .getValue()
+                        .get("approvalDate");
 
-                ttlMap.put("SystemTTL", convertValueToLocalDate(lastIssuedDate).plusDays(6575));
+                    LocalDate localDate = convertValueToLocalDate(lastApprovalDate);
+                    ttlMap.put("SystemTTL", addDaysAndConvertToString(localDate, 6575));
+                }
                 break;
             default:
                 throw new AssertionError(format("Migration 2572, case with id: %s "
@@ -168,11 +176,11 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
 
         if (caseDetails.getData().containsKey("TTL")) {
             ttlMap.put("OverrideTTL", caseDetails.getData().get("OverrideTTL"));
-            ttlMap.put("Suspend", "YES");
+            ttlMap.put("Suspended", "Yes");
             ttlMap.put("SystemTTL", caseDetails.getData().get("SystemTTL"));
         } else {
             ttlMap.put("OverrideTTL", null);
-            ttlMap.put("Suspend", "YES");
+            ttlMap.put("Suspended", "Yes");
             ttlMap.put("SystemTTL", null);
         }
 
@@ -182,5 +190,9 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
 
     public LocalDate convertValueToLocalDate(Object dateOnCase) {
         return LocalDate.parse(dateOnCase.toString(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+    }
+
+    public String addDaysAndConvertToString(LocalDate localDate, long daysToAdd) {
+        return localDate.plusDays(daysToAdd).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
     }
 }
