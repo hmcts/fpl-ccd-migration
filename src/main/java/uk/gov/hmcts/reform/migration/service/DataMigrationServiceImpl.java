@@ -174,9 +174,9 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         HashMap<String, Object> ttlMap = new HashMap<>();
 
         if (caseDetails.getData().containsKey("TTL")) {
-            ttlMap.put("OverrideTTL", caseDetails.getData().get("OverrideTTL"));
+            ttlMap.put("OverrideTTL", caseDetails.getData().getOrDefault("OverrideTTL", null));
             ttlMap.put("Suspended", "Yes");
-            ttlMap.put("SystemTTL", caseDetails.getData().get("SystemTTL"));
+            ttlMap.put("SystemTTL", caseDetails.getData().getOrDefault("SystemTTL", null));
         } else {
             ttlMap.put("OverrideTTL", null);
             ttlMap.put("Suspended", "Yes");
