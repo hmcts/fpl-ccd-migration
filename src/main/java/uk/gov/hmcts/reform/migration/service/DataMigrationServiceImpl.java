@@ -121,7 +121,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
                 ttlMap.put("SystemTTL", addDaysAndConvertToString(
                     caseDetails.getCreatedDate().toLocalDate(), 180));
                 break;
-            case "Submitted", "Gatekeeping", "GATEKEEPING_LISTING", "Returned":
+            case "Submitted", "Gatekeeping", "GATEKEEPING_LISTING", "RETURNED":
                 LocalDate dateSubmitted = convertValueToLocalDate(caseDetails.getData().get("dateSubmitted"));
 
                 ttlMap.put("SystemTTL", addDaysAndConvertToString(dateSubmitted, 6575));
@@ -136,7 +136,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
 
                 ttlMap.put("SystemTTL", convertValueToLocalDate(closedCaseDate).plusDays(6575));
                 break;
-            case "CASE_MANAGEMENT", "FINAL_HEARING":
+            case "PREPARE_FOR_HEARING", "FINAL_HEARING":
                 if (caseDetails.getData().get("orderCollection") == null) {
                     dateSubmitted = convertValueToLocalDate(caseDetails.getData().get("dateSubmitted"));
                     ttlMap.put("SystemTTL", addDaysAndConvertToString(dateSubmitted, 6575));

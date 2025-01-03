@@ -149,7 +149,7 @@ class DataMigrationServiceImplTest {
 
         caseDetails = CaseDetails.builder()
             .data(caseData)
-            .state("CASE_MANAGEMENT").build();
+            .state("PREPARE_FOR_HEARING").build();
 
         assertThat(dataMigrationService.triggerTtlMigration(caseDetails).equals(expectedTtl));
     }
@@ -169,7 +169,7 @@ class DataMigrationServiceImplTest {
 
         caseDetails = CaseDetails.builder()
             .data(caseData)
-            .state("CASE_MANAGEMENT").build();
+            .state("PREPARE_FOR_HEARING").build();
 
         assertThat(dataMigrationService.triggerTtlMigration(caseDetails).equals(expectedTtl));
     }
@@ -194,7 +194,7 @@ class DataMigrationServiceImplTest {
 
         caseDetails = CaseDetails.builder()
             .data(caseData)
-            .state("CASE_MANAGEMENT").build();
+            .state("PREPARE_FOR_HEARING").build();
 
         assertThat(dataMigrationService.triggerSuspendMigrationTtl(caseDetails).equals(expectedTtl));
     }
@@ -210,7 +210,7 @@ class DataMigrationServiceImplTest {
 
         caseDetails = CaseDetails.builder()
             .data(caseData)
-            .state("CASE_MANAGEMENT").build();
+            .state("PREPARE_FOR_HEARING").build();
 
         assertThat(dataMigrationService.triggerSuspendMigrationTtl(caseDetails).equals(expectedTtl));
     }
