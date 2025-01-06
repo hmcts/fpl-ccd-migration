@@ -152,7 +152,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
                         getApprovalDateOnElement(element1)
                             .compareTo(getApprovalDateOnElement(element2)));
 
-                    LocalDate localDate = getApprovalDateOnElement(orderCollection.get(orderCollection.size() -1));
+                    LocalDate localDate = getApprovalDateOnElement(orderCollection.get(orderCollection.size() - 1));
                     ttlMap.put("SystemTTL", addDaysAndConvertToString(localDate, 6575));
                 }
                 break;

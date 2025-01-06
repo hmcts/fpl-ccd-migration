@@ -125,8 +125,8 @@ class DataMigrationServiceImplTest {
 
     @Test
     void shouldPopulateTtlOnCaseManagementCase() {
-        LocalDate now = LocalDate.now();
-        LocalDateTime nowTime = LocalDateTime.now();
+        final LocalDate now = LocalDate.now();
+        final LocalDateTime nowTime = LocalDateTime.now();
         LocalDate expectedSystemTtl = now.plusDays(6575);
 
         Map<String, Object> expectedTtl = new HashMap<>();
