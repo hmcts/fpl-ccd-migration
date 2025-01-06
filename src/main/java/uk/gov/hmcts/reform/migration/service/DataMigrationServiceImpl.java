@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.migration.query.Must;
 import uk.gov.hmcts.reform.migration.query.MustNot;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
@@ -27,6 +28,7 @@ import java.util.function.Predicate;
 
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
+import static org.apache.commons.lang3.ObjectUtils.isEmpty;
 
 @Slf4j
 @Component
@@ -128,7 +130,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
                 break;
             case "CLOSED":
                 Map<String, Object> closedCase = objectMapper.convertValue(
-                    caseDetails.getData().get("closeCase"),
+                    caseDetails.getData().get("closeCaseTabField"),
                     new TypeReference<Map<String, Object>>() {}
                 );
 
@@ -137,7 +139,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
                 ttlMap.put("SystemTTL", convertValueToLocalDate(closedCaseDate).plusDays(6575));
                 break;
             case "PREPARE_FOR_HEARING", "FINAL_HEARING":
-                if (caseDetails.getData().get("orderCollection") == null) {
+                if (isEmpty(caseDetails.getData().get("orderCollection"))) {
                     dateSubmitted = convertValueToLocalDate(caseDetails.getData().get("dateSubmitted"));
                     ttlMap.put("SystemTTL", addDaysAndConvertToString(dateSubmitted, 6575));
                 } else {
@@ -147,15 +149,10 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
                     );
 
                     orderCollection.sort((element1, element2) ->
-                        convertValueToLocalDate(element1.getValue().get("approvalDate"))
-                            .compareTo(convertValueToLocalDate(element2.getValue().get("approvalDate"))));
+                        getApprovalDateOnElement(element1)
+                            .compareTo(getApprovalDateOnElement(element2)));
 
-                    Object lastApprovalDate = orderCollection
-                        .get(orderCollection.size() - 1)
-                        .getValue()
-                        .get("approvalDate");
-
-                    LocalDate localDate = convertValueToLocalDate(lastApprovalDate);
+                    LocalDate localDate = getApprovalDateOnElement(orderCollection.get(orderCollection.size() -1));
                     ttlMap.put("SystemTTL", addDaysAndConvertToString(localDate, 6575));
                 }
                 break;
@@ -193,5 +190,13 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
 
     public String addDaysAndConvertToString(LocalDate localDate, long daysToAdd) {
         return localDate.plusDays(daysToAdd).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+    }
+
+    public LocalDate getApprovalDateOnElement(Element<Map<String, Object>> element) {
+        if (isEmpty(element.getValue().get("approvalDate"))) {
+            return LocalDateTime.parse(element.getValue().get("approvalDateTime").toString()).toLocalDate();
+        } else {
+            return convertValueToLocalDate(element.getValue().get("approvalDate"));
+        }
     }
 }

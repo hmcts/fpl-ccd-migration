@@ -114,7 +114,7 @@ class DataMigrationServiceImplTest {
         closeCase.put("date", now.toString());
 
         Map<String, Object> caseData = new HashMap<>();
-        caseData.put("closeCase", closeCase);
+        caseData.put("closeCaseTabField", closeCase);
 
         caseDetails = CaseDetails.builder()
             .data(caseData)
@@ -126,6 +126,7 @@ class DataMigrationServiceImplTest {
     @Test
     void shouldPopulateTtlOnCaseManagementCase() {
         LocalDate now = LocalDate.now();
+        LocalDateTime nowTime = LocalDateTime.now();
         LocalDate expectedSystemTtl = now.plusDays(6575);
 
         Map<String, Object> expectedTtl = new HashMap<>();
@@ -136,7 +137,7 @@ class DataMigrationServiceImplTest {
         Map<String, Object> order1 = new HashMap<>();
         order1.put("approvalDate", now.minusDays(2).toString());
         Map<String, Object> order2 = new HashMap<>();
-        order2.put("approvalDate", now.toString());
+        order2.put("approvalDateTime", nowTime.toString());
         Map<String, Object> order3 = new HashMap<>();
         order3.put("approvalDate", now.minusDays(4).toString());
 
