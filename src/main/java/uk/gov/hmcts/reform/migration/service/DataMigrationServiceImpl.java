@@ -193,10 +193,13 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
     }
 
     public LocalDate getApprovalDateOnElement(Element<Map<String, Object>> element) {
-        if (isEmpty(element.getValue().get("approvalDate"))) {
+        if (!isEmpty(element.getValue().get("approvalDateTime"))) {
             return LocalDateTime.parse(element.getValue().get("approvalDateTime").toString()).toLocalDate();
-        } else {
+        } else if (!isEmpty(element.getValue().get("approvalDate"))) {
             return convertValueToLocalDate(element.getValue().get("approvalDate"));
+        } else {
+            return LocalDate.parse(element.getValue().get("dateOfIssue").toString(),
+                DateTimeFormatter.ofPattern("d MMMM yyyy"));
         }
     }
 }

@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.fpl.model.common.Element;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -140,6 +141,37 @@ class DataMigrationServiceImplTest {
         order2.put("approvalDateTime", nowTime.toString());
         Map<String, Object> order3 = new HashMap<>();
         order3.put("approvalDate", now.minusDays(4).toString());
+
+        List<Element<Map<String, Object>>> orderCollection = List.of(new Element<>(UUID.randomUUID(), order1),
+            new Element<>(UUID.randomUUID(), order2),
+            new Element<>(UUID.randomUUID(), order3));
+
+        Map<String, Object> caseData = new HashMap<>();
+        caseData.put("orderCollection", orderCollection);
+
+        caseDetails = CaseDetails.builder()
+            .data(caseData)
+            .state("PREPARE_FOR_HEARING").build();
+
+        assertThat(dataMigrationService.triggerTtlMigration(caseDetails).equals(expectedTtl));
+    }
+
+    @Test
+    void shouldPopulateTtlOnCaseManagementCaseWithNoApprovedOrders() {
+        final LocalDate now = LocalDate.now();
+        LocalDate expectedSystemTtl = now.plusDays(6575);
+
+        Map<String, Object> expectedTtl = new HashMap<>();
+        expectedTtl.put("OverrideTTL", null);
+        expectedTtl.put("Suspended", "No");
+        expectedTtl.put("SystemTTL", expectedSystemTtl);
+
+        Map<String, Object> order1 = new HashMap<>();
+        order1.put("dateOfIssue", now.minusDays(2).format(DateTimeFormatter.ofPattern("d MMMM yyyy")));
+        Map<String, Object> order2 = new HashMap<>();
+        order2.put("dateOfIssue", now.format(DateTimeFormatter.ofPattern("d MMMM yyyy")));
+        Map<String, Object> order3 = new HashMap<>();
+        order3.put("dateOfIssue", now.minusDays(4).format(DateTimeFormatter.ofPattern("d MMMM yyyy")));
 
         List<Element<Map<String, Object>>> orderCollection = List.of(new Element<>(UUID.randomUUID(), order1),
             new Element<>(UUID.randomUUID(), order2),
