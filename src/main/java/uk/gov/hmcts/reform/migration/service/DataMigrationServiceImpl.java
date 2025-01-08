@@ -205,9 +205,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
             new TypeReference<HashMap<String, Object>>() {});
 
         if (caseDetails.getData().containsKey("TTL")) {
-            HashMap<String, Object> ttlMap = objectMapper.convertValue(caseDetails.getData().get("TTL"),
-                new TypeReference<HashMap<String, Object>>() {});
-            ttlMap.remove("TTL");
+            updates.remove("TTL");
         }
 
         return updates;
