@@ -134,9 +134,9 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
                     new TypeReference<Map<String, Object>>() {}
                 );
 
-                Object closedCaseDate = closedCase.get("date");
+                LocalDate closedCaseDate = convertValueToLocalDate(closedCase.get("date"));
 
-                ttlMap.put("SystemTTL", convertValueToLocalDate(closedCaseDate).plusDays(6575).toString());
+                ttlMap.put("SystemTTL", addDaysAndConvertToString(closedCaseDate,6575));
                 break;
             case "PREPARE_FOR_HEARING", "FINAL_HEARING":
                 if (isEmpty(caseDetails.getData().get("orderCollection"))) {
