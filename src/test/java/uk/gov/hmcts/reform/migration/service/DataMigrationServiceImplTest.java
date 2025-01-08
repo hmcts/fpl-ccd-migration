@@ -215,12 +215,12 @@ class DataMigrationServiceImplTest {
         Map<String, Object> expectedTtl = new HashMap<>();
         expectedTtl.put("OverrideTTL", null);
         expectedTtl.put("Suspended", "Yes");
-        expectedTtl.put("SystemTTL", expectedSystemTtl);
+        expectedTtl.put("SystemTTL", expectedSystemTtl.toString());
 
         Map<String, Object> existingTtl = new HashMap<>();
         existingTtl.put("OverrideTTL", null);
         existingTtl.put("Suspended", "No");
-        existingTtl.put("SystemTTL", expectedSystemTtl);
+        existingTtl.put("SystemTTL", expectedSystemTtl.toString());
 
         Map<String, Object> caseData = new HashMap<>();
         caseData.put("TTL", existingTtl);
@@ -246,5 +246,52 @@ class DataMigrationServiceImplTest {
             .state("PREPARE_FOR_HEARING").build();
 
         assertThat(dataMigrationService.triggerSuspendMigrationTtl(caseDetails).equals(expectedTtl));
+    }
+
+    @Test
+    void shouldResumeOnCaseWithTtl() {
+        LocalDate now = LocalDate.now();
+        LocalDate expectedSystemTtl = now.plusDays(6575);
+
+        Map<String, Object> expectedTtl = new HashMap<>();
+        expectedTtl.put("OverrideTTL", null);
+        expectedTtl.put("Suspended", "No");
+        expectedTtl.put("SystemTTL", expectedSystemTtl.toString());
+
+        Map<String, Object> existingTtl = new HashMap<>();
+        existingTtl.put("OverrideTTL", null);
+        existingTtl.put("Suspended", "Yes");
+        existingTtl.put("SystemTTL", expectedSystemTtl.toString());
+
+        Map<String, Object> caseData = new HashMap<>();
+        caseData.put("TTL", existingTtl);
+
+        caseDetails = CaseDetails.builder()
+            .data(caseData)
+            .state("PREPARE_FOR_HEARING").build();
+
+        assertThat(dataMigrationService.triggerResumeMigrationTtl(caseDetails).equals(expectedTtl));
+    }
+
+    @Test
+    void shouldRemoveTtlObjectOnCase() {
+        LocalDate now = LocalDate.now();
+        LocalDate expectedSystemTtl = now.plusDays(6575);
+
+        Map<String, Object> existingTtl = new HashMap<>();
+        existingTtl.put("OverrideTTL", null);
+        existingTtl.put("Suspended", "Yes");
+        existingTtl.put("SystemTTL", expectedSystemTtl.toString());
+
+        Map<String, Object> caseData = new HashMap<>();
+        caseData.put("TTL", existingTtl);
+
+        caseDetails = CaseDetails.builder()
+            .data(caseData)
+            .state("PREPARE_FOR_HEARING").build();
+
+        dataMigrationService.triggerRemoveMigrationTtl(caseDetails);
+
+        assertThat(!caseDetails.getData().containsKey("TTL"));
     }
 }

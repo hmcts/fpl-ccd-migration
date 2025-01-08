@@ -169,8 +169,11 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
     public Map<String, Object> triggerSuspendMigrationTtl(CaseDetails caseDetails) {
         HashMap<String, Object> updates = new HashMap<>();
         HashMap<String, Object> ttlMap = new HashMap<>();
+        ObjectMapper objectMapper = new ObjectMapper();
 
         if (caseDetails.getData().containsKey("TTL")) {
+            ttlMap = objectMapper.convertValue(caseDetails.getData().get("TTL"),
+                new TypeReference<HashMap<String, Object>>() {});
             ttlMap.replace("Suspended", "Yes");
         } else {
             ttlMap.put("OverrideTTL", null);
@@ -179,6 +182,34 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         }
 
         updates.put("TTL", ttlMap);
+        return updates;
+    }
+
+    public Map<String, Object> triggerResumeMigrationTtl(CaseDetails caseDetails) {
+        HashMap<String, Object> updates = new HashMap<>();
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        if (caseDetails.getData().containsKey("TTL")) {
+            HashMap<String, Object> ttlMap = objectMapper.convertValue(caseDetails.getData().get("TTL"),
+                new TypeReference<HashMap<String, Object>>() {});
+            ttlMap.replace("Suspended", "No");
+            updates.put("TTL", ttlMap);
+        }
+
+        return updates;
+    }
+
+    public Map<String, Object> triggerRemoveMigrationTtl(CaseDetails caseDetails) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        HashMap<String, Object> updates = objectMapper.convertValue(caseDetails.getData(),
+            new TypeReference<HashMap<String, Object>>() {});
+
+        if (caseDetails.getData().containsKey("TTL")) {
+            HashMap<String, Object> ttlMap = objectMapper.convertValue(caseDetails.getData().get("TTL"),
+                new TypeReference<HashMap<String, Object>>() {});
+            ttlMap.remove("TTL");
+        }
+
         return updates;
     }
 
