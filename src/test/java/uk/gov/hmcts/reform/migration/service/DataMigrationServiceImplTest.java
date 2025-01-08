@@ -73,13 +73,14 @@ class DataMigrationServiceImplTest {
         Map<String, Object> expectedTtl = new HashMap<>();
         expectedTtl.put("OverrideTTL", null);
         expectedTtl.put("Suspended", "No");
-        expectedTtl.put("SystemTTL", expectedSystemTtl);
+        expectedTtl.put("SystemTTL", expectedSystemTtl.toString());
 
         caseDetails = CaseDetails.builder()
             .createdDate(now)
             .state("Open").build();
 
-        assertThat(dataMigrationService.triggerTtlMigration(caseDetails).equals(expectedTtl));
+        Map<String, Object> data = dataMigrationService.triggerTtlMigration(caseDetails);
+        assertThat(data.get("TTL")).isEqualTo(expectedTtl);
     }
 
     @Test
@@ -89,7 +90,7 @@ class DataMigrationServiceImplTest {
         Map<String, Object> expectedTtl = new HashMap<>();
         expectedTtl.put("OverrideTTL", null);
         expectedTtl.put("Suspended", "No");
-        expectedTtl.put("SystemTTL", expectedSystemTtl);
+        expectedTtl.put("SystemTTL", expectedSystemTtl.toString());
 
         Map<String, Object> caseData = new HashMap<>();
         caseData.put("dateSubmitted", now);
@@ -98,7 +99,8 @@ class DataMigrationServiceImplTest {
             .data(caseData)
             .state("Submitted").build();
 
-        assertThat(dataMigrationService.triggerTtlMigration(caseDetails).equals(expectedTtl));
+        Map<String, Object> data = dataMigrationService.triggerTtlMigration(caseDetails);
+        assertThat(data.get("TTL")).isEqualTo(expectedTtl);
     }
 
     @Test
@@ -109,7 +111,7 @@ class DataMigrationServiceImplTest {
         Map<String, Object> expectedTtl = new HashMap<>();
         expectedTtl.put("OverrideTTL", null);
         expectedTtl.put("Suspended", "No");
-        expectedTtl.put("SystemTTL", expectedSystemTtl);
+        expectedTtl.put("SystemTTL", expectedSystemTtl.toString());
 
         Map<String, Object> closeCase = new HashMap<>();
         closeCase.put("date", now.toString());
@@ -121,7 +123,8 @@ class DataMigrationServiceImplTest {
             .data(caseData)
             .state("CLOSED").build();
 
-        assertThat(dataMigrationService.triggerTtlMigration(caseDetails).equals(expectedTtl));
+        Map<String, Object> data = dataMigrationService.triggerTtlMigration(caseDetails);
+        assertThat(data.get("TTL")).isEqualTo(expectedTtl);
     }
 
     @Test
@@ -133,7 +136,7 @@ class DataMigrationServiceImplTest {
         Map<String, Object> expectedTtl = new HashMap<>();
         expectedTtl.put("OverrideTTL", null);
         expectedTtl.put("Suspended", "No");
-        expectedTtl.put("SystemTTL", expectedSystemTtl);
+        expectedTtl.put("SystemTTL", expectedSystemTtl.toString());
 
         Map<String, Object> order1 = new HashMap<>();
         order1.put("approvalDate", now.minusDays(2).toString());
@@ -153,7 +156,8 @@ class DataMigrationServiceImplTest {
             .data(caseData)
             .state("PREPARE_FOR_HEARING").build();
 
-        assertThat(dataMigrationService.triggerTtlMigration(caseDetails).equals(expectedTtl));
+        Map<String, Object> data = dataMigrationService.triggerTtlMigration(caseDetails);
+        assertThat(data.get("TTL")).isEqualTo(expectedTtl);
     }
 
     @Test
@@ -164,7 +168,7 @@ class DataMigrationServiceImplTest {
         Map<String, Object> expectedTtl = new HashMap<>();
         expectedTtl.put("OverrideTTL", null);
         expectedTtl.put("Suspended", "No");
-        expectedTtl.put("SystemTTL", expectedSystemTtl);
+        expectedTtl.put("SystemTTL", expectedSystemTtl.toString());
 
         Map<String, Object> order1 = new HashMap<>();
         order1.put("dateOfIssue", now.minusDays(2).format(DateTimeFormatter.ofPattern("d MMMM yyyy")));
@@ -184,7 +188,8 @@ class DataMigrationServiceImplTest {
             .data(caseData)
             .state("PREPARE_FOR_HEARING").build();
 
-        assertThat(dataMigrationService.triggerTtlMigration(caseDetails).equals(expectedTtl));
+        Map<String, Object> data = dataMigrationService.triggerTtlMigration(caseDetails);
+        assertThat(data.get("TTL")).isEqualTo(expectedTtl);
     }
 
     @Test
@@ -195,7 +200,7 @@ class DataMigrationServiceImplTest {
         Map<String, Object> expectedTtl = new HashMap<>();
         expectedTtl.put("OverrideTTL", null);
         expectedTtl.put("Suspended", "No");
-        expectedTtl.put("SystemTTL", expectedSystemTtl);
+        expectedTtl.put("SystemTTL", expectedSystemTtl.toString());
 
         Map<String, Object> caseData = new HashMap<>();
         caseData.put("dateSubmitted", now);
@@ -204,7 +209,8 @@ class DataMigrationServiceImplTest {
             .data(caseData)
             .state("PREPARE_FOR_HEARING").build();
 
-        assertThat(dataMigrationService.triggerTtlMigration(caseDetails).equals(expectedTtl));
+        Map<String, Object> data = dataMigrationService.triggerTtlMigration(caseDetails);
+        assertThat(data.get("TTL")).isEqualTo(expectedTtl);
     }
 
     @Test
@@ -229,7 +235,8 @@ class DataMigrationServiceImplTest {
             .data(caseData)
             .state("PREPARE_FOR_HEARING").build();
 
-        assertThat(dataMigrationService.triggerSuspendMigrationTtl(caseDetails).equals(expectedTtl));
+        Map<String, Object> data = dataMigrationService.triggerSuspendMigrationTtl(caseDetails);
+        assertThat(data.get("TTL")).isEqualTo(expectedTtl);
     }
 
     @Test
@@ -245,7 +252,8 @@ class DataMigrationServiceImplTest {
             .data(caseData)
             .state("PREPARE_FOR_HEARING").build();
 
-        assertThat(dataMigrationService.triggerSuspendMigrationTtl(caseDetails).equals(expectedTtl));
+        Map<String, Object> data = dataMigrationService.triggerSuspendMigrationTtl(caseDetails);
+        assertThat(data.get("TTL")).isEqualTo(expectedTtl);
     }
 
     @Test
@@ -270,7 +278,8 @@ class DataMigrationServiceImplTest {
             .data(caseData)
             .state("PREPARE_FOR_HEARING").build();
 
-        assertThat(dataMigrationService.triggerResumeMigrationTtl(caseDetails).equals(expectedTtl));
+        Map<String, Object> data = dataMigrationService.triggerResumeMigrationTtl(caseDetails);
+        assertThat(data.get("TTL")).isEqualTo(expectedTtl);
     }
 
     @Test
@@ -290,8 +299,7 @@ class DataMigrationServiceImplTest {
             .data(caseData)
             .state("PREPARE_FOR_HEARING").build();
 
-        dataMigrationService.triggerRemoveMigrationTtl(caseDetails);
-
-        assertThat(!caseDetails.getData().containsKey("TTL"));
+        Map<String, Object> data = dataMigrationService.triggerRemoveMigrationTtl(caseDetails);
+        assertThat(data.get("TTL")).isNull();
     }
 }
