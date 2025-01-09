@@ -38,11 +38,12 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
     public static final String COURT = "court";
     private final Map<String, Function<CaseDetails, Map<String, Object>>> migrations = Map.of(
         "DFPL-log", this::triggerOnlyMigration,
-        "DFPL-2572", this::triggerTtlMigration
+        "DFPL-2572", this::triggerRemoveMigrationTtl
         );
 
     private final Map<String, EsQuery> queries = Map.of(
-        "DFPL-2585", this.closedCases()
+        "DFPL-2585", this.closedCases(),
+        "DFPL-2572", this.notDeletedCases()
     );
 
     private EsQuery closedCases() {
@@ -51,6 +52,16 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         return BooleanQuery.builder()
             .must(Must.builder()
                 .clauses(List.of(closedState))
+                .build())
+            .build();
+    }
+
+    private EsQuery notDeletedCases() {
+        final MatchQuery nonDeltedCases = MatchQuery.of("state", "DELETED");
+
+        return BooleanQuery.builder()
+            .mustNot(MustNot.builder()
+                .clauses(List.of(nonDeltedCases))
                 .build())
             .build();
     }
@@ -203,7 +214,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
         HashMap<String, Object> updates = new HashMap<>();
 
         if (caseDetails.getData().containsKey("TTL")) {
-            updates.put("TTL", null);
+            updates.put("TTL", new HashMap<>());
         }
 
         return updates;

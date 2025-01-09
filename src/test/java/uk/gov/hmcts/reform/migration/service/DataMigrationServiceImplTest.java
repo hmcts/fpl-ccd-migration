@@ -300,6 +300,6 @@ class DataMigrationServiceImplTest {
             .state("PREPARE_FOR_HEARING").build();
 
         Map<String, Object> data = dataMigrationService.triggerRemoveMigrationTtl(caseDetails);
-        assertThat(data.get("TTL")).isNull();
+        assertThat(data.get("TTL")).isEqualTo(new HashMap<>());
     }
 }
