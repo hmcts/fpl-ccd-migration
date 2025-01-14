@@ -57,7 +57,7 @@ public class DataMigrationServiceImpl implements DataMigrationService<Map<String
     }
 
     private EsQuery openCases() {
-        final MatchQuery openState = MatchQuery.of("state", "OPEN");
+        final MatchQuery openState = MatchQuery.of("state", "Open");
 
         return BooleanQuery.builder()
             .must(Must.builder()
